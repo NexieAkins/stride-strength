@@ -18,9 +18,31 @@ button{border:0;border-radius:9px;padding:12px;background:#5145cd;color:white;fo
 input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;background:#101b2c;color:white;border:1px solid #475569;border-radius:9px}
 label{display:block;margin-top:8px}
 .hidden{display:none}
-nav{position:fixed;bottom:0;left:0;right:0;background:#111c2e;display:grid;grid-template-columns:repeat(5,1fr);padding:8px 3px max(12px,env(safe-area-inset-bottom))}
-nav button{background:transparent;font-size:11px;padding:10px 2px}
-nav button.active{background:#5145cd}
+nav{
+ position:fixed;
+ bottom:0;
+ left:0;
+ right:0;
+ width:100%;
+ background:#111c2e;
+ display:grid;
+ grid-template-columns:repeat(5,minmax(0,1fr));
+ gap:4px;
+ padding:10px 8px;
+ z-index:9999;
+ box-shadow:0 -4px 15px rgba(0,0,0,.3);
+}
+nav button{
+ background:transparent;
+ color:white;
+ font-size:13px;
+ padding:12px 4px;
+ min-width:0;
+ text-align:center;
+}
+nav button.active{
+ background:#5145cd;
+}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stats .card{margin:0}
 .stats strong{font-size:23px}
