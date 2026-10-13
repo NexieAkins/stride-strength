@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stride & Strength</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0d1424;color:white;font-family:Arial,sans-serif;padding:20px 16px 85px}
+header{max-width:600px;margin:auto}
+h1{font-size:30px;margin-bottom:5px}
+h2{font-size:20px}
+p,small{color:#aab9ce}
+main{max-width:600px;margin:auto}
+.hero{background:linear-gradient(120deg,#5145cd,#087e80);padding:24px;border-radius:20px;margin:20px 0}
+.card{background:#1b273a;padding:17px;border-radius:15px;margin:10px 0}
+.card strong{display:block;margin-bottom:7px}
+.card small{display:block}
+.stats{display:flex;gap:10px}
+.stats .card{flex:1;text-align:center}
+.stats strong{font-size:24px}
+button{border:0;border-radius:10px;padding:12px;color:white;background:#5145cd;font-weight:bold;cursor:pointer}
+input,select,textarea{width:100%;padding:12px;margin:8px 0 15px;background:#101b2c;color:white;border:1px solid #475569;border-radius:10px}
+label{font-size:14px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#111c2e;display:flex;justify-content:space-around;padding:12px}
+nav button{background:transparent}
+.active{background:#5145cd}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+<small>YOUR FITNESS COMPANION</small>
+<h1>Stride & Strength ✦</h1>
+<p>Run stronger. Lift smarter. Every day counts.</p>
+</header>
+<main>
+<section id="home">
+<div class="hero">
+<h2>Your strength. Your stride.</h2>
+<p>Track every mile, every rep, every victory.</p>
+<button onclick="show('log')">Log Workout →</button>
+</div>
+<div class="stats">
+<div class="card"><strong id="sessions">0</strong><small>Workouts</small></div>
+<div class="card"><strong id="miles">0</strong><small>Miles</small></div>
+</div>
+<h2>Your Weekly Schedule</h2>
+<div id="schedule"></div>
+</section>
+
+<section id="plan" class="hidden">
+<h2>Training Plan</h2>
+<div id="details"></div>
+</section>
+
+<section id="log" class="hidden">
+<h2>Log Your Workout</h2>
+<form id="form">
+<label>Date</label>
+<input id="date" type="date" required>
+<label>Workout</label>
+<select id="type">
+<option>Long Run</option>
+<option>Quality Run</option>
+<option>Upper Body</option>
+<option>Lower Body</option>
+<option>Core</option>
+<option>Recovery</option>
+</select>
+<label>Distance (miles)</label>
+<input id="distance" type="number" min="0" step=".01" placeholder="4.5">
+<label>Duration (minutes)</label>
+<input id="duration" type="number" min="0" placeholder="55">
+<label>Weights / Notes</label>
+<textarea id="notes" placeholder="Exercises, weights, sets and reps"></textarea>
+<button type="submit">Save Workout</button>
+</form>
+<p id="message"></p>
+</section>
+
+<section id="progress" class="hidden">
+<h2>My Progress</h2>
+<div class="stats">
+<div class="card"><strong id="total">0</strong><small>Sessions</small></div>
+<div class="card"><strong id="distanceTotal">0</strong><small>Miles</small></div>
+</div>
+<h2>Workout History</h2>
+<div id="history"></div>
+<button onclick="exportCSV()">Export CSV</button>
+<p>Your data is stored on this device.</p>
+</section>
+</main>
+
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('plan')">Plan</button>
+<button onclick="show('log')">Log</button>
+<button onclick="show('progress')">Progress</button>
+</nav>
+
+<script>
+const workouts=[
+["Monday","Light activation / rest","Mobility and optional light full body"],
+["Tuesday","Long / Mission Run","Endurance run. Build mileage gradually. Short cooldown."],
+["Wednesday","Upper + Core","Lat pulldown, rows, chest press, triceps, lateral raises and core. Modify if shoulder hurts."],
+["Thursday","Quality Run","Intervals or tempo. Prefer 0.10–0.25 mile speed blocks."],
+["Friday","Lower Body + Core","Leg press, leg curl, leg extension, hip abduction, reverse crunch."],
+["Saturday","Upper Back + Core","Lat pulldown, rows, curls, triceps, lateral raises and core."],
+["Sunday","Recovery","Rest, mobility or optional catch-up."]
+];
+const key="stride-strength-data";
+let logs=[];
+try{logs=JSON.parse(localStorage.getItem(key)||"[]")}catch(e){logs=[]}
+if(!Array.isArray(logs))logs=[];
+function show(id){
+document.querySelectorAll("main section").forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+refresh();
+}
+function safe(s){
+return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+workouts.forEach(w=>{
+const card=document.createElement("div");
+card.className="card";
+card.innerHTML="<strong>"+safe(w[0])+"</strong><small>"+safe(w[1])+"</small>";
+document.getElementById("schedule").appendChild(card);
+const detail=document.createElement("div");
+detail.className="card";
+detail.innerHTML="<strong>"+safe(w[0])+" — "+safe(w[1])+"</strong><p>"+safe(w[2])+"</p>";
+document.getElementById("details").appendChild(detail);
+});
+const today=new Date();
+document.getElementById("date").value=[
+today.getFullYear(),
+String(today.getMonth()+1).padStart(2,"0"),
+String(today.getDate()).padStart(2,"0")
+].join("-");
+document.getElementById("form").onsubmit=e=>{
+e.preventDefault();
+const entry={
+date:document.getElementById("date").value,
+type:document.getElementById("type").value,
+miles:Number(document.getElementById("distance").value)||0,
+minutes:Number(document.getElementById("duration").value)||0,
+notes:document.getElementById("notes").value
+};
+logs.push(entry);
+try{
+localStorage.setItem(key,JSON.stringify(logs));
+document.getElementById("message").textContent="Workout saved!";
+document.getElementById("form").reset();
+refresh();
+}catch(err){
+logs.pop();
+document.getElementById("message").textContent="Could not save workout.";
+}
+};
+function refresh(){
+const miles=logs.reduce((a,b)=>a+b.miles,0);
+["sessions","total"].forEach(id=>document.getElementById(id).textContent=logs.length);
+["miles","distanceTotal"].forEach(id=>document.getElementById(id).textContent=miles.toFixed(1));
+document.getElementById("history").innerHTML=logs.length?
+logs.slice().reverse().map(x=>"<div class='card'><strong>"+safe(x.date)+" — "+safe(x.type)+"</strong><small>"+x.miles+" miles · "+x.minutes+" min</small><p>"+safe(x.notes)+"</p></div>").join(""):
+"<p>No workouts logged yet.</p>";
+}
+function exportCSV(){
+const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+const rows=[["Date","Type","Miles","Minutes","Notes"],...logs.map(x=>[x.date,x.type,x.miles,x.minutes,x.notes])];
+const csv=rows.map(r=>r.map(q).join(",")).join("\n");
+const url=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+const a=document.createElement("a");
+a.href=url;a.download="stride-strength.csv";a.click();
+setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+refresh();
+</script>
+</body>
+</html>
