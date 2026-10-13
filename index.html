@@ -1,6 +1,18 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stride & Strength</title><style>
 *{box-sizing:border-box}body{background:#0d1424;color:white;font:15px system-ui;margin:0;padding:18px 16px 110px}header,main{max-width:720px;margin:auto}p{color:#b6c4d9}.card{background:#1b273a;padding:16px;border-radius:15px;margin:12px 0}.hero{background:linear-gradient(120deg,#5145cd,#087e80);padding:22px;border-radius:18px}button{background:#5145cd;color:white;border:0;border-radius:9px;padding:12px;cursor:pointer}input,select,textarea{width:100%;padding:12px;background:#101b2c;color:white;border:1px solid #475569;border-radius:9px;margin:7px 0 13px}label{display:block}.hidden{display:none!important}nav{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#111c2e;padding:10px 3px;z-index:9}nav button{font-size:12px;min-width:0;background:transparent;padding:10px 1px}nav button.active{background:#5145cd}.exercise{padding:10px 0;border-bottom:1px solid #475569}.exercise label{display:flex;gap:10px}.exercise input{width:20px;height:20px;margin:0}
-</style></head><body><header><h1>Stride & Strength ✦</h1><p>Run stronger. Lift smarter. Nourish consistently.</p></header><main>
+</style><style>
+#account{max-width:720px;margin:12px auto;padding:14px;background:#1b273a;border-radius:14px}
+#account input{max-width:340px;display:block}#account button{margin:4px}
+#cloudStatus{color:#b6c4d9;font-size:13px}#cloudImport{background:#0f766e}
+</style></head><body><header><h1>Stride & Strength ✦</h1><p>Run stronger. Lift smarter. Nourish consistently.</p></header><div id="account"><h3>☁ Cloud account</h3><div id="signedOut">
+<p>Sign in to sync your fitness records across devices.</p>
+<form id="loginForm"><label>Email</label><input id="authEmail" type="email" required autocomplete="email">
+<label>Password (at least 6 characters)</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password">
+<button type="submit">Sign in</button><button type="button" id="signup">Create account</button></form></div>
+<div id="signedIn" class="hidden"><p id="accountEmail"></p>
+<button id="cloudRefresh">Refresh cloud data</button><button id="cloudImport">Import this browser's saved records</button>
+<button id="signout">Sign out</button><p class="muted">Import is optional and merges records into your cloud account. Export a backup first.</p></div>
+<p id="cloudStatus" role="status">Cloud connection loading…</p></div><main>
 <section id="home"><div class="hero"><h2>Your strength. Your stride.</h2><button data-go="log">Log workout →</button></div><div class="card" id="homeStats"></div><h2>Weekly schedule</h2><div id="schedule"></div></section>
 <section id="train" class="hidden"><h2>Interactive training</h2><p>Select a day and check off exercises or running segments. Weights and speeds are suggestions.</p><select id="daySelect"></select><div id="dayDetails" class="card"></div><button data-go="log">Log workout →</button></section>
 <section id="meals" class="hidden"><h2>Meals & nutrition</h2><div class="card"><h3>Daily goals</h3><label>Calories</label><input id="calGoal" type="number" min="1200"><label>Protein (g)</label><input id="proGoal" type="number" min="20"><button id="saveGoals">Save goals</button></div><div class="card"><h3>Today's totals</h3><p id="nutrition"></p><p id="water"></p><button id="addWater">+ Glass of water</button></div><div class="card"><h3>Log meal</h3><form id="mealForm"><label>Date</label><input id="mealDate" type="date" required><label>Meal</label><select id="mealType"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select><label>Food and portion</label><input id="food" required><label>Calories</label><input id="calories" type="number" min="0" required><label>Protein (g)</label><input id="protein" type="number" min="0" step=".1" required><button>Save meal</button></form></div><h2>7-day meal ideas</h2><div id="mealPlan"></div><h2>Meal history</h2><div id="mealHistory"></div></section>
@@ -14,7 +26,7 @@ function date(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padSt
 const today=date();function read(k,def){try{return JSON.parse(localStorage.getItem(k))||def}catch(e){return def}}
 let db=read(KEY,null);if(!db){db=read('stride-strength-v2-complete',null)||{workouts:read('stride-strength-data',[]),meals:[],weights:[],water:{},goals:{calories:1900,protein:110}};let old=read('stride-strength-v2',{});if(!db.meals?.length&&old.meals)db.meals=old.meals;if(!db.weights?.length&&old.weights)db.weights=old.weights;if(old.water&&!Object.keys(db.water||{}).length)db.water=old.water}
 for(let k of ['workouts','meals','weights'])if(!Array.isArray(db[k]))db[k]=[];db.water=db.water||{};db.goals=db.goals||{calories:1900,protein:110};db.checked=db.checked||{};
-function save(){try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){alert('Storage unavailable');return false}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));if(window.cloudQueue)window.cloudQueue();return true}catch(e){alert('Storage unavailable');return false}}
 function show(page){document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hidden',x.id!==page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.go===page));render();scrollTo(0,0)}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 const plan=[
@@ -35,6 +47,147 @@ foods.forEach(p=>{let x=document.createElement('div');x.className='card';x.textC
 $('saveGoals').onclick=()=>{db.goals={calories:Math.max(1200,Number($('calGoal').value)||1900),protein:Math.max(20,Number($('proGoal').value)||110)};save();render()};
 $('mealForm').onsubmit=e=>{e.preventDefault();db.meals.push({date:$('mealDate').value,type:$('mealType').value,food:$('food').value,calories:Number($('calories').value),protein:Number($('protein').value)});if(save()){$('food').value='';$('calories').value='';$('protein').value='';render()}};
 $('addWater').onclick=()=>{db.water[today]=(db.water[today]||0)+1;save();render()};
+$('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}};
+$('weightForm').onsubmit=e=>{e.preventDefault();let w=Number($('weightValue').value);db.weights.push({date:$('weightDate').value,weight:$('weightUnit').value==='kg'?w*2.20462262:w});if(save()){$('status').textContent='Weight saved';$('weightValue').value='';render()}};
+function total(a,k){return a.reduce((s,x)=>s+(Number(x[k])||0),0)}
+function history(id,items,fmt){let box=$(id);box.replaceChildren();if(!items.length){box.textContent='No entries yet';return}items.slice().reverse().forEach(item=>{let x=document.createElement('div');x.className='card';x.textContent=fmt(item);box.appendChild(x)})}
+function render(){$('homeStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles';let m=db.meals.filter(x=>x.date===today);$('nutrition').textContent=total(m,'calories')+' / '+db.goals.calories+' kcal · '+total(m,'protein').toFixed(1)+' / '+db.goals.protein+' g protein';$('water').textContent=(db.water[today]||0)+' glasses of water';let w=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=w.at(-1),prev=w.at(-2);$('progressStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles · Latest weight: '+(last?Number(last.weight).toFixed(1)+' lb':'—')+' · Change: '+(last&&prev?(last.weight-prev.weight).toFixed(1)+' lb':'—');history('weightHistory',w,x=>x.date+' · '+Number(x.weight).toFixed(1)+' lb');history('workoutHistory',db.workouts,x=>x.date+' · '+x.type+' · '+(x.miles||0)+' mi · '+(x.minutes||0)+' min · '+(x.notes||''));history('mealHistory',db.meals,x=>x.date+' · '+x.food+' · '+x.calories+' kcal · '+x.protein+'g')}
+function report(weekly){let d=new Date();if(weekly)d.setDate(d.getDate()-6);let from=date(d),within=x=>x.date>=from&&x.date<=today,w=db.workouts.filter(within),m=db.meals.filter(within),weights=db.weights.filter(within).sort((a,b)=>a.date.localeCompare(b.date));let text=['STRIDE & STRENGTH '+(weekly?'WEEKLY':'DAILY')+' REPORT','Period: '+from+' to '+today,'Workouts: '+w.length,'Running: '+total(w,'miles').toFixed(2)+' miles',...w.map(x=>x.type+'; '+(x.notes||'')+'; energy '+(x.energy||'N/A')+'; soreness '+(x.soreness||'N/A')),'Meals logged: '+m.length,'Calories logged: '+total(m,'calories'),'Protein logged: '+total(m,'protein').toFixed(1)+' g','Weight: '+(weights.length?weights.at(-1).weight.toFixed(1)+' lb':'not logged'),'Please review my progress and suggest adjustments.'].join('\n');if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>$('reportStatus').textContent='Copied! Paste into ChatGPT.').catch(()=>prompt('Copy report',text));else prompt('Copy report',text)}
+$('daily').onclick=()=>report(false);$('weekly').onclick=()=>report(true);
+$('backup').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='stride-strength-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+save();render();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+'use strict';
+const URL='https://gwagccrxnqicorqmcrma.supabase.co';
+const PUBLIC_KEY='sb_publishable_xiH45eL40kzKyaYkP5XJ3g_V98SOjOw';
+const status=document.getElementById('cloudStatus');
+const message=x=>status.textContent=x;
+if(!window.supabase?.createClient){message('Cloud library unavailable. Check internet connection. Local logging still works.');return}
+const client=window.supabase.createClient(URL,PUBLIC_KEY);
+let user=null,loading=false,writing=false,queued=false,localBeforeLogin=null;
+const uid=()=>crypto.randomUUID();
+function normalize(){
+ for(const collection of ['workouts','meals','weights']){
+  for(const record of db[collection])if(!record.id)record.id=uid();
+ }
+ db.waterIds=db.waterIds||{};
+}
+function cloudRows(){
+ normalize();
+ return {
+ workouts:db.workouts.map(w=>({
+ id:w.id,user_id:user.id,workout_date:w.date||today,workout_type:w.type||'Other',
+ source:'manual',distance_miles:Number(w.miles)||0,duration_minutes:Number(w.minutes)||0,
+ energy:w.energy?Number(w.energy):null,soreness:w.soreness||null,notes:w.notes||null
+ })),
+ meals:db.meals.map(m=>({
+ id:m.id,user_id:user.id,meal_date:m.date||today,meal_type:m.type||'Other',
+ food_name:m.food||'Meal',calories:Number(m.calories)||0,protein_g:Number(m.protein)||0
+ })),
+ weigh_ins:db.weights.map(w=>({
+ id:w.id,user_id:user.id,weigh_date:w.date||today,weight_lb:Number(w.weight)
+ })),
+ water_logs:Object.entries(db.water).map(([day,glasses])=>({
+ id:db.waterIds[day]||(db.waterIds[day]=uid()),user_id:user.id,log_date:day,glasses:Number(glasses)||0
+ }))
+ };
+}
+async function writeCloud(){
+ if(!user||loading)return;
+ if(writing){queued=true;return}
+ writing=true;
+ try{
+  const rows=cloudRows();
+  for(const [table,items] of Object.entries(rows)){
+   if(items.length){
+    const {error}=await client.from(table).upsert(items,{onConflict:'id'});
+    if(error)throw error;
+   }
+  }
+  const {error}=await client.from('goals').upsert({
+   user_id:user.id,daily_calorie_goal:Number(db.goals.calories)||1900,
+   daily_protein_goal:Number(db.goals.protein)||110
+  },{onConflict:'user_id'});
+  if(error)throw error;
+  localStorage.setItem(KEY,JSON.stringify(db));
+  message('✓ Synced to Supabase');
+ }catch(e){message('Sync failed: '+e.message)}
+ finally{writing=false;if(queued){queued=false;writeCloud()}}
+}
+let pending;
+window.cloudQueue=function(){if(!user||loading)return;clearTimeout(pending);pending=setTimeout(writeCloud,500)};
+async function loadCloud(){
+ if(!user)return;
+ loading=true;message('Loading your cloud records…');
+ try{
+  const tables=['workouts','meals','weigh_ins','water_logs','goals'];
+  const results=await Promise.all(tables.map(t=>client.from(t).select('*').eq('user_id',user.id).limit(5000)));
+  for(let i=0;i<results.length;i++)if(results[i].error)throw results[i].error;
+  const [w,m,weights,water,goals]=results.map(x=>x.data||[]);
+  db.workouts=w.map(x=>({id:x.id,date:x.workout_date,type:x.workout_type,miles:Number(x.distance_miles)||0,minutes:Number(x.duration_minutes)||0,notes:x.notes||'',energy:x.energy||'',soreness:x.soreness||''}));
+  db.meals=m.map(x=>({id:x.id,date:x.meal_date,type:x.meal_type,food:x.food_name,calories:Number(x.calories)||0,protein:Number(x.protein_g)||0}));
+  db.weights=weights.map(x=>({id:x.id,date:x.weigh_date,weight:Number(x.weight_lb)}));
+  db.water={};db.waterIds={};
+  water.forEach(x=>{db.water[x.log_date]=x.glasses;db.waterIds[x.log_date]=x.id});
+  if(goals.length)db.goals={calories:goals[0].daily_calorie_goal,protein:goals[0].daily_protein_goal};
+  $('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
+  localStorage.setItem(KEY,JSON.stringify(db));render();
+  message('✓ Cloud records loaded');
+ }catch(e){message('Could not load cloud records: '+e.message)}
+ finally{loading=false}
+}
+async function login(signup){
+ const email=$('authEmail').value.trim(),password=$('authPassword').value;
+ if(!email||!password)return;
+ message(signup?'Creating account…':'Signing in…');
+ const {data,error}=signup?
+ await client.auth.signUp({email,password}):
+ await client.auth.signInWithPassword({email,password});
+ if(error){message(error.message);return}
+ if(signup&&!data.session)message('Check your email for a confirmation link, then sign in.');
+}
+$('loginForm').onsubmit=e=>{e.preventDefault();login(false)};
+$('signup').onclick=()=>login(true);
+$('signout').onclick=async()=>{await client.auth.signOut();message('Signed out. Local data remains on this device.')};
+$('cloudRefresh').onclick=loadCloud;
+$('cloudImport').onclick=async()=>{
+ if(!user)return;
+ if(!confirm('Merge this browser’s pre-login records into your cloud account? Export a backup first.'))return;
+ const incoming=localBeforeLogin;
+ if(!incoming){message('No pre-login snapshot to import on this device.');return}
+ for(const table of ['workouts','meals','weights']){
+  const existing=new Set(db[table].map(x=>x.id));
+  for(const x of incoming[table]||[]){
+   if(!x.id)x.id=uid();
+   if(!existing.has(x.id)){db[table].push(x);existing.add(x.id)}
+  }
+ }
+ for(const [day,glasses] of Object.entries(incoming.water||{})){
+  if(!(day in db.water))db.water[day]=glasses;
+ }
+ render();await writeCloud();
+ message('Import completed. Check your history and cloud sync status.');
+};
+client.auth.onAuthStateChange((event,session)=>{
+ const next=session?.user||null,changed=next?.id!==user?.id;
+ if(next&&changed){
+  localBeforeLogin=JSON.parse(JSON.stringify(db));
+  user=next;
+  $('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');
+  $('accountEmail').textContent='Signed in: '+user.email;
+  setTimeout(loadCloud,0);
+ }else if(!next){
+  user=null;clearTimeout(pending);
+  $('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');
+  message('Not signed in — entries are saved only in this browser.');
+ }
+});
+})();
+</script>
+</body></html>$('addWater').onclick=()=>{db.water[today]=(db.water[today]||0)+1;save();render()};
 $('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}};
 $('weightForm').onsubmit=e=>{e.preventDefault();let w=Number($('weightValue').value);db.weights.push({date:$('weightDate').value,weight:$('weightUnit').value==='kg'?w*2.20462262:w});if(save()){$('status').textContent='Weight saved';$('weightValue').value='';render()}};
 function total(a,k){return a.reduce((s,x)=>s+(Number(x[k])||0),0)}
