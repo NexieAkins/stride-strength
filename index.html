@@ -15,7 +15,15 @@
 <p id="cloudStatus" role="status">Cloud connection loading…</p></div><main>
 <section id="home"><div class="hero"><h2>Your strength. Your stride.</h2><button data-go="log">Log workout →</button></div><div class="card" id="homeStats"></div><h2>Weekly schedule</h2><div id="schedule"></div></section>
 <section id="train" class="hidden"><h2>Interactive training</h2><p>Select a day and check off activities. Monday and Wednesday standing core are flexible, and extra activities can be logged separately. Runna sets Tuesday and Thursday workouts.</p><select id="daySelect"></select><div id="dayDetails" class="card"></div><button data-go="log">Log workout →</button></section>
-<section id="meals" class="hidden"><h2>Meals & nutrition</h2><div class="card"><h3>Daily goals</h3><label>Calories</label><input id="calGoal" type="number" min="1200"><label>Protein (g)</label><input id="proGoal" type="number" min="20"><button id="saveGoals">Save goals</button></div><div class="card"><h3>Today's totals</h3><p id="nutrition"></p><p id="water"></p><button id="addWater">+ Glass of water</button></div><div class="card"><h3>Log meal</h3><form id="mealForm"><label>Date</label><input id="mealDate" type="date" required><label>Meal</label><select id="mealType"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select><label>Food and portion</label><input id="food" required><label>Calories</label><input id="calories" type="number" min="0" required><label>Protein (g)</label><input id="protein" type="number" min="0" step=".1" required><button>Save meal</button></form></div><h2>7-day meal ideas</h2><div id="mealPlan"></div><h2>Meal history</h2><div id="mealHistory"></div></section>
+<section id="meals" class="hidden"><h2>Meals & nutrition</h2><div class="card"><h3>Daily goals</h3><label>Calories</label><input id="calGoal" type="number" min="1200"><label>Protein (g)</label><input id="proGoal" type="number" min="20"><button id="saveGoals">Save goals</button></div><div class="card"><h3>Today's totals</h3><p id="nutrition"></p><p id="water"></p><button id="addWater">+ Glass of water</button></div><div class="card" id="aiMealPanel"><h3>✨ AI Meal Logger</h3><p>Describe your meal, attach a photo, or both. Review the estimate before saving.</p>
+<label for="aiMealDescription">Describe your food and portions</label><textarea id="aiMealDescription" placeholder="e.g. Two scrambled eggs, two slices of toast, and coffee with milk"></textarea>
+<label for="aiMealPhoto">Meal photo (optional)</label><input id="aiMealPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*">
+<button type="button" id="aiAnalyzeMeal">Estimate nutrition with AI</button><p id="aiMealStatus" role="status"></p>
+<div id="aiMealResults" class="hidden"><label for="aiEstimateName">Food / portion (editable)</label><textarea id="aiEstimateName"></textarea>
+<label for="aiEstimateCalories">Estimated calories (editable)</label><input id="aiEstimateCalories" type="number" min="0" max="5000" step="1">
+<label for="aiEstimateProtein">Estimated protein, grams (editable)</label><input id="aiEstimateProtein" type="number" min="0" max="300" step="0.1">
+<p id="aiEstimateNotes"></p><button type="button" id="aiUseEstimate">Use estimate in meal form ↓</button></div></div>
+<div class="card"><h3>Log meal</h3><form id="mealForm"><label>Date</label><input id="mealDate" type="date" required><label>Meal</label><select id="mealType"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select><label>Food and portion</label><input id="food" required><label>Calories</label><input id="calories" type="number" min="0" required><label>Protein (g)</label><input id="protein" type="number" min="0" step=".1" required><button>Save meal</button></form></div><h2>7-day meal ideas</h2><div id="mealPlan"></div><h2>Meal history</h2><div id="mealHistory"></div></section>
 <section id="log" class="hidden"><h2>Log workout</h2><div class="card"><form id="workoutForm"><label>Date</label><input id="workoutDate" type="date" required><label>Type</label><select id="workoutType"><option>Long Run</option><option>Quality Run</option><option>Upper Body</option><option>Lower Body</option><option>Core</option><option>Recovery</option><option>Standing Core</option><option>OCS Preparation</option><option>Additional Activity</option></select><label>Miles</label><input id="distance" type="number" min="0" step=".01"><label>Minutes</label><input id="duration" type="number" min="0"><label>Runna prescription / exercises / weights / sets / reps / additional activity</label><textarea id="notes" placeholder="Describe your Runna session, standing core, OCS training, or any additional work"></textarea><label>Energy (1–10)</label><input id="energy" type="number" min="1" max="10"><label>Soreness</label><input id="soreness"><button>Save workout</button></form></div><div class="card"><h3>Weekly weigh-in</h3><form id="weightForm"><label>Date</label><input id="weightDate" type="date" required><label>Weight</label><input id="weightValue" type="number" min="30" max="700" step=".1" required><label>Unit</label><select id="weightUnit"><option value="lb">lb</option><option value="kg">kg</option></select><button>Save weight</button></form></div><p id="status"></p></section>
 <section id="progress" class="hidden"><h2>Progress</h2><div id="progressStats" class="card"></div><div class="card"><button id="daily">Copy daily summary</button> <button id="weekly">Copy weekly summary</button><p id="reportStatus"></p></div><div class="card"><h3>Training milestones</h3><p id="runningMiles"></p><p id="workoutStreak"></p><small>Streak = consecutive calendar weeks with at least one logged workout; it does not measure full plan completion.</small></div><div class="card"><h3>Weight progress graph</h3><svg id="weightGraph" viewBox="0 0 640 250" role="img" aria-label="Weight history line graph" style="width:100%;height:auto"></svg><p id="weightGraphNote"></p></div><h2>Weight history</h2><div id="weightHistory"></div><h2>Workout history</h2><div id="workoutHistory"></div><button id="backup">Export backup</button><p>Data is saved in this browser. Export regularly; reports are shared manually.</p></section>
 </main><nav><button data-go="home" class="active">Home</button><button data-go="train">Train</button><button data-go="meals">Meals</button><button data-go="log">Log</button><button data-go="progress">Progress</button></nav>
@@ -95,6 +103,7 @@ const status=document.getElementById('cloudStatus');
 const message=x=>status.textContent=x;
 if(!window.supabase?.createClient){message('Cloud library unavailable. Check internet connection. Local logging still works.');return}
 const client=window.supabase.createClient(URL,PUBLIC_KEY);
+window.mealAiGetToken=async()=>{const {data,error}=await client.auth.getSession();if(error)throw error;return data.session?.access_token||null};
 let user=null,loading=false,writing=false,queued=false,localBeforeLogin=null;
 const uid=()=>crypto.randomUUID();
 function normalize(){
@@ -213,6 +222,47 @@ client.auth.onAuthStateChange((event,session)=>{
   message('Not signed in — entries are saved only in this browser.');
  }
 });
+})();
+</script>
+<script>
+(function(){
+'use strict';
+const get=id=>document.getElementById(id);
+const status=t=>get('aiMealStatus').textContent=t;
+async function imageData(file){
+ if(!file)return null;
+ if(file.size>12*1024*1024)throw Error('Photo too large. Choose a photo under 12 MB.');
+ const bmp=await createImageBitmap(file);
+ const ratio=Math.min(1,1200/Math.max(bmp.width,bmp.height));
+ const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bmp.width*ratio));canvas.height=Math.max(1,Math.round(bmp.height*ratio));
+ canvas.getContext('2d').drawImage(bmp,0,0,canvas.width,canvas.height);
+ bmp.close?.();return canvas.toDataURL('image/jpeg',0.75);
+}
+get('aiAnalyzeMeal').onclick=async()=>{
+ const btn=get('aiAnalyzeMeal');btn.disabled=true;
+ try{
+  const description=get('aiMealDescription').value.trim(),file=get('aiMealPhoto').files[0];
+  if(!description&&!file)throw Error('Describe a meal or choose a photo first.');
+  if(typeof window.mealAiGetToken!=='function')throw Error('Sign in to your cloud account first.');
+  const token=await window.mealAiGetToken();if(!token)throw Error('Sign in before using AI meal estimates.');
+  status('Analyzing meal…');
+  const photo=await imageData(file);
+  const res=await fetch('/.netlify/functions/analyze-meal',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({description,photo})});
+  const data=await res.json().catch(()=>({error:'Invalid server response'}));
+  if(!res.ok)throw Error(data.error||'Analysis failed');
+  get('aiEstimateName').value=data.food_name||description;
+  get('aiEstimateCalories').value=data.calories;
+  get('aiEstimateProtein').value=data.protein_g;
+  get('aiEstimateNotes').textContent=(data.notes||'')+' · AI estimates are approximate; check portions, cooking oil, sauces and labels.';
+  get('aiMealResults').classList.remove('hidden');status('Estimate ready. Review and edit before saving.');
+ }catch(e){status('Could not estimate meal: '+e.message)}finally{btn.disabled=false}
+};
+get('aiUseEstimate').onclick=()=>{
+ const name=get('aiEstimateName').value.trim(),cal=Number(get('aiEstimateCalories').value),pro=Number(get('aiEstimateProtein').value);
+ if(!name||!Number.isFinite(cal)||!Number.isFinite(pro)||cal<0||pro<0){status('Enter valid food, calories and protein.');return}
+ get('food').value=name;get('calories').value=String(cal);get('protein').value=String(pro);
+ status('Estimate transferred. Select meal type and click Save meal below to sync it.');get('mealForm').scrollIntoView({behavior:'smooth',block:'center'});
+};
 })();
 </script>
 </body></html>
