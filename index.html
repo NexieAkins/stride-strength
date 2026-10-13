@@ -545,3 +545,162 @@ function render(){
  Math.min(100,100*calories/data.goals.calories)+"%";
  $("proteinBar").style.width=
  Math.min(100,100*protein/data
+
+          
+$("proteinBar").style.width=
+ Math.min(100,100*protein/
+ (Number(data.goals.protein)||110))+"%";
+
+$("waterTotal").textContent=
+ (data.water[today]||0)+" glasses today";
+
+// Meal history
+const mealHistory=$("mealHistory");
+mealHistory.textContent="";
+data.meals.slice().reverse().forEach(m=>{
+ const card=document.createElement("div");
+ card.className="card";
+ card.textContent=
+ m.date+" | "+m.type+" | "+m.food+
+ " | "+m.calories+" kcal | "+m.protein+"g protein";
+ mealHistory.appendChild(card);
+});
+
+// Weight history and changes
+const weights=data.weights.slice().sort(
+ (a,b)=>a.date.localeCompare(b.date)
+);
+const latest=weights[weights.length-1];
+const previous=weights[weights.length-2];
+
+$("latestWeight").textContent=latest?
+ Number(latest.weight).toFixed(1)+" lb":"—";
+
+$("weightChange").textContent=
+ latest&&previous?
+ (latest.weight-previous.weight>=0?"+":"")+
+ (latest.weight-previous.weight).toFixed(1)+" lb":"—";
+
+const weightHistory=$("weightHistory");
+weightHistory.textContent="";
+weights.slice().reverse().forEach(w=>{
+ const card=document.createElement("div");
+ card.className="card";
+ card.textContent=w.date+" | "+
+ Number(w.weight).toFixed(1)+" lb";
+ weightHistory.appendChild(card);
+});
+
+// Workout history
+const workoutHistory=$("workoutHistory");
+workoutHistory.textContent="";
+data.workouts.slice().reverse().forEach(w=>{
+ const card=document.createElement("div");
+ card.className="card";
+ const title=document.createElement("strong");
+ title.textContent=w.date+" | "+w.type;
+ const p=document.createElement("p");
+ p.textContent=
+ (Number(w.miles)||0)+" miles | "+
+ (Number(w.minutes)||0)+" minutes | "+
+ (w.notes||"No notes");
+ card.append(title,p);
+ workoutHistory.appendChild(card);
+});
+}
+
+// Daily and weekly reports
+function copyReport(weekly){
+ const end=todayString();
+ const start=new Date();
+ if(weekly)start.setDate(start.getDate()-6);
+ const from=[
+ start.getFullYear(),
+ String(start.getMonth()+1).padStart(2,"0"),
+ String(start.getDate()).padStart(2,"0")
+ ].join("-");
+
+ const within=x=>x.date>=from&&x.date<=end;
+ const workouts=data.workouts.filter(within);
+ const meals=data.meals.filter(within);
+ const weights=data.weights.filter(within)
+ .sort((a,b)=>a.date.localeCompare(b.date));
+
+ const miles=workouts.reduce(
+ (a,w)=>a+(Number(w.miles)||0),0
+ );
+ const calories=meals.reduce(
+ (a,m)=>a+(Number(m.calories)||0),0
+ );
+ const protein=meals.reduce(
+ (a,m)=>a+(Number(m.protein)||0),0
+ );
+
+ const report=[
+ "STRIDE & STRENGTH",
+ weekly?"WEEKLY REPORT":"DAILY REPORT",
+ "Period: "+from+" to "+end,
+ "",
+ "WORKOUTS",
+ "Sessions: "+workouts.length,
+ "Running: "+miles.toFixed(2)+" miles",
+ ...workouts.map(w=>
+ w.date+" | "+w.type+
+ " | "+(w.minutes||0)+" min"+
+ " | "+(w.notes||"")+
+ " | Energy: "+(w.energy||"N/A")+
+ " | Difficulty: "+(w.difficulty||"N/A")+
+ " | Soreness: "+(w.soreness||"N/A")
+ ),
+ "",
+ "NUTRITION",
+ "Meals recorded: "+meals.length,
+ "Calories logged: "+calories,
+ "Protein logged: "+protein.toFixed(1)+"g",
+ "Days in period: "+(weekly?7:1),
+ "",
+ "WEIGHT",
+ weights.length?
+ "Latest: "+Number(
+ weights[weights.length-1].weight
+ ).toFixed(1)+" lb":"No weigh-in in period",
+ "",
+ "Please review my training, nutrition,",
+ "weight trend and suggest adjustments."
+ ].join("\n");
+
+ const fallback=()=>window.prompt(
+ "Select and copy this report:",report
+ );
+
+ if(navigator.clipboard&&navigator.clipboard.writeText){
+ navigator.clipboard.writeText(report).then(()=>{
+ $("reportStatus").textContent=
+ "Report copied! Paste into ChatGPT.";
+ }).catch(fallback);
+ }else{
+ fallback();
+ }
+}
+
+// Download a backup of all saved data
+function exportBackup(){
+ const content=JSON.stringify(data,null,2);
+ const blob=new Blob([content],{
+ type:"application/json"
+ });
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download="stride-strength-backup.json";
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// Initialize the dashboard
+render();
+</script>
+</body>
+</html>
