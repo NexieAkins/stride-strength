@@ -187,6 +187,159 @@ client.auth.onAuthStateChange((event,session)=>{
 });
 })();
 </script>
+</body></html>['Friday','Lower + core',['Leg press: 3 × 10, up to 165 lb if comfortable','Leg curl: 3 × 12','Leg extension: 3 × 10','Hip abduction: 3 × 12','Reverse crunch: 3 × 12']],
+['Saturday','Back priority + core',['Lat pulldown: 3 × 10','Cable row: 3 × 10','Biceps: 3 × 12','Triceps: 3 × 12','Lateral raise if pain-free: 2 × 12','Core: 3 sets']],
+['Sunday','Recovery',['Walk or mobility','Rest or optional catch-up']]
+];
+plan.forEach((p,i)=>{let c=document.createElement('div');c.className='card';c.textContent=p[0]+' — '+p[1];$('schedule').appendChild(c);let o=document.createElement('option');o.value=i;o.textContent=p[0]+' — '+p[1];$('daySelect').appendChild(o)});
+function drawDay(){let i=Number($('daySelect').value),p=plan[i],box=$('dayDetails');box.replaceChildren();let h=document.createElement('h3');h.textContent=p[0]+' · '+p[1];box.appendChild(h);p[2].forEach((line,n)=>{let row=document.createElement('div');row.className='exercise';let label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';let key=today+'-'+i+'-'+n;cb.checked=!!db.checked[key];cb.onchange=()=>{db.checked[key]=cb.checked;save()};label.append(cb,document.createTextNode(line));row.appendChild(label);box.appendChild(row)})}
+$('daySelect').onchange=drawDay;$('daySelect').value=(new Date().getDay()+6)%7;drawDay();
+const foods=[['Monday','Yogurt and oats','Chicken rice bowl','Salmon and vegetables'],['Tuesday','Eggs and toast','Turkey wrap','Chicken stir-fry'],['Wednesday','Protein oats','Tuna sandwich','Lentil stew'],['Thursday','Egg avocado toast','Quinoa salad','Fish and potatoes'],['Friday','Yogurt parfait','Burrito bowl','Turkey meatballs'],['Saturday','Omelet','Chicken sandwich','Tofu curry'],['Sunday','Overnight oats','Lentil soup','Roast chicken']];
+foods.forEach(p=>{let x=document.createElement('div');x.className='card';x.textContent=p[0]+' — Breakfast: '+p[1]+'; Lunch: '+p[2]+'; Dinner: '+p[3];$('mealPlan').appendChild(x)});
+['mealDate','workoutDate','weightDate'].forEach(k=>$(k).value=today);$('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
+$('saveGoals').onclick=()=>{db.goals={calories:Math.max(1200,Number($('calGoal').value)||1900),protein:Math.max(20,Number($('proGoal').value)||110)};save();render()};
+$('mealForm').onsubmit=e=>{e.preventDefault();db.meals.push({date:$('mealDate').value,type:$('mealType').value,food:$('food').value,calories:Number($('calories').value),protein:Number($('protein').value)});if(save()){$('food').value='';$('calories').value='';$('protein').value='';render()}};
+$('addWater').onclick=()=>{db.water[today]=(db.water[today]||0)+1;save();render()};
+$('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}};
+$('weightForm').onsubmit=e=>{e.preventDefault();let w=Number($('weightValue').value);db.weights.push({date:$('weightDate').value,weight:$('weightUnit').value==='kg'?w*2.20462262:w});if(save()){$('status').textContent='Weight saved';$('weightValue').value='';render()}};
+function total(a,k){return a.reduce((s,x)=>s+(Number(x[k])||0),0)}
+function history(id,items,fmt){let box=$(id);box.replaceChildren();if(!items.length){box.textContent='No entries yet';return}items.slice().reverse().forEach(item=>{let x=document.createElement('div');x.className='card';x.textContent=fmt(item);box.appendChild(x)})}
+function render(){$('homeStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles';let m=db.meals.filter(x=>x.date===today);$('nutrition').textContent=total(m,'calories')+' / '+db.goals.calories+' kcal · '+total(m,'protein').toFixed(1)+' / '+db.goals.protein+' g protein';$('water').textContent=(db.water[today]||0)+' glasses of water';let w=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=w.at(-1),prev=w.at(-2);$('progressStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles · Latest weight: '+(last?Number(last.weight).toFixed(1)+' lb':'—')+' · Change: '+(last&&prev?(last.weight-prev.weight).toFixed(1)+' lb':'—');history('weightHistory',w,x=>x.date+' · '+Number(x.weight).toFixed(1)+' lb');history('workoutHistory',db.workouts,x=>x.date+' · '+x.type+' · '+(x.miles||0)+' mi · '+(x.minutes||0)+' min · '+(x.notes||''));history('mealHistory',db.meals,x=>x.date+' · '+x.food+' · '+x.calories+' kcal · '+x.protein+'g')}
+function report(weekly){let d=new Date();if(weekly)d.setDate(d.getDate()-6);let from=date(d),within=x=>x.date>=from&&x.date<=today,w=db.workouts.filter(within),m=db.meals.filter(within),weights=db.weights.filter(within).sort((a,b)=>a.date.localeCompare(b.date));let text=['STRIDE & STRENGTH '+(weekly?'WEEKLY':'DAILY')+' REPORT','Period: '+from+' to '+today,'Workouts: '+w.length,'Running: '+total(w,'miles').toFixed(2)+' miles',...w.map(x=>x.type+'; '+(x.notes||'')+'; energy '+(x.energy||'N/A')+'; soreness '+(x.soreness||'N/A')),'Meals logged: '+m.length,'Calories logged: '+total(m,'calories'),'Protein logged: '+total(m,'protein').toFixed(1)+' g','Weight: '+(weights.length?weights.at(-1).weight.toFixed(1)+' lb':'not logged'),'Please review my progress and suggest adjustments.'].join('\n');if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>$('reportStatus').textContent='Copied! Paste into ChatGPT.').catch(()=>prompt('Copy report',text));else prompt('Copy report',text)}
+$('daily').onclick=()=>report(false);$('weekly').onclick=()=>report(true);
+$('backup').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='stride-strength-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+save();render();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+'use strict';
+const URL='https://gwagccrxnqicorqmcrma.supabase.co';
+const PUBLIC_KEY='sb_publishable_xiH45eL40kzKyaYkP5XJ3g_V98SOjOw';
+const status=document.getElementById('cloudStatus');
+const message=x=>status.textContent=x;
+if(!window.supabase?.createClient){message('Cloud library unavailable. Check internet connection. Local logging still works.');return}
+const client=window.supabase.createClient(URL,PUBLIC_KEY);
+let user=null,loading=false,writing=false,queued=false,localBeforeLogin=null;
+const uid=()=>crypto.randomUUID();
+function normalize(){
+ for(const collection of ['workouts','meals','weights']){
+  for(const record of db[collection])if(!record.id)record.id=uid();
+ }
+ db.waterIds=db.waterIds||{};
+}
+function cloudRows(){
+ normalize();
+ return {
+ workouts:db.workouts.map(w=>({
+ id:w.id,user_id:user.id,workout_date:w.date||today,workout_type:w.type||'Other',
+ source:'manual',distance_miles:Number(w.miles)||0,duration_minutes:Number(w.minutes)||0,
+ energy:w.energy?Number(w.energy):null,soreness:w.soreness||null,notes:w.notes||null
+ })),
+ meals:db.meals.map(m=>({
+ id:m.id,user_id:user.id,meal_date:m.date||today,meal_type:m.type||'Other',
+ food_name:m.food||'Meal',calories:Number(m.calories)||0,protein_g:Number(m.protein)||0
+ })),
+ weigh_ins:db.weights.map(w=>({
+ id:w.id,user_id:user.id,weigh_date:w.date||today,weight_lb:Number(w.weight)
+ })),
+ water_logs:Object.entries(db.water).map(([day,glasses])=>({
+ id:db.waterIds[day]||(db.waterIds[day]=uid()),user_id:user.id,log_date:day,glasses:Number(glasses)||0
+ }))
+ };
+}
+async function writeCloud(){
+ if(!user||loading)return;
+ if(writing){queued=true;return}
+ writing=true;
+ try{
+  const rows=cloudRows();
+  for(const [table,items] of Object.entries(rows)){
+   if(items.length){
+    const {error}=await client.from(table).upsert(items,{onConflict:'id'});
+    if(error)throw error;
+   }
+  }
+  const {error}=await client.from('goals').upsert({
+   user_id:user.id,daily_calorie_goal:Number(db.goals.calories)||1900,
+   daily_protein_goal:Number(db.goals.protein)||110
+  },{onConflict:'user_id'});
+  if(error)throw error;
+  localStorage.setItem(KEY,JSON.stringify(db));
+  message('✓ Synced to Supabase');
+ }catch(e){message('Sync failed: '+e.message)}
+ finally{writing=false;if(queued){queued=false;writeCloud()}}
+}
+let pending;
+window.cloudQueue=function(){if(!user||loading)return;clearTimeout(pending);pending=setTimeout(writeCloud,500)};
+async function loadCloud(){
+ if(!user)return;
+ loading=true;message('Loading your cloud records…');
+ try{
+  const tables=['workouts','meals','weigh_ins','water_logs','goals'];
+  const results=await Promise.all(tables.map(t=>client.from(t).select('*').eq('user_id',user.id).limit(5000)));
+  for(let i=0;i<results.length;i++)if(results[i].error)throw results[i].error;
+  const [w,m,weights,water,goals]=results.map(x=>x.data||[]);
+  db.workouts=w.map(x=>({id:x.id,date:x.workout_date,type:x.workout_type,miles:Number(x.distance_miles)||0,minutes:Number(x.duration_minutes)||0,notes:x.notes||'',energy:x.energy||'',soreness:x.soreness||''}));
+  db.meals=m.map(x=>({id:x.id,date:x.meal_date,type:x.meal_type,food:x.food_name,calories:Number(x.calories)||0,protein:Number(x.protein_g)||0}));
+  db.weights=weights.map(x=>({id:x.id,date:x.weigh_date,weight:Number(x.weight_lb)}));
+  db.water={};db.waterIds={};
+  water.forEach(x=>{db.water[x.log_date]=x.glasses;db.waterIds[x.log_date]=x.id});
+  if(goals.length)db.goals={calories:goals[0].daily_calorie_goal,protein:goals[0].daily_protein_goal};
+  $('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
+  localStorage.setItem(KEY,JSON.stringify(db));render();
+  message('✓ Cloud records loaded');
+ }catch(e){message('Could not load cloud records: '+e.message)}
+ finally{loading=false}
+}
+async function login(signup){
+ const email=$('authEmail').value.trim(),password=$('authPassword').value;
+ if(!email||!password)return;
+ message(signup?'Creating account…':'Signing in…');
+ const {data,error}=signup?
+ await client.auth.signUp({email,password}):
+ await client.auth.signInWithPassword({email,password});
+ if(error){message(error.message);return}
+ if(signup&&!data.session)message('Check your email for a confirmation link, then sign in.');
+}
+$('loginForm').onsubmit=e=>{e.preventDefault();login(false)};
+$('signup').onclick=()=>login(true);
+$('signout').onclick=async()=>{await client.auth.signOut();message('Signed out. Local data remains on this device.')};
+$('cloudRefresh').onclick=loadCloud;
+$('cloudImport').onclick=async()=>{
+ if(!user)return;
+ if(!confirm('Merge this browser’s pre-login records into your cloud account? Export a backup first.'))return;
+ const incoming=localBeforeLogin;
+ if(!incoming){message('No pre-login snapshot to import on this device.');return}
+ for(const table of ['workouts','meals','weights']){
+  const existing=new Set(db[table].map(x=>x.id));
+  for(const x of incoming[table]||[]){
+   if(!x.id)x.id=uid();
+   if(!existing.has(x.id)){db[table].push(x);existing.add(x.id)}
+  }
+ }
+ for(const [day,glasses] of Object.entries(incoming.water||{})){
+  if(!(day in db.water))db.water[day]=glasses;
+ }
+ render();await writeCloud();
+ message('Import completed. Check your history and cloud sync status.');
+};
+client.auth.onAuthStateChange((event,session)=>{
+ const next=session?.user||null,changed=next?.id!==user?.id;
+ if(next&&changed){
+  localBeforeLogin=JSON.parse(JSON.stringify(db));
+  user=next;
+  $('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');
+  $('accountEmail').textContent='Signed in: '+user.email;
+  setTimeout(loadCloud,0);
+ }else if(!next){
+  user=null;clearTimeout(pending);
+  $('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');
+  message('Not signed in — entries are saved only in this browser.');
+ }
+});
+})();
+</script>
 </body></html>$('addWater').onclick=()=>{db.water[today]=(db.water[today]||0)+1;save();render()};
 $('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}};
 $('weightForm').onsubmit=e=>{e.preventDefault();let w=Number($('weightValue').value);db.weights.push({date:$('weightDate').value,weight:$('weightUnit').value==='kg'?w*2.20462262:w});if(save()){$('status').textContent='Weight saved';$('weightValue').value='';render()}};
