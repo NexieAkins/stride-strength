@@ -1,381 +1,47 @@
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Stride & Strength</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#0d1424;color:white;font:15px Arial;padding:20px 15px 105px}
-header,main{max-width:650px;margin:auto}
-h1{font-size:30px}
-h2{font-size:21px}
-p,small{color:#aab9ce;line-height:1.5}
-.hero{background:linear-gradient(120deg,#5145cd,#087e80);padding:22px;border-radius:18px}
-.card{background:#1b273a;padding:16px;border-radius:14px;margin:12px 0}
-button{border:0;border-radius:9px;padding:12px;background:#5145cd;color:white;font-weight:bold;cursor:pointer}
-input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;background:#101b2c;color:white;border:1px solid #475569;border-radius:9px}
-label{display:block;margin-top:8px}
-.hidden{display:none}
-nav{
- position:fixed;
- bottom:0;
- left:0;
- right:0;
- width:100%;
- background:#111c2e;
- display:grid;
- grid-template-columns:repeat(5,minmax(0,1fr));
- gap:4px;
- padding:10px 8px;
- z-index:9999;
- box-shadow:0 -4px 15px rgba(0,0,0,.3);
-}
-nav button{
- background:transparent;
- color:white;
- font-size:13px;
- padding:12px 4px;
- min-width:0;
- text-align:center;
-}
-nav button.active{
- background:#5145cd;
-}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stats .card{margin:0}
-.stats strong{font-size:23px}
-</style>
-</head>
-<body>
-<header>
-<small>YOUR FITNESS COMPANION</small>
-<h1>Stride & Strength ✦</h1>
-<p>Run stronger. Lift smarter. Nourish consistently.</p>
-</header>
-<main>
-<section id="home">
-<div class="hero">
-<h2>Your strength. Your stride.</h2>
-<p>Track your workouts, nutrition and weight.</p>
-<button onclick="show('log')">Log Workout →</button>
-</div>
-<div class="stats">
-<div class="card"><strong id="homeCount">0</strong><p>Workouts</p></div>
-<div class="card"><strong id="homeMiles">0</strong><p>Miles</p></div>
-</div>
-<h2>Weekly Schedule</h2>
-<div id="schedule"></div>
-</section>
-
-<section id="train" class="hidden">
-<h2>Training Plan</h2>
-<div id="training"></div>
-</section>
-
-<section id="meals" class="hidden">
-<h2>Meals & Nutrition</h2>
-<div class="card">
-<h3>Daily Goals</h3>
-<label>Calories</label>
-<input id="calGoal" type="number" value="1900">
-<label>Protein (g)</label>
-<input id="proGoal" type="number" value="110">
-<button onclick="saveGoals()">Save Goals</button>
-</div>
-<div class="card">
-<h3>Today's Nutrition</h3>
-<p id="nutrition"></p>
-<p id="water"></p>
-<button onclick="addWater()">+ Glass of Water</button>
-</div>
-<div class="card">
-<h3>Log Meal</h3>
-<form id="mealForm">
-<label>Date</label>
-<input id="mealDate" type="date" required>
-<label>Meal</label>
-<select id="mealType">
-<option>Breakfast</option><option>Lunch</option>
-<option>Dinner</option><option>Snack</option>
-</select>
-<label>Food and portion</label>
-<input id="food" required>
-<label>Calories</label>
-<input id="calories" type="number" min="0" required>
-<label>Protein (g)</label>
-<input id="protein" type="number" min="0" step=".1" required>
-<button type="submit">Save Meal</button>
-</form>
-</div>
-<h2>7-Day Meal Plan</h2>
-<p>Meal ideas; adjust portions to your needs.</p>
-<div id="mealPlan"></div>
-<h2>Meal History</h2>
-<div id="mealHistory"></div>
-</section>
-
-<section id="log" class="hidden">
-<h2>Log Workout</h2>
-<div class="card">
-<form id="workoutForm">
-<label>Date</label>
-<input id="workoutDate" type="date" required>
-<label>Workout</label>
-<select id="workoutType">
-<option>Long Run</option><option>Quality Run</option>
-<option>Upper Body</option><option>Lower Body</option>
-<option>Core</option><option>Recovery</option>
-</select>
-<label>Distance (miles)</label>
-<input id="distance" type="number" min="0" step=".01">
-<label>Duration (minutes)</label>
-<input id="duration" type="number" min="0">
-<label>Exercises, weights, sets and reps</label>
-<textarea id="notes"></textarea>
-<label>Energy (1–10)</label>
-<input id="energy" type="number" min="1" max="10">
-<label>Soreness / recovery</label>
-<input id="soreness">
-<button type="submit">Save Workout</button>
-</form>
-</div>
-<div class="card">
-<h3>Weekly Weigh-In</h3>
-<form id="weightForm">
-<label>Date</label>
-<input id="weightDate" type="date" required>
-<label>Weight (lb)</label>
-<input id="weightValue" type="number" min="40" max="700" step=".1" required>
-<button type="submit">Save Weight</button>
-</form>
-</div>
-<p id="status"></p>
-</section>
-
-<section id="progress" class="hidden">
-<h2>My Progress</h2>
-<div class="stats">
-<div class="card"><strong id="sessions">0</strong><p>Workouts</p></div>
-<div class="card"><strong id="miles">0</strong><p>Miles</p></div>
-<div class="card"><strong id="latestWeight">—</strong><p>Latest Weight</p></div>
-<div class="card"><strong id="weightChange">—</strong><p>Weight Change</p></div>
-</div>
-<div class="card">
-<h3>Share With ChatGPT</h3>
-<button onclick="report(false)">Daily Summary</button>
-<button onclick="report(true)">Weekly Summary</button>
-<p id="reportStatus"></p>
-</div>
-<h2>Weight History</h2>
-<div id="weightHistory"></div>
-<h2>Workout History</h2>
-<div id="workoutHistory"></div>
-<button onclick="backup()">Export Data Backup</button>
-<p>Data is stored on this device. Export backups regularly.</p>
-</section>
-</main>
-
-<nav>
-<button class="active" data-page="home" onclick="show('home')">Home</button>
-<button data-page="train" onclick="show('train')">Train</button>
-<button data-page="meals" onclick="show('meals')">Meals</button>
-<button data-page="log" onclick="show('log')">Log</button>
-<button data-page="progress" onclick="show('progress')">Progress</button>
-</nav>
-
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stride & Strength</title><style>
+*{box-sizing:border-box}body{background:#0d1424;color:white;font:15px system-ui;margin:0;padding:18px 16px 110px}header,main{max-width:720px;margin:auto}p{color:#b6c4d9}.card{background:#1b273a;padding:16px;border-radius:15px;margin:12px 0}.hero{background:linear-gradient(120deg,#5145cd,#087e80);padding:22px;border-radius:18px}button{background:#5145cd;color:white;border:0;border-radius:9px;padding:12px;cursor:pointer}input,select,textarea{width:100%;padding:12px;background:#101b2c;color:white;border:1px solid #475569;border-radius:9px;margin:7px 0 13px}label{display:block}.hidden{display:none!important}nav{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#111c2e;padding:10px 3px;z-index:9}nav button{font-size:12px;min-width:0;background:transparent;padding:10px 1px}nav button.active{background:#5145cd}.exercise{padding:10px 0;border-bottom:1px solid #475569}.exercise label{display:flex;gap:10px}.exercise input{width:20px;height:20px;margin:0}
+</style></head><body><header><h1>Stride & Strength ✦</h1><p>Run stronger. Lift smarter. Nourish consistently.</p></header><main>
+<section id="home"><div class="hero"><h2>Your strength. Your stride.</h2><button data-go="log">Log workout →</button></div><div class="card" id="homeStats"></div><h2>Weekly schedule</h2><div id="schedule"></div></section>
+<section id="train" class="hidden"><h2>Interactive training</h2><p>Select a day and check off exercises or running segments. Weights and speeds are suggestions.</p><select id="daySelect"></select><div id="dayDetails" class="card"></div><button data-go="log">Log workout →</button></section>
+<section id="meals" class="hidden"><h2>Meals & nutrition</h2><div class="card"><h3>Daily goals</h3><label>Calories</label><input id="calGoal" type="number" min="1200"><label>Protein (g)</label><input id="proGoal" type="number" min="20"><button id="saveGoals">Save goals</button></div><div class="card"><h3>Today's totals</h3><p id="nutrition"></p><p id="water"></p><button id="addWater">+ Glass of water</button></div><div class="card"><h3>Log meal</h3><form id="mealForm"><label>Date</label><input id="mealDate" type="date" required><label>Meal</label><select id="mealType"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select><label>Food and portion</label><input id="food" required><label>Calories</label><input id="calories" type="number" min="0" required><label>Protein (g)</label><input id="protein" type="number" min="0" step=".1" required><button>Save meal</button></form></div><h2>7-day meal ideas</h2><div id="mealPlan"></div><h2>Meal history</h2><div id="mealHistory"></div></section>
+<section id="log" class="hidden"><h2>Log workout</h2><div class="card"><form id="workoutForm"><label>Date</label><input id="workoutDate" type="date" required><label>Type</label><select id="workoutType"><option>Long Run</option><option>Quality Run</option><option>Upper Body</option><option>Lower Body</option><option>Core</option><option>Recovery</option></select><label>Miles</label><input id="distance" type="number" min="0" step=".01"><label>Minutes</label><input id="duration" type="number" min="0"><label>Exercises, weights, sets, reps</label><textarea id="notes"></textarea><label>Energy (1–10)</label><input id="energy" type="number" min="1" max="10"><label>Soreness</label><input id="soreness"><button>Save workout</button></form></div><div class="card"><h3>Weekly weigh-in</h3><form id="weightForm"><label>Date</label><input id="weightDate" type="date" required><label>Weight</label><input id="weightValue" type="number" min="30" max="700" step=".1" required><label>Unit</label><select id="weightUnit"><option value="lb">lb</option><option value="kg">kg</option></select><button>Save weight</button></form></div><p id="status"></p></section>
+<section id="progress" class="hidden"><h2>Progress</h2><div id="progressStats" class="card"></div><div class="card"><button id="daily">Copy daily summary</button> <button id="weekly">Copy weekly summary</button><p id="reportStatus"></p></div><h2>Weight history</h2><div id="weightHistory"></div><h2>Workout history</h2><div id="workoutHistory"></div><button id="backup">Export backup</button><p>Data is saved in this browser. Export regularly; reports are shared manually.</p></section>
+</main><nav><button data-go="home" class="active">Home</button><button data-go="train">Train</button><button data-go="meals">Meals</button><button data-go="log">Log</button><button data-go="progress">Progress</button></nav>
 <script>
-"use strict";
-const $=id=>document.getElementById(id);
-const KEY="stride-strength-v2-complete";
-function dateString(d=new Date()){
-return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
-}
-const today=dateString();
-function read(k,fallback){
-try{return JSON.parse(localStorage.getItem(k))||fallback}
-catch(e){return fallback}
-}
-let saved=read(KEY,null);
-let db=saved||{
-workouts:[],meals:[],weights:[],water:{},
-goals:{calories:1900,protein:110}
-};
-if(!Array.isArray(db.workouts))db.workouts=[];
-if(!Array.isArray(db.meals))db.meals=[];
-if(!Array.isArray(db.weights))db.weights=[];
-if(!db.water)db.water={};
-if(!db.goals)db.goals={calories:1900,protein:110};
-if(!saved){
-let old=read("stride-strength-data",[]);
-if(Array.isArray(old))db.workouts=old;
-let extra=read("stride-strength-v2",{});
-if(Array.isArray(extra.meals))db.meals=extra.meals;
-if(Array.isArray(extra.weights))db.weights=extra.weights;
-if(extra.water)db.water=extra.water;
-}
-function save(){
-try{localStorage.setItem(KEY,JSON.stringify(db));return true}
-catch(e){alert("Unable to save data");return false}
-}
-function show(page){
-document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!==page));
-document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
-render();
-window.scrollTo(0,0);
-}
-const days=[
-["Monday","Light activation / rest"],
-["Tuesday","Long mission run: endurance and short cooldown"],
-["Wednesday","Upper body + core: back, chest, triceps, lateral raises"],
-["Thursday","Quality run: tempo or 0.10–0.25 mile intervals"],
-["Friday","Lower body + core: leg press, curls, extensions, abduction"],
-["Saturday","Upper back priority + core: pulldowns, rows, arms"],
-["Sunday","Recovery or optional catch-up"]
+'use strict';
+const $=id=>document.getElementById(id),KEY='stride-strength-v3';
+function date(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+const today=date();function read(k,def){try{return JSON.parse(localStorage.getItem(k))||def}catch(e){return def}}
+let db=read(KEY,null);if(!db){db=read('stride-strength-v2-complete',null)||{workouts:read('stride-strength-data',[]),meals:[],weights:[],water:{},goals:{calories:1900,protein:110}};let old=read('stride-strength-v2',{});if(!db.meals?.length&&old.meals)db.meals=old.meals;if(!db.weights?.length&&old.weights)db.weights=old.weights;if(old.water&&!Object.keys(db.water||{}).length)db.water=old.water}
+for(let k of ['workouts','meals','weights'])if(!Array.isArray(db[k]))db[k]=[];db.water=db.water||{};db.goals=db.goals||{calories:1900,protein:110};db.checked=db.checked||{};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));return true}catch(e){alert('Storage unavailable');return false}}
+function show(page){document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hidden',x.id!==page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.go===page));render();scrollTo(0,0)}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+const plan=[
+['Monday','Activation / rest',['Mobility 5–10 min','Optional easy full-body activation']],
+['Tuesday','Long run',['0.00–0.25 mi: 4.3–4.6 mph warm-up','0.25–0.50 mi: 4.8 mph','0.50–0.75 mi: 4.9 mph','0.75–1.00 mi: 5.0 mph','Continue 0.25-mile blocks at sustainable 4.8–5.2 mph','Short cooldown']],
+['Wednesday','Upper + core',['Lat pulldown: 3 × 10','Supported row: 3 × 10','Chest press: 3 × 10 if pain-free','Triceps: 3 × 12','Light lateral raise: 2 × 12 if pain-free','Reverse crunch: 3 × 12']],
+['Thursday','Quality run',['0.00–0.25 mi warm-up: 4.3–4.6 mph','0.25–0.50 mi easy: 4.8 mph','0.10 mi fast: 5.4 mph','0.10 mi recovery: 4.5 mph','Repeat short fast/recovery blocks','Short cooldown']],
+['Friday','Lower + core',['Leg press: 3 × 10, up to 165 lb if comfortable','Leg curl: 3 × 12','Leg extension: 3 × 10','Hip abduction: 3 × 12','Reverse crunch: 3 × 12']],
+['Saturday','Back priority + core',['Lat pulldown: 3 × 10','Cable row: 3 × 10','Biceps: 3 × 12','Triceps: 3 × 12','Lateral raise if pain-free: 2 × 12','Core: 3 sets']],
+['Sunday','Recovery',['Walk or mobility','Rest or optional catch-up']]
 ];
-days.forEach(d=>{
-let c=document.createElement("div");
-c.className="card";
-c.textContent=d[0]+" — "+d[1];
-$("schedule").appendChild(c);
-$("training").appendChild(c.cloneNode(true));
-});
-const ideas=[
-["Monday","Yogurt and oats","Chicken rice bowl","Salmon and vegetables"],
-["Tuesday","Eggs and toast","Turkey wrap","Chicken stir-fry"],
-["Wednesday","Protein oats","Tuna sandwich","Lentil stew"],
-["Thursday","Egg avocado toast","Quinoa salad","Fish and potatoes"],
-["Friday","Yogurt parfait","Burrito bowl","Turkey meatballs"],
-["Saturday","Omelet","Chicken sandwich","Tofu curry"],
-["Sunday","Overnight oats","Lentil soup","Roast chicken"]
-];
-ideas.forEach(d=>{
-let c=document.createElement("div");
-c.className="card";
-c.textContent=d[0]+": Breakfast — "+d[1]+
-"; Lunch — "+d[2]+"; Dinner — "+d[3];
-$("mealPlan").appendChild(c);
-});
-["mealDate","workoutDate","weightDate"].forEach(id=>$(id).value=today);
-$("calGoal").value=db.goals.calories;
-$("proGoal").value=db.goals.protein;
-function saveGoals(){
-db.goals.calories=Number($("calGoal").value)||1900;
-db.goals.protein=Number($("proGoal").value)||110;
+plan.forEach((p,i)=>{let c=document.createElement('div');c.className='card';c.textContent=p[0]+' — '+p[1];$('schedule').appendChild(c);let o=document.createElement('option');o.value=i;o.textContent=p[0]+' — '+p[1];$('daySelect').appendChild(o)});
+function drawDay(){let i=Number($('daySelect').value),p=plan[i],box=$('dayDetails');box.replaceChildren();let h=document.createElement('h3');h.textContent=p[0]+' · '+p[1];box.appendChild(h);p[2].forEach((line,n)=>{let row=document.createElement('div');row.className='exercise';let label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';let key=today+'-'+i+'-'+n;cb.checked=!!db.checked[key];cb.onchange=()=>{db.checked[key]=cb.checked;save()};label.append(cb,document.createTextNode(line));row.appendChild(label);box.appendChild(row)})}
+$('daySelect').onchange=drawDay;$('daySelect').value=(new Date().getDay()+6)%7;drawDay();
+const foods=[['Monday','Yogurt and oats','Chicken rice bowl','Salmon and vegetables'],['Tuesday','Eggs and toast','Turkey wrap','Chicken stir-fry'],['Wednesday','Protein oats','Tuna sandwich','Lentil stew'],['Thursday','Egg avocado toast','Quinoa salad','Fish and potatoes'],['Friday','Yogurt parfait','Burrito bowl','Turkey meatballs'],['Saturday','Omelet','Chicken sandwich','Tofu curry'],['Sunday','Overnight oats','Lentil soup','Roast chicken']];
+foods.forEach(p=>{let x=document.createElement('div');x.className='card';x.textContent=p[0]+' — Breakfast: '+p[1]+'; Lunch: '+p[2]+'; Dinner: '+p[3];$('mealPlan').appendChild(x)});
+['mealDate','workoutDate','weightDate'].forEach(k=>$(k).value=today);$('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
+$('saveGoals').onclick=()=>{db.goals={calories:Math.max(1200,Number($('calGoal').value)||1900),protein:Math.max(20,Number($('proGoal').value)||110)};save();render()};
+$('mealForm').onsubmit=e=>{e.preventDefault();db.meals.push({date:$('mealDate').value,type:$('mealType').value,food:$('food').value,calories:Number($('calories').value),protein:Number($('protein').value)});if(save()){$('food').value='';$('calories').value='';$('protein').value='';render()}};
+$('addWater').onclick=()=>{db.water[today]=(db.water[today]||0)+1;save();render()};
+$('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}};
+$('weightForm').onsubmit=e=>{e.preventDefault();let w=Number($('weightValue').value);db.weights.push({date:$('weightDate').value,weight:$('weightUnit').value==='kg'?w*2.20462262:w});if(save()){$('status').textContent='Weight saved';$('weightValue').value='';render()}};
+function total(a,k){return a.reduce((s,x)=>s+(Number(x[k])||0),0)}
+function history(id,items,fmt){let box=$(id);box.replaceChildren();if(!items.length){box.textContent='No entries yet';return}items.slice().reverse().forEach(item=>{let x=document.createElement('div');x.className='card';x.textContent=fmt(item);box.appendChild(x)})}
+function render(){$('homeStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles';let m=db.meals.filter(x=>x.date===today);$('nutrition').textContent=total(m,'calories')+' / '+db.goals.calories+' kcal · '+total(m,'protein').toFixed(1)+' / '+db.goals.protein+' g protein';$('water').textContent=(db.water[today]||0)+' glasses of water';let w=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=w.at(-1),prev=w.at(-2);$('progressStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles · Latest weight: '+(last?Number(last.weight).toFixed(1)+' lb':'—')+' · Change: '+(last&&prev?(last.weight-prev.weight).toFixed(1)+' lb':'—');history('weightHistory',w,x=>x.date+' · '+Number(x.weight).toFixed(1)+' lb');history('workoutHistory',db.workouts,x=>x.date+' · '+x.type+' · '+(x.miles||0)+' mi · '+(x.minutes||0)+' min · '+(x.notes||''));history('mealHistory',db.meals,x=>x.date+' · '+x.food+' · '+x.calories+' kcal · '+x.protein+'g')}
+function report(weekly){let d=new Date();if(weekly)d.setDate(d.getDate()-6);let from=date(d),within=x=>x.date>=from&&x.date<=today,w=db.workouts.filter(within),m=db.meals.filter(within),weights=db.weights.filter(within).sort((a,b)=>a.date.localeCompare(b.date));let text=['STRIDE & STRENGTH '+(weekly?'WEEKLY':'DAILY')+' REPORT','Period: '+from+' to '+today,'Workouts: '+w.length,'Running: '+total(w,'miles').toFixed(2)+' miles',...w.map(x=>x.type+'; '+(x.notes||'')+'; energy '+(x.energy||'N/A')+'; soreness '+(x.soreness||'N/A')),'Meals logged: '+m.length,'Calories logged: '+total(m,'calories'),'Protein logged: '+total(m,'protein').toFixed(1)+' g','Weight: '+(weights.length?weights.at(-1).weight.toFixed(1)+' lb':'not logged'),'Please review my progress and suggest adjustments.'].join('\n');if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>$('reportStatus').textContent='Copied! Paste into ChatGPT.').catch(()=>prompt('Copy report',text));else prompt('Copy report',text)}
+$('daily').onclick=()=>report(false);$('weekly').onclick=()=>report(true);
+$('backup').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='stride-strength-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 save();render();
-}
-$("mealForm").onsubmit=e=>{
-e.preventDefault();
-db.meals.push({
-date:$("mealDate").value,type:$("mealType").value,
-food:$("food").value,calories:Number($("calories").value),
-protein:Number($("protein").value)
-});
-if(save()){
-$("food").value="";
-$("calories").value="";
-$("protein").value="";
-render();
-}
-};
-function addWater(){
-db.water[today]=(db.water[today]||0)+1;
-save();render();
-}
-$("workoutForm").onsubmit=e=>{
-e.preventDefault();
-db.workouts.push({
-date:$("workoutDate").value,type:$("workoutType").value,
-miles:Number($("distance").value)||0,
-minutes:Number($("duration").value)||0,
-notes:$("notes").value,energy:$("energy").value,
-soreness:$("soreness").value
-});
-if(save()){
-$("status").textContent="Workout saved!";
-$("workoutForm").reset();
-$("workoutDate").value=today;
-render();
-}
-};
-$("weightForm").onsubmit=e=>{
-e.preventDefault();
-db.weights.push({
-date:$("weightDate").value,
-weight:Number($("weightValue").value)
-});
-if(save()){
-$("status").textContent="Weight saved!";
-$("weightValue").value="";
-render();
-}
-};
-function render(){
-let miles=db.workouts.reduce((a,w)=>a+(Number(w.miles)||0),0);
-$("homeCount").textContent=$("sessions").textContent=db.workouts.length;
-$("homeMiles").textContent=$("miles").textContent=miles.toFixed(1);
-let meals=db.meals.filter(m=>m.date===today);
-let cal=meals.reduce((a,m)=>a+Number(m.calories),0);
-let pro=meals.reduce((a,m)=>a+Number(m.protein),0);
-$("nutrition").textContent=cal+" / "+db.goals.calories+
-" calories | "+pro.toFixed(1)+" / "+db.goals.protein+" g protein";
-$("water").textContent=(db.water[today]||0)+" glasses of water";
-let weights=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date));
-let last=weights.at(-1),prev=weights.at(-2);
-$("latestWeight").textContent=last?Number(last.weight).toFixed(1)+" lb":"—";
-$("weightChange").textContent=last&&prev?
-(Number(last.weight)-Number(prev.weight)).toFixed(1)+" lb":"—";
-function history(id,items,format){
-let box=$(id);box.textContent="";
-items.slice().reverse().forEach(item=>{
-let c=document.createElement("div");
-c.className="card";c.textContent=format(item);
-box.appendChild(c);
-});
-}
-history("mealHistory",db.meals.slice(-30),
-m=>m.date+" | "+m.food+" | "+m.calories+" kcal | "+m.protein+"g");
-history("weightHistory",weights,
-w=>w.date+" | "+Number(w.weight).toFixed(1)+" lb");
-history("workoutHistory",db.workouts,
-w=>w.date+" | "+w.type+" | "+(w.miles||0)+" mi | "+(w.minutes||0)+" min | "+(w.notes||""));
-}
-function report(weekly){
-let start=new Date();
-if(weekly)start.setDate(start.getDate()-6);
-let from=dateString(start),end=today;
-let inside=x=>x.date>=from&&x.date<=end;
-let ws=db.workouts.filter(inside),ms=db.meals.filter(inside);
-let wt=db.weights.filter(inside).sort((a,b)=>a.date.localeCompare(b.date));
-let total=(arr,k)=>arr.reduce((a,x)=>a+(Number(x[k])||0),0);
-let text=[
-"STRIDE & STRENGTH "+(weekly?"WEEKLY":"DAILY")+" REPORT",
-"Period: "+from+" to "+end,
-"Workouts: "+ws.length,
-"Distance: "+total(ws,"miles").toFixed(2)+" miles",
-...ws.map(w=>w.type+": "+(w.notes||"")+"; energy "+(w.energy||"N/A")+"; soreness "+(w.soreness||"N/A")),
-"Meals recorded: "+ms.length,
-"Calories logged: "+total(ms,"calories"),
-"Protein logged: "+total(ms,"protein").toFixed(1)+" g",
-"Latest weight in period: "+(wt.length?wt.at(-1).weight+" lb":"not recorded"),
-"Please review my progress and suggest adjustments."
-].join("\n");
-if(navigator.clipboard&&navigator.clipboard.writeText){
-navigator.clipboard.writeText(text).then(()=>{
-$("reportStatus").textContent="Copied! Paste into ChatGPT.";
-}).catch(()=>prompt("Copy report",text));
-}else prompt("Copy report",text);
-}
-function backup(){
-let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
-let url=URL.createObjectURL(blob);
-let a=document.createElement("a");
-a.href=url;a.download="stride-strength-backup.json";
-a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-save();
-render();
-</script>
-</body>
-</html>
+</script></body></html>
