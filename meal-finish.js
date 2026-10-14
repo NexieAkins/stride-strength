@@ -5,129 +5,187 @@
 
   const $ = id => document.getElementById(id);
   const plan = $("mealPlan");
+
   if (!plan) return;
+
+  const KEY = "stride-strength-active-menu-v4";
+  const SAVED_KEY = "stride-strength-menu-v1";
 
   const days = [
     "Monday", "Tuesday", "Wednesday",
     "Thursday", "Friday", "Saturday", "Sunday"
   ];
 
-  const KEY = "stride-strength-active-plan-v3";
-  const AI_KEY = "stride-strength-menu-v1";
+  // Preserve the original recommendations.
+  const defaults = [...plan.children].map(
+    element => element.cloneNode(true)
+  );
 
-  const cards = [...plan.children];
-
-  const defaults = cards.map(card => {
-    const content = card.querySelector(".card") || card;
-    return content.textContent.trim();
-  });
-
-  let active;
-  try {
-    active = JSON.parse(localStorage.getItem(KEY));
-  } catch (e) {}
-
-  if (!Array.isArray(active) || active.length !== 7) {
-    active = defaults.slice();
+  function clean(text) {
+    return text
+      .replace(/\*\*/g, "")
+      .replace(/^#{1,6}\s*/gm, "")
+      .replace(/^---+$/gm, "")
+      .trim();
   }
 
-  function renderPlan() {
-    cards.forEach((card, i) => {
-      const content = card.querySelector(".card") || card;
-      content.textContent = active[i] || defaults[i];
-    });
+  function store(text) {
+    localStorage.setItem(KEY, text);
+    localStorage.setItem(SAVED_KEY, text);
   }
 
-  function savePlan() {
-    localStorage.setItem(KEY, JSON.stringify(active));
-    renderPlan();
+  function makeCard(title, content) {
+    const card = document.createElement("details");
+    card.className = "card";
+
+    const heading = document.createElement("summary");
+    heading.textContent = title;
+    heading.style.cursor = "pointer";
+    heading.style.fontWeight = "bold";
+
+    const body = document.createElement("div");
+    body.textContent = clean(content);
+    body.style.whiteSpace = "pre-line";
+    body.style.lineHeight = "1.7";
+    body.style.marginTop = "14px";
+    body.style.fontSize = "14px";
+
+    card.append(heading, body);
+    return card;
   }
 
-  function parseWeek(text) {
-    const found = new Map();
+  function displayAI(text) {
+    if (!text || !text.trim()) return;
 
-    const regex =
+    const content = text.trim();
+
+    // Completely replace old recommendations.
+    plan.replaceChildren();
+
+    const pattern =
       /(?:^|\n)\s*(?:#{1,3}\s*)?(?:\*\*)?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)(?:\*\*)?\s*[:—–-]?/gi;
 
-    const matches = [...text.matchAll(regex)];
+    const matches = [...content.matchAll(pattern)];
+
+    const sections = new Map();
 
     matches.forEach((match, index) => {
       const start = match.index + match[0].length;
+
       const end = matches[index + 1]
         ? matches[index + 1].index
-        : text.length;
+        : content.length;
 
-      found.set(
+      sections.set(
         match[1].toLowerCase(),
-        text.slice(start, end).trim()
+        content.slice(start, end).trim()
       );
     });
 
-    if (found.size !== 7) return null;
-
-    return days.map(day =>
-      day + " — " + found.get(day.toLowerCase())
-    );
-  }
-
-  function applyMenu(text) {
-    if (!text || !text.trim()) return;
-
-    const week = parseWeek(text);
-
-    if (week) {
-      active = week;
+    if (sections.size === 7) {
+      days.forEach(day => {
+        plan.appendChild(
+          makeCard(
+            day,
+            sections.get(day.toLowerCase())
+          )
+        );
+      });
     } else {
-      const selected = $("menuTarget")?.value;
-
-      const index =
-        selected && selected !== "week"
-          ? Number(selected)
-          : (new Date().getDay() + 6) % 7;
-
-      active[index] = days[index] + " — " + text;
+      // Display a single-day or custom AI menu
+      // as the active recommendation.
+      const card = makeCard("My AI Meal Plan", content);
+      card.open = true;
+      plan.appendChild(card);
     }
 
-    savePlan();
+    const recommendations = $("mealRecommendations");
+
+    if (recommendations) {
+      recommendations.open = false;
+    }
 
     const status = $("menuStatus");
+
     if (status) {
       status.textContent =
-        "✓ Your meal recommendations have been updated!";
+        "✓ Your AI menu is now your active meal plan.";
     }
   }
 
-  // Restore the previously saved AI menu on load.
-  const savedAI = localStorage.getItem(AI_KEY);
-
-  if (!localStorage.getItem(KEY) && savedAI) {
-    applyMenu(savedAI);
-  } else {
-    renderPlan();
+  function activate(text) {
+    if (!text || !text.trim()) return;
+    store(text);
+    displayAI(text);
   }
 
-  // Save Menu now also updates recommendations.
+  function restoreDefaults() {
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(SAVED_KEY);
+
+    plan.replaceChildren(
+      ...defaults.map(element => element.cloneNode(true))
+    );
+
+    const status = $("menuStatus");
+
+    if (status) {
+      status.textContent =
+        "Original recommendations restored.";
+    }
+  }
+
+  // Restore saved AI menu when the app opens.
+  const saved =
+    localStorage.getItem(KEY) ||
+    localStorage.getItem(SAVED_KEY);
+
+  if (saved) {
+    displayAI(saved);
+  }
+
+  // Update recommendations after generating AI menu.
+  const result = $("menuResult");
+  const draft = $("menuDraft");
+
+  if (result && draft) {
+    const observer = new MutationObserver(() => {
+      if (!result.hidden && draft.value.trim()) {
+        activate(draft.value);
+      }
+    });
+
+    observer.observe(result, {
+      attributes: true,
+      attributeFilter: ["hidden"]
+    });
+  }
+
+  // Save edited AI menu as the active plan.
   $("menuSave")?.addEventListener("click", () => {
-    const text = $("menuDraft")?.value || "";
-    applyMenu(text);
+    activate($("menuDraft")?.value || "");
   });
 
-  // Restore defaults.
-  const restore = document.createElement("button");
-  restore.type = "button";
-  restore.textContent = "Restore Default Meal Plan";
-  restore.style.margin = "10px 0";
+  // Restore original recommendations.
+  const button = document.createElement("button");
 
-  restore.onclick = () => {
-    if (!confirm("Restore the original meal plan?")) return;
+  button.type = "button";
+  button.textContent = "Restore Default Meal Plan";
+  button.style.margin = "12px 0";
 
-    active = defaults.slice();
-    savePlan();
+  button.onclick = () => {
+    if (confirm("Restore the original meal plan?")) {
+      restoreDefaults();
+    }
   };
 
-  plan.parentNode.insertBefore(restore, plan);
+  const wrapper = $("mealRecommendations") || plan;
+  wrapper.parentNode.insertBefore(button, wrapper);
 
-  // Keep recommendations collapsed.
+  // Keep recommendations hidden until clicked.
   const recommendations = $("mealRecommendations");
-  if (recommendations) recommendations.open = false;
+
+  if (recommendations) {
+    recommendations.open = false;
+  }
 })();
