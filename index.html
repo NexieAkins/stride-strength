@@ -180,9 +180,9 @@ async function loadCloud(){
   const [w,m,weights,water,goals]=results.map(x=>x.data||[]);
   db.trainingSessions=[];
   db.workouts=w.flatMap(x=>{
-   let session=null;if((x.notes||'').startsWith('STRIDE_SESSION_V1:')){try{session=JSON.parse(x.notes.slice(18));}catch{}}
+   let session=null;if((x.notes||'').startsWith('STRIDE_SESSION_V1:')){try{session=JSON.parse(x.notes.slice(18));if(!session||!Array.isArray(session.exercises)||!session.exercises.every(e=>e&&Array.isArray(e.sets)))session=null;}catch{}}
    if(session?.status==='draft'){session.owner=user.id;db.trainingSessions.push(session);return [];}
-   return [{id:x.id,date:x.workout_date,type:x.workout_type,miles:Number(x.distance_miles)||0,minutes:Number(x.duration_minutes)||0,source:x.source||'manual',notes:session?window.strideSessionTracker.summary(session):x.notes||'',session,energy:x.energy||'',soreness:x.soreness||''}];
+   return [{id:x.id,date:x.workout_date,type:x.workout_type,miles:Number(x.distance_miles)||0,minutes:Number(x.duration_minutes)||0,source:x.source||'manual',notes:session?(session.summaryText||window.strideSessionTracker?.summary(session)||session.title||'Training session'):x.notes||'',session,energy:x.energy||'',soreness:x.soreness||''}];
   });
   db.meals=m.map(x=>({id:x.id,date:x.meal_date,type:x.meal_type,food:x.food_name,calories:Number(x.calories)||0,protein:Number(x.protein_g)||0}));
   db.weights=weights.map(x=>({id:x.id,date:x.weigh_date,weight:Number(x.weight_lb)}));
