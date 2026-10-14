@@ -1,0 +1,245 @@
+
+/* STRIDE & STRENGTH — CLEAN UI V1 */
+
+:root {
+  --bg: #0d1424;
+  --surface: #192438;
+  --surface-soft: #202e43;
+  --border: #304158;
+  --text: #f5f7fc;
+  --muted: #a9b8cc;
+  --accent: #7568ed;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 system-ui, sans-serif;
+  padding: 0 16px 115px;
+  margin: 0;
+}
+
+header, main {
+  max-width: 720px;
+  margin: auto;
+}
+
+header { padding: 25px 0 12px; }
+
+h1 {
+  font-size: clamp(26px, 6vw, 34px);
+  letter-spacing: -.8px;
+  line-height: 1.2;
+  margin: 0 0 9px;
+}
+
+h2 {
+  font-size: 21px;
+  letter-spacing: -.35px;
+  margin: 26px 0 12px;
+}
+
+h3 { font-size: 17px; }
+
+p, small {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+main > section {
+  padding-bottom: 24px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 17px;
+  margin: 12px 0;
+  box-shadow: none;
+}
+
+.hero {
+  background: linear-gradient(
+    125deg, #443a9b, #145e77
+  );
+  border-radius: 20px;
+  padding: 24px;
+  margin: 16px 0 22px;
+}
+
+.hero h2 { margin-top: 0; }
+.hero p { color: #e4e8fa; }
+
+button {
+  background: var(--accent);
+  color: white;
+  border: 0;
+  border-radius: 11px;
+  padding: 12px 16px;
+  min-height: 43px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 3px;
+}
+
+input, textarea, select {
+  background: #111d2f;
+  color: var(--text);
+  border: 1px solid #43526a;
+  border-radius: 11px;
+  padding: 12px;
+  font: inherit;
+  max-width: 100%;
+}
+
+textarea {
+  line-height: 1.55;
+  resize: vertical;
+}
+
+label {
+  color: #d1dbea;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+details > summary {
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 650;
+}
+
+details[open] > summary {
+  margin-bottom: 12px;
+}
+
+#mealPlan > details {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface-soft);
+  margin: 9px 0;
+  padding: 12px;
+}
+
+#mealHistory .diary-day {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 13px;
+}
+
+#mealHistory .diary-day .card {
+  background: var(--surface-soft);
+  border: 0;
+  margin: 7px 0;
+  padding: 12px;
+  font-size: 13px;
+}
+
+#mealHistory button {
+  font-size: 12px;
+  padding: 7px 11px;
+  min-height: 34px;
+}
+
+#menuBuilderFold,
+#mealRecommendations {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 15px;
+}
+
+#progress svg,
+#weightGraph {
+  max-width: 100%;
+  height: auto;
+}
+
+#signedIn {
+  font-size: 13px;
+}
+
+#signedIn button {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  min-height: 36px;
+  padding: 8px 11px;
+}
+
+#cloudStatus {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Mobile navigation */
+nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0,1fr));
+  gap: 3px;
+  background: #101a2b;
+  border-top: 1px solid var(--border);
+  padding: 9px 5px max(
+    12px, env(safe-area-inset-bottom)
+  );
+  z-index: 100;
+  box-shadow: 0 -8px 25px #0002;
+}
+
+nav button {
+  background: transparent;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 11px 2px;
+  min-height: 43px;
+  border-radius: 9px;
+  white-space: nowrap;
+}
+
+nav button.active {
+  background: #5145cd;
+  font-weight: 700;
+}
+
+@media (min-width: 720px) {
+  body { padding-bottom: 120px; }
+  nav {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(720px, 100%);
+    border-radius: 18px 18px 0 0;
+  }
+  nav button { font-size: 13px; }
+  .card { padding: 20px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button, .card {
+    transition: background .15s ease,
+                border-color .15s ease;
+  }
+}
