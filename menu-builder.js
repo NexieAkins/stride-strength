@@ -34,7 +34,7 @@
   panel.className = "card";
 
   panel.innerHTML = `
-    <h3>✨ AI Menu Builder</h3>
+    <h3>Meal planner</h3>
     <p>Build a menu or substitute a meal.</p>
 
     <label>What would you like to do?</label>
@@ -71,7 +71,7 @@
     <p id="menuStatus" role="status"></p>
 
     <div id="menuResult" hidden>
-      <label>AI Suggestions (editable)</label>
+      <label>Suggested menu (editable)</label>
       <textarea id="menuDraft" rows="12"></textarea>
 
       <p>

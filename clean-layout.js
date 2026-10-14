@@ -47,7 +47,7 @@
   // Meals: show totals first, tools only when needed.
   collapse(
     $("aiMealPanel"),
-    "✨ Analyze a Meal with AI"
+    "Estimate meal nutrition"
   );
 
   collapse(
@@ -141,3 +141,4 @@
 
   document.head.appendChild(style);
 })();
+

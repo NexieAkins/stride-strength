@@ -18,7 +18,7 @@ exports.handler = async (event) => {
   }
 
   if (!process.env.OPENAI_API_KEY) {
-    return reply(503, { error: 'AI service not configured.' });
+    return reply(503, { error: 'Meal planning is not configured.' });
   }
 
   const token = (
@@ -162,7 +162,7 @@ exports.handler = async (event) => {
     if (!response.ok) {
       return reply(502, {
         error:
-          'AI provider error: ' +
+          'Meal planning service error: ' +
           (result.error?.message || response.status)
       });
     }
@@ -205,3 +205,4 @@ exports.handler = async (event) => {
     });
   }
 };
+

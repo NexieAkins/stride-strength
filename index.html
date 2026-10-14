@@ -18,10 +18,10 @@
 <p id="cloudStatus" role="status">Cloud connection loading…</p></div><main>
 <section id="home"><div class="hero"><h2>Your strength. Your stride.</h2><button data-go="log">Log workout →</button></div><div class="card" id="homeStats"></div><h2>Your weekly schedule</h2><div id="schedule"></div></section>
 <section id="train" class="hidden"><h2>Interactive training</h2><p>Select a day and check off activities. Monday and Wednesday standing core are flexible, and extra activities can be logged separately. Runna sets Tuesday and Thursday workouts.</p><select id="daySelect"></select><div id="dayDetails" class="card"></div><button data-go="log">Log workout →</button></section>
-<section id="meals" class="hidden"><h2>Meals & nutrition</h2><div class="card"><h3>Daily goals</h3><label for="calGoal">Calories</label><input id="calGoal" type="number" min="1200"><label for="proGoal">Protein (g)</label><input id="proGoal" type="number" min="20"><button id="saveGoals">Save goals</button></div><div class="card"><h3>Today's totals</h3><p id="nutrition"></p><p id="water"></p><button id="addWater">+ Glass of water</button></div><div class="card" id="aiMealPanel"><h3>✨ AI Meal Logger</h3><p>Describe your meal, attach a photo, or both. Review the estimate before saving.</p>
+<section id="meals" class="hidden"><h2>Meals & nutrition</h2><div class="card"><h3>Daily goals</h3><label for="calGoal">Calories</label><input id="calGoal" type="number" min="1200"><label for="proGoal">Protein (g)</label><input id="proGoal" type="number" min="20"><button id="saveGoals">Save goals</button></div><div class="card"><h3>Today's totals</h3><p id="nutrition"></p><p id="water"></p><button id="addWater">+ Glass of water</button></div><div class="card" id="aiMealPanel"><h3>Meal nutrition estimate</h3><p>Describe your meal, attach a photo, or both. Review the estimate before saving.</p>
 <label for="aiMealDescription">Describe your food and portions</label><textarea id="aiMealDescription" placeholder="e.g. Two scrambled eggs, two slices of toast, and coffee with milk"></textarea>
 <label for="aiMealPhoto">Meal photo (optional)</label><input id="aiMealPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*">
-<label for="mealCamera">Take a meal photo</label><input id="mealCamera" type="file" accept="image/*" capture="environment"><img id="mealPreview" class="hidden" alt="Selected meal photo" style="max-width:100%;max-height:240px;border-radius:12px"><button id="clearMealPhoto" type="button" class="hidden">Remove photo</button><button type="button" id="aiAnalyzeMeal">Estimate nutrition with AI</button><p id="aiMealStatus" role="status"></p>
+<label for="mealCamera">Take a meal photo</label><input id="mealCamera" type="file" accept="image/*" capture="environment"><img id="mealPreview" class="hidden" alt="Selected meal photo" style="max-width:100%;max-height:240px;border-radius:12px"><button id="clearMealPhoto" type="button" class="hidden">Remove photo</button><button type="button" id="aiAnalyzeMeal">Estimate nutrition</button><p id="aiMealStatus" role="status"></p>
 <div id="aiMealResults" class="hidden"><label for="aiEstimateName">Food / portion (editable)</label><textarea id="aiEstimateName"></textarea>
 <label for="aiEstimateCalories">Estimated calories (editable)</label><input id="aiEstimateCalories" type="number" min="0" max="5000" step="1">
 <label for="aiEstimateProtein">Estimated protein, grams (editable)</label><input id="aiEstimateProtein" type="number" min="0" max="300" step="0.1">
@@ -263,7 +263,7 @@ get('aiAnalyzeMeal').onclick=async()=>{
   const description=get('aiMealDescription').value.trim(),file=get('mealCamera').files[0]||get('aiMealPhoto').files[0];
   if(!description&&!file)throw Error('Describe a meal or choose a photo first.');
   if(typeof window.mealAiGetToken!=='function')throw Error('Sign in to your cloud account first.');
-  const token=await window.mealAiGetToken();if(!token)throw Error('Sign in before using AI meal estimates.');
+  const token=await window.mealAiGetToken();if(!token)throw Error('Sign in before estimating a meal.');
   status('Analyzing meal…');
   const photo=await imageData(file);
   const res=await fetch('/.netlify/functions/analyze-meal',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({description,photo})});
@@ -272,7 +272,7 @@ get('aiAnalyzeMeal').onclick=async()=>{
   get('aiEstimateName').value=data.food_name||description;
   get('aiEstimateCalories').value=data.calories;
   get('aiEstimateProtein').value=data.protein_g;
-  get('aiEstimateNotes').textContent=(data.notes||'')+' · AI estimates are approximate; check portions, cooking oil, sauces and labels.';
+  get('aiEstimateNotes').textContent=(data.notes||'')+' · Nutrition estimates are approximate; check portions, cooking oil, sauces and labels.';
   get('aiMealResults').classList.remove('hidden');status('Estimate ready. Review and edit before saving.');
  }catch(e){status('Could not estimate meal: '+e.message)}finally{btn.disabled=false}
 };

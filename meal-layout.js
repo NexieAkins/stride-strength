@@ -5,7 +5,7 @@ const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)
 const totals=$('nutrition').closest('.card'),goals=$('calGoal').closest('details')||$('calGoal').closest('.card'),logger=$('aiMealPanel').closest('details')||$('aiMealPanel'),form=$('mealForm').closest('details')||$('mealForm').closest('.card'),history=$('mealHistory').closest('details')||$('mealHistory'),achievement=$('nutritionComplete').closest('.nutrition-achievement'),kitchen=$('myKitchen'),menu=$('menuGenerate').closest('.card'),recommendations=$('mealRecommendations');
 const restore=[...meals.querySelectorAll('button')].find(b=>b.textContent==='Restore Default Meal Plan');
 const tabs=node('div');tabs.id='mealTabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Meal views');
-const names={today:'Today',diary:'Diary',kitchen:'Kitchen',tools:'AI Tools'},views={},buttons={};let selected='today',currentOwner=null;
+const names={today:'Today',diary:'Diary',kitchen:'Kitchen',tools:'Meal tools'},views={},buttons={};let selected='today',currentOwner=null;
 for(const [name,label]of Object.entries(names)){const b=node('button',label);b.type='button';b.id='mealTab-'+name;b.setAttribute('role','tab');b.setAttribute('aria-controls','mealView-'+name);b.onclick=()=>select(name);buttons[name]=b;tabs.append(b);const panel=node('div');panel.id='mealView-'+name;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',b.id);views[name]=panel;}
 const quick=node('div');quick.className='card';quick.append(node('h3','Today’s food diary'));const preview=node('div');preview.id='todayMealPreview';quick.append(preview);
 function action(text,fn){const b=node('button',text);b.type='button';b.onclick=fn;return b;}

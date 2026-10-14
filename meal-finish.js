@@ -95,7 +95,7 @@
     } else {
       // Display a single-day or custom AI menu
       // as the active recommendation.
-      const card = makeCard("My AI Meal Plan", content);
+      const card = makeCard("My meal plan", content);
       card.open = true;
       plan.appendChild(card);
     }
@@ -110,7 +110,7 @@
 
     if (status) {
       status.textContent =
-        "✓ Your AI menu is now your active meal plan.";
+        "✓ Your menu is now your active meal plan.";
     }
   }
 
