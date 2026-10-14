@@ -4,7 +4,10 @@
 #account{max-width:440px;margin:8vh auto;padding:26px;background:#1b273a;border-radius:20px}body:not(.authenticated) main,body:not(.authenticated) nav{display:none!important}body.authenticated #account{max-width:720px;margin:8px auto;padding:10px 16px;background:transparent}body.authenticated #account>h3{display:none}body.authenticated #signedIn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}body.authenticated #signedIn p{margin:4px}body.authenticated #account #cloudStatus{margin:3px 0}
 #account input{max-width:340px;display:block}#account button{margin:4px}
 #cloudStatus{color:#b6c4d9;font-size:13px}#cloudImport{background:#0f766e}
-</style></head><body><header><h1>Stride & Strength <small>V4 ✦</small></h1><p>Run stronger. Lift smarter. Nourish consistently.</p></header><div id="account"><h3>☁ Cloud account</h3><div id="signedOut">
+</style>
+<link rel="stylesheet" href="./app-polish.css">
+</head>
+<body><header><h1>Stride & Strength <small>V4 ✦</small></h1><p>Run stronger. Lift smarter. Nourish consistently.</p></header><div id="account"><h3>☁ Cloud account</h3><div id="signedOut">
 <p>Sign in to sync your fitness records across devices.</p>
 <form id="loginForm"><label for="authEmail">Email</label><input id="authEmail" type="email" required autocomplete="email">
 <label for="authPassword">Password (at least 6 characters)</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password">
