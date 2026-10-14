@@ -4,7 +4,7 @@ let html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
 html=html.replace(/<script src="([^"]+)"><\/script>/g,(_,src)=>src.startsWith('https:')?'': '<script>'+fs.readFileSync(path.join(__dirname,src),'utf8')+'</script>');
 html=html.replace('let pending;', 'window.__cloudTest={cloudRows,loadCloud,client,setUser:u=>user=u};let pending;');
 const errors=[];
-function boot(storage){const dom=new JSDOM(html,{url:'https://stride.test',runScripts:'dangerously',beforeParse(w){w.alert=()=>{};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>{}}})};w.addEventListener('error',e=>errors.push(e.message));if(storage)w.localStorage.setItem('stride-strength-v3',storage);}});dom.window.eval("window.cloudRecordOwner=()=> 'test-user';render();show('train');");return dom;}
+function boot(storage){const dom=new JSDOM(html,{url:'https://stride.test',runScripts:'dangerously',beforeParse(w){w.alert=()=>{};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>{}}})};w.addEventListener('error',e=>errors.push(e.message));if(storage)w.localStorage.setItem('stride-strength-v3',storage);}});dom.window.eval("window.strideWorkoutCheckin=null;window.cloudRecordOwner=()=> 'test-user';render();show('train');");return dom;}
 (async()=>{
 let dom=boot(),w=dom.window;const run=js=>w.eval(js),get=id=>w.document.getElementById(id);
 get('trainDefault').click();get('trainUsePlan').click();assert.equal(get('sessionTracker').querySelectorAll('fieldset').length,12);

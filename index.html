@@ -56,7 +56,7 @@ $('daySelect').onchange=drawDay;$('daySelect').value=(new Date().getDay()+6)%7;d
 const foods=[['Monday','Yogurt and oats','Chicken rice bowl','Salmon and vegetables'],['Tuesday','Eggs and toast','Turkey wrap','Chicken stir-fry'],['Wednesday','Protein oats','Tuna sandwich','Lentil stew'],['Thursday','Egg avocado toast','Quinoa salad','Fish and potatoes'],['Friday','Yogurt parfait','Burrito bowl','Turkey meatballs'],['Saturday','Omelet','Chicken sandwich','Tofu curry'],['Sunday','Overnight oats','Lentil soup','Roast chicken']];
 foods.forEach(p=>{let x=document.createElement('div');x.className='card';x.textContent=p[0]+' — Breakfast: '+p[1]+'; Lunch: '+p[2]+'; Dinner: '+p[3];$('mealPlan').appendChild(x)});
 ['mealDate','workoutDate','weightDate'].forEach(k=>$(k).value=today);$('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
-$('saveGoals').onclick=()=>{db.goals={calories:Math.max(1200,Number($('calGoal').value)||1900),protein:Math.max(20,Number($('proGoal').value)||110)};save();render()};
+$('saveGoals').onclick=()=>{if(db.profile?.user_id===window.cloudRecordOwner?.())db.profile.nutrition_mode='manual';db.goals={calories:Math.max(1200,Number($('calGoal').value)||1900),protein:Math.max(20,Number($('proGoal').value)||110)};save();render()};
 $('mealForm').onsubmit=e=>{e.preventDefault();db.meals.push({date:$('mealDate').value,type:$('mealType').value,food:$('food').value,calories:Number($('calories').value),protein:Number($('protein').value)});if(save()){$('food').value='';$('calories').value='';$('protein').value='';render()}};
 $('addWater').onclick=()=>{db.water[today]=(db.water[today]||0)+1;save();render()};
 $('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}};
@@ -161,23 +161,25 @@ async function writeCloud(){
    daily_protein_goal:Number(db.goals.protein)||110
   },{onConflict:'user_id'});
   if(error)throw error;
+  if(db.profile?.user_id===user.id){const {error:profileError}=await client.from('profiles').upsert(db.profile,{onConflict:'user_id'});if(profileError)throw profileError;}
   localStorage.setItem(KEY,JSON.stringify(db));
   if(!queued)db.syncDirty=null;localStorage.setItem(KEY,JSON.stringify(db));message('✓ Synced to Supabase');return true;
  }catch(e){message('Sync failed: '+e.message);return false;}
  finally{writing=false;if(queued){queued=false;writeCloud()}}
 }
 let pending;
-window.cloudRecordOwner=()=>user?.id||null;
+window.cloudRecordOwner=()=>user?.id||null;window.strideProfileReadyOwner=null;
 window.cloudQueue=function(){if(!user||loading)return;db.syncDirty=user.id;localStorage.setItem(KEY,JSON.stringify(db));clearTimeout(pending);pending=setTimeout(()=>{pending=null;writeCloud()},500)};
 async function loadCloud(){
  if(!user||writing)return;
  if(pending||db.syncDirty===user.id){clearTimeout(pending);pending=null;if(!await writeCloud())return;}
- loading=true;let loaded=false;document.querySelector('main').inert=true;message('Loading your cloud records…');
+ loading=true;const loadingOwner=user.id;let loaded=false;document.querySelector('main').inert=true;message('Loading your cloud records…');
  try{
-  const tables=['workouts','meals','weigh_ins','water_logs','goals'];
+  const tables=['workouts','meals','weigh_ins','water_logs','goals','profiles'];
   const results=await Promise.all(tables.map(t=>client.from(t).select('*').eq('user_id',user.id).limit(5000)));
+  if(user?.id!==loadingOwner)return;
   for(let i=0;i<results.length;i++)if(results[i].error)throw results[i].error;
-  const [w,m,weights,water,goals]=results.map(x=>x.data||[]);
+  const [w,m,weights,water,goals,profiles]=results.map(x=>x.data||[]);
   db.trainingSessions=[];
   db.workouts=w.flatMap(x=>{
    let session=null;if((x.notes||'').startsWith('STRIDE_SESSION_V1:')){try{session=JSON.parse(x.notes.slice(18));if(!session||!Array.isArray(session.exercises)||!session.exercises.every(e=>e&&Array.isArray(e.sets)))session=null;}catch{}}
@@ -188,7 +190,7 @@ async function loadCloud(){
   db.weights=weights.map(x=>({id:x.id,date:x.weigh_date,weight:Number(x.weight_lb)}));
   db.water={};db.waterIds={};
   water.forEach(x=>{db.water[x.log_date]=x.glasses;db.waterIds[x.log_date]=x.id});
-  if(goals.length)db.goals={calories:goals[0].daily_calorie_goal,protein:goals[0].daily_protein_goal};
+  db.goals=goals.length?{calories:goals[0].daily_calorie_goal,protein:goals[0].daily_protein_goal}:{calories:1900,protein:110};db.profile=profiles[0]||null;window.strideProfileReadyOwner=user.id;
   $('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
   localStorage.setItem(KEY,JSON.stringify(db));render();
   loaded=true;message('✓ Cloud records loaded');
@@ -237,12 +239,12 @@ client.auth.onAuthStateChange((event,session)=>{
  const next=session?.user||null,changed=next?.id!==user?.id;
  if(next&&changed){
   localBeforeLogin=JSON.parse(JSON.stringify(db));
-  user=next;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.add('authenticated');
+  user=next;db.profile=null;window.strideProfileReadyOwner=null;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.add('authenticated');
   $('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');
   $('accountEmail').textContent='Signed in: '+user.email;
   document.querySelector('main').inert=true;setTimeout(loadCloud,0);
  }else if(!next){
-  user=null;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.remove('authenticated');clearTimeout(pending);
+  user=null;db.profile=null;window.strideProfileReadyOwner=null;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.remove('authenticated');clearTimeout(pending);
   $('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');
   message('Not signed in — entries are saved only in this browser.');
  }
@@ -458,5 +460,8 @@ get('aiUseEstimate').onclick=()=>{
 <script src="./v5-ui.js"></script>
 <script src="./train-layout.js"></script>
 <script src="./meal-layout.js"></script>
+<script src="./nutrition-targets.js"></script>
+<script src="./onboarding.js"></script>
+<script src="./workout-checkin.js"></script>
 </body></html>
 
