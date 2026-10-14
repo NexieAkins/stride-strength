@@ -8,8 +8,9 @@
 
   if (!plan) return;
 
-  const KEY = "stride-strength-active-menu-v4";
-  const SAVED_KEY = "stride-strength-menu-v1";
+  const owner=()=>window.cloudRecordOwner?.()||'browser';
+  const KEY = ()=>"stride-strength-active-menu-v4-"+owner();
+  const SAVED_KEY = ()=>"stride-strength-menu-v1-"+owner();
 
   const days = [
     "Monday", "Tuesday", "Wednesday",
@@ -30,8 +31,8 @@
   }
 
   function store(text) {
-    localStorage.setItem(KEY, text);
-    localStorage.setItem(SAVED_KEY, text);
+    localStorage.setItem(KEY(), text);
+    localStorage.setItem(SAVED_KEY(), text);
   }
 
   function makeCard(title, content) {
@@ -120,8 +121,8 @@
   }
 
   function restoreDefaults() {
-    localStorage.removeItem(KEY);
-    localStorage.removeItem(SAVED_KEY);
+    localStorage.removeItem(KEY());
+    localStorage.removeItem(SAVED_KEY());
 
     plan.replaceChildren(
       ...defaults.map(element => element.cloneNode(true))
@@ -137,8 +138,8 @@
 
   // Restore saved AI menu when the app opens.
   const saved =
-    localStorage.getItem(KEY) ||
-    localStorage.getItem(SAVED_KEY);
+    localStorage.getItem(KEY()) ||
+    localStorage.getItem(SAVED_KEY());
 
   if (saved) {
     displayAI(saved);
@@ -182,6 +183,8 @@
   const wrapper = $("mealRecommendations") || plan;
   wrapper.parentNode.insertBefore(button, wrapper);
 
+  const previousRender=render;
+  render=function(){previousRender();const text=localStorage.getItem(KEY())||localStorage.getItem(SAVED_KEY());if(text)displayAI(text);};
   // Keep recommendations hidden until clicked.
   const recommendations = $("mealRecommendations");
 
@@ -189,3 +192,4 @@
     recommendations.open = false;
   }
 })();
+

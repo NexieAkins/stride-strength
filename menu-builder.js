@@ -97,15 +97,19 @@
 
   plan.parentNode.insertBefore(panel, plan);
 
-  const storageKey = "stride-strength-menu-v1";
+  const owner=()=>window.cloudRecordOwner?.()||'browser';
+  const storageKey = ()=>"stride-strength-menu-v1-"+owner();
+  let currentOwner=null;
+  function restoreOwner(){if(currentOwner===owner())return;currentOwner=owner();$("menuDraft").value='';$("menuResult").hidden=true;$("menuLikes").value='';$("menuAvoid").value='';$("menuReplace").value='';$("savedMenu").textContent=localStorage.getItem(storageKey())||'No saved menu yet.';}
+  const oldRender=render;render=function(){oldRender();restoreOwner()};restoreOwner();
 
   $("savedMenu").textContent =
-    localStorage.getItem(storageKey) ||
+    localStorage.getItem(storageKey()) ||
     "No saved menu yet.";
 
   $("menuSave").onclick = () => {
     const text = $("menuDraft").value;
-    localStorage.setItem(storageKey, text);
+    localStorage.setItem(storageKey(), text);
     $("savedMenu").textContent = text;
     $("menuStatus").textContent = "Menu saved on this device.";
   };
@@ -125,6 +129,7 @@
   };
 
   $("menuGenerate").onclick = async () => {
+    const requestOwner=owner();
     const button = $("menuGenerate");
     button.disabled = true;
     $("menuStatus").textContent = "Generating your menu...";
@@ -148,6 +153,7 @@
       const { data, error } =
         await client.auth.getSession();
 
+      if(requestOwner!==owner())return;
       if (error || !data.session) {
         throw new Error("Please sign in first.");
       }
@@ -179,6 +185,7 @@
         error: "Invalid server response"
       }));
 
+      if(requestOwner!==owner())return;
       if (!response.ok) {
         throw new Error(
           result.error || "Menu generation failed."
@@ -192,9 +199,10 @@
         "Menu ready! Review and edit before using.";
 
     } catch (error) {
-      $("menuStatus").textContent = error.message;
+      if(requestOwner===owner())$("menuStatus").textContent = error.message;
     } finally {
       button.disabled = false;
     }
   };
 })();
+

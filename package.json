@@ -1,0 +1,15 @@
+{
+  "name": "stride-strength",
+  "version": "5.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "test": "node test-session-dom.cjs && node test-kitchen.cjs && node test-photos.cjs && node test-photo-policies.cjs",
+    "test:browser": "node test-session.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "30.1.2",
+    "playwright": "1.62.1",
+    "@electric-sql/pglite": "0.5.10"
+  }
+}

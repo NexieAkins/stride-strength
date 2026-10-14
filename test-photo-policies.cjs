@@ -1,0 +1,24 @@
+const {PGlite}=require('@electric-sql/pglite');
+const fs=require('node:fs'),assert=require('node:assert/strict'),path=require('node:path');
+(async()=>{const db=new PGlite();await db.exec(`
+create role authenticated; create role anon;
+create schema auth; create schema storage;
+create table auth.users(id uuid primary key);
+insert into auth.users values('00000000-0000-0000-0000-000000000001'),('00000000-0000-0000-0000-000000000002');
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text);
+alter table storage.objects enable row level security;
+grant usage on schema auth,storage to authenticated,anon;
+grant select,insert,delete on storage.objects to authenticated;
+create function storage.foldername(name text) returns text[] language sql immutable as $$select (string_to_array(name,'/'))[1:cardinality(string_to_array(name,'/'))-1]$$;
+create function storage.extension(name text) returns text language sql immutable as $$select split_part(name,'.',-1)$$;
+`);await db.exec(fs.readFileSync(path.join(__dirname,'supabase/transformation-photos.sql'),'utf8'));
+const userA='00000000-0000-0000-0000-000000000001',userB='00000000-0000-0000-0000-000000000002',photo='00000000-0000-0000-0000-000000000003';const asUser=async uid=>{await db.exec('reset role');await db.query("select set_config('test.uid',$1,false)",[uid]);await db.exec('set role authenticated');};
+assert.equal((await db.query('select public from storage.buckets')).rows[0].public,false);
+await asUser(userA);await db.query("insert into transformation_photos(id,user_id,captured_on,angle,storage_path) values($1,$2,'2026-10-14','Front',$3)",[photo,userA,userA+'/'+photo+'.jpg']);await db.query("insert into storage.objects(bucket_id,name) values('stride-transformation-private-v5',$1)",[userA+'/'+photo+'.jpg']);assert.equal((await db.query('select * from transformation_photos')).rows.length,1);assert.equal((await db.query('select * from storage.objects')).rows.length,1);
+await asUser(userB);assert.equal((await db.query('select * from transformation_photos')).rows.length,0);assert.equal((await db.query('select * from storage.objects')).rows.length,0);await db.query('delete from transformation_photos where id=$1',[photo]);await db.query('delete from storage.objects where name=$1',[userA+'/'+photo+'.jpg']);
+await assert.rejects(db.query("insert into storage.objects(bucket_id,name) values('stride-transformation-private-v5',$1)",[userA+'/forged.jpg']),/row-level security/);
+await assert.rejects(db.query("insert into transformation_photos(id,user_id,captured_on,angle,storage_path) values($1,$2,'2026-10-14','Front',$3)",['00000000-0000-0000-0000-000000000004',userA,userA+'/00000000-0000-0000-0000-000000000004.jpg']),/row-level security/);
+await asUser(userA);assert.equal((await db.query('select * from transformation_photos')).rows.length,1);assert.equal((await db.query('select * from storage.objects')).rows.length,1);await db.query('delete from storage.objects where name=$1',[userA+'/'+photo+'.jpg']);await db.query('delete from transformation_photos where id=$1',[photo]);assert.equal((await db.query('select * from transformation_photos')).rows.length,0);
+await db.exec('reset role; set role anon;');await assert.rejects(db.query('select * from transformation_photos'),/permission denied/);await db.close();console.log('PASS: migration SQL executes; bucket private; owners can read/write/delete; other accounts cannot read/delete/forge paths; anonymous access denied.');})().catch(e=>{console.error(e);process.exit(1)});
