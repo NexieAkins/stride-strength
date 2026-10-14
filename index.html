@@ -280,4 +280,160 @@ get('aiUseEstimate').onclick=()=>{
 
 <script src="./menu-builder.js"></script>
   
+<style>
+/* Cleaner meal diary */
+#mealRecommendations {
+  background:#1b273a;
+  border-radius:15px;
+  padding:16px;
+  margin:14px 0;
+}
+#mealRecommendations > summary {
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#mealRecommendations #mealPlan {
+  margin-top:12px;
+}
+#mealRecommendations #mealPlan > .card {
+  padding:10px;
+  margin:8px 0;
+}
+#mealHistory .diary-day {
+  background:#152033;
+  border:1px solid #334155;
+  border-radius:14px;
+  padding:12px;
+  margin:14px 0;
+}
+#mealHistory .diary-day h3 {
+  margin:4px 0 12px;
+}
+#mealHistory .card {
+  margin:5px 0;
+  padding:12px;
+  border-radius:8px;
+  background:#24334a;
+  font-size:13px;
+  line-height:1.5;
+}
+#mealHistory .card button {
+  font-size:12px;
+  padding:7px 10px;
+  margin:8px 5px 0 0;
+}
+</style>
+
+<script>
+(function(){
+  "use strict";
+
+  const plan=document.getElementById("mealPlan");
+  const history=document.getElementById("mealHistory");
+
+  // Collapse all seven-day recommendations.
+  if(plan && !document.getElementById(
+    "mealRecommendations"
+  )){
+    const wrapper=document.createElement("details");
+    wrapper.id="mealRecommendations";
+
+    const heading=document.createElement("summary");
+    heading.textContent=
+      "📖 View 7-Day Meal Recommendations";
+
+    plan.parentNode.insertBefore(wrapper,plan);
+    wrapper.append(heading,plan);
+
+    // Hide the old standalone heading.
+    const previous=wrapper.previousElementSibling;
+    if(previous &&
+      previous.textContent.trim()===
+      "7-day meal ideas"){
+      previous.style.display="none";
+    }
+  }
+
+  if(!history)return;
+
+  let organizing=false;
+
+  function organizeDiary(){
+    if(organizing)return;
+    organizing=true;
+
+    try{
+      const cards=[
+        ...history.querySelectorAll(".card")
+      ];
+
+      if(!cards.length)return;
+
+      const groups=new Map();
+
+      cards.forEach(card=>{
+        const match=card.textContent.match(
+          /\d{4}-\d{2}-\d{2}/
+        );
+
+        const day=match?
+          match[0]:"Other entries";
+
+        if(!groups.has(day)){
+          groups.set(day,[]);
+        }
+
+        groups.get(day).push(card);
+      });
+
+      history.replaceChildren();
+
+      [...groups.keys()].sort().reverse()
+        .forEach(day=>{
+          const section=document.createElement("div");
+          section.className="diary-day";
+
+          const title=document.createElement("h3");
+          title.textContent="📅 "+day;
+
+          section.appendChild(title);
+
+          groups.get(day).forEach(card=>{
+            section.appendChild(card);
+          });
+
+          history.appendChild(section);
+        });
+
+    }finally{
+      organizing=false;
+    }
+  }
+
+  // Reorganize after meal history updates.
+  let scheduled=false;
+
+  const observer=new MutationObserver(()=>{
+    if(organizing||scheduled)return;
+
+    if(history.querySelector(
+      ":scope > .card"
+    )){
+      scheduled=true;
+      requestAnimationFrame(()=>{
+        scheduled=false;
+        organizeDiary();
+      });
+    }
+  });
+
+  observer.observe(history,{
+    childList:true
+  });
+
+  organizeDiary();
+})();
+</script>
+
 </body></html>
