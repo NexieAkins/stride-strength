@@ -23,6 +23,7 @@ else if(/standing core/i.test(p[1])){today.append(action('Start standing core',(
 else{today.append(action('Plan today’s workout',()=>{$('trainFocus').value=/lower|leg/i.test(p[1])?'lower':/back/i.test(p[1])?'upperback':/upper/i.test(p[1])?'upper':/core/i.test(p[1])?'core':'full';select('plan');}));}
 tracker.querySelector('p')?.replaceChildren(document.createTextNode('Start a workout or resume a saved session.'));
 }
+window.addEventListener('stride-plan-workout',()=>select('plan'));window.addEventListener('stride-session-start',()=>select('today'));
 const originalStart=window.strideSessionTracker.start;window.strideSessionTracker.start=function(...args){originalStart(...args);if(window.strideSessionTracker.isActive()){select('today');tracker.scrollIntoView({behavior:'smooth',block:'start'});}};
 const originalRender=render;render=function(){originalRender();update();};
 const style=node('style');style.textContent='#trainingTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:5px;background:var(--card);border-radius:12px;margin:16px 0}#trainingTabs button{background:transparent;color:var(--muted);padding:10px 4px}#trainingTabs button[aria-selected=true]{background:var(--accent);color:var(--on-accent)}#todayTraining button{margin:4px 4px 4px 0}#trainingWeek summary{cursor:pointer;font-weight:700}#trainingView-today #sessionTracker>h2{margin-top:0}';document.head.append(style);
