@@ -16,3 +16,21 @@ Sign in to Supabase in the app. Under Meals, describe a meal and/or select a pho
 This version requires Netlify Functions and a valid OpenAI API key. Netlify's static-only deployment or copying only index.html will not enable AI analysis. Estimates are not precise nutrition facts. Keep your previous backup before replacing files.
 
 This endpoint verifies Supabase authentication before using OpenAI. For a public/multi-user deployment, add per-user rate limiting, quotas, monitoring and spending limits before launch.
+
+## V4
+
+V4 adds Achievements, an integrated five-category Core Workout Library with an 8-minute option, guided stretches, meal camera capture/preview, and Edit/Delete for meal, workout and weight history. Include `v4.js` alongside `index.html` when deploying. The original `netlify/functions/analyze-meal.js` and `netlify.toml` remain required. Deploy to the existing Netlify site to retain its configured environment variables.
+
+Core completion uses the existing `workouts` table. Editing upserts the original record ID; deleting sends a user-scoped delete to the existing table and retries on sync failure. No new tables or credentials are required. See `V4-VERIFICATION.md` for test evidence and remaining live checks.
+
+### Tests
+
+Install `jsdom` and `playwright` in a separate test environment, then run:
+
+```sh
+node meal-function.cjs
+node v4.dom.cjs
+node v4.browser.cjs
+```
+
+Browser tests require `playwright install chromium`. Tests use fake records and mocked cloud/AI services; they never write to production Supabase.
