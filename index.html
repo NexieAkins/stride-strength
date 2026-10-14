@@ -195,15 +195,21 @@ async function loadCloud(){
  }catch(e){message('Could not load cloud records: '+e.message)}
  finally{loading=false;document.querySelector('main').inert=!loaded}
 }
+let authBusy=false;
 async function login(signup){
  const email=$('authEmail').value.trim(),password=$('authPassword').value;
- if(!email||!password)return;
+ if(authBusy||!$('loginForm').reportValidity()||!email||!password)return;
+ authBusy=true;
+ const buttons=[...$('loginForm').querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);
  message(signup?'Creating account…':'Signing in…');
+ try{
  const {data,error}=signup?
  await client.auth.signUp({email,password}):
  await client.auth.signInWithPassword({email,password});
- if(error){message(error.message);return}
+ if(error){message(error.code==='over_email_send_rate_limit'||/email rate limit exceeded/i.test(error.message)?'Account confirmation emails are temporarily unavailable. Please try again later. If you already confirmed your account, use Sign in.':error.message);return}
  if(signup&&!data.session)message('Check your email for a confirmation link, then sign in.');
+ }catch(e){message('Could not connect. Please try again.');}
+ finally{authBusy=false;buttons.forEach(b=>b.disabled=false);}
 }
 $('loginForm').onsubmit=e=>{e.preventDefault();login(false)};
 $('signup').onclick=()=>login(true);
