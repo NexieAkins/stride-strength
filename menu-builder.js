@@ -49,7 +49,7 @@
 
     <label>Foods I enjoy</label>
     <textarea id="menuLikes"
-      placeholder="e.g. Nigerian meals, rice, chicken, eggs">
+      placeholder="e.g. lentils, vegetables, rice, eggs, chicken, family favourites">
     </textarea>
 
     <label>Foods to avoid / allergies</label>
@@ -160,6 +160,7 @@
 
       const payload = {
         action: $("menuAction").value,
+        style: $("mealStyle").value,
         replace: $("menuReplace").value,
         likes: $("menuLikes").value,
         avoid: $("menuAvoid").value,

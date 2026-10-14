@@ -99,6 +99,7 @@ exports.handler = async function (event) {
 
     const prompt = [
       "Task: " + action,
+      "Meal preference: " + ({balanced:"Balanced meals",protein:"Higher-protein meals",plant:"Plant-based meals without meat, fish, eggs or dairy",custom:"User-supplied food preferences"}[input.style] || "User-supplied food preferences"),
       "Meal to replace: " +
         String(input.replace || "").slice(0, 300),
       "Preferred foods: " +
@@ -130,7 +131,7 @@ exports.handler = async function (event) {
               content:
                 "You are a nutrition menu assistant. " +
                 "Create practical meal suggestions. " +
-                "Respect food allergies and restrictions. " +
+                "Respect food allergies, restrictions, and the selected meal preference. Use the foods and food culture the user supplies, never assume a nationality. " +
                 "If substituting, offer three alternatives " +
                 "with estimated calories and protein. " +
                 "If building, create one daily menu with " +
