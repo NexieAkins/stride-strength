@@ -2,7 +2,7 @@ name: TestFlight upload
 on:
   push:
     branches: [native/store-launch]
-    paths: ['.github/workflows/testflight.yml', 'mobile/scripts/sign-ios.sh', 'mobile/scripts/prepare-signing.py']
+    paths: ['.github/workflows/testflight.yml', 'mobile/scripts/sign-ios.sh', 'mobile/scripts/prepare-signing.py', 'mobile/ios/App/App/SceneDelegate.swift', 'v5-ui.js', 'mobile/scripts/layout-qa.cjs']
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,6 +26,10 @@ jobs:
       - run: npm run sync
         working-directory: mobile
       - run: brew install xcodegen
+      - name: Check phone layout with WebKit
+        run: |
+          npx playwright install webkit
+          node mobile/scripts/layout-qa.cjs
       - name: Sign and upload to TestFlight
         run: bash mobile/scripts/sign-ios.sh
         env:
