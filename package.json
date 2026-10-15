@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.cjs",
-    "test": "node test-session-dom.cjs && node test-kitchen.cjs && node test-photos.cjs && node test-photo-policies.cjs && node test-onboarding.cjs && node test-nutrition-targets.cjs && node test-workout-checkin.cjs && node test-kitchen-quality.cjs",
+    "test": "node test-session-dom.cjs && node test-kitchen.cjs && node test-photos.cjs && node test-photo-policies.cjs && node test-onboarding.cjs && node test-nutrition-targets.cjs && node test-workout-checkin.cjs && node test-kitchen-quality.cjs && node test-kitchen-cuisine.cjs",
     "test:browser": "node test-session.cjs"
   },
   "devDependencies": {

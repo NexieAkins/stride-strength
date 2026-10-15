@@ -16,7 +16,7 @@ const plan=meals=>({title:'Kitchen plan',note:'Leave ingredients unused when the
 (async()=>{
 process.env.OPENAI_API_KEY='test';let requests=[];
 global.fetch=async(url,options)=>{if(url.includes('/auth/v1/user'))return {ok:true,json:async()=>({id:'user'})};requests.push(JSON.parse(options.body));return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(requests.length===1?plan([garri,shake]):plan([good]))}}]})};};
-let response=await handler(event);assert.equal(response.statusCode,200);assert.equal(requests.length,2);let output=JSON.parse(response.body);assert.deepEqual(output.meals.map(m=>m.name),[good.name]);assert.equal(output.planner_version,2);assert.equal(response.headers['X-Kitchen-Planner-Version'],'2');assert.match(requests[1].messages[1].content,/cold-soaked/);assert.match(requests[1].messages[1].content,/Meat\/offal/);
+let response=await handler(event);assert.equal(response.statusCode,200);assert.equal(requests.length,3);let output=JSON.parse(response.body);assert.deepEqual(output.meals.map(m=>m.name),[good.name]);assert.equal(output.planner_version,3);assert.equal(response.headers['X-Kitchen-Planner-Version'],'3');assert.match(requests[1].messages[1].content,/cold-soaked/);assert.match(requests[1].messages[1].content,/Meat\/offal/);
 // Even if the second model repeats both mistakes, neither recipe can reach the user.
 global.fetch=async url=>url.includes('/auth/v1/user')?{ok:true,json:async()=>({id:'user'})}:{ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(plan([garri,shake,good]))}}]})};
 response=await handler(event);assert.equal(response.statusCode,200);output=JSON.parse(response.body);assert.deepEqual(output.meals.map(m=>m.name),[good.name]);
