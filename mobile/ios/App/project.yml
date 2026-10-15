@@ -26,9 +26,11 @@ targets:
         buildPhase: resources
     info:
       path: App/Info.plist
+      properties: {"CAPACITOR_DEBUG": "$(CAPACITOR_DEBUG)", "CFBundleDevelopmentRegion": "en", "CFBundleDisplayName": "Stride & Strength", "CFBundleExecutable": "$(EXECUTABLE_NAME)", "CFBundleIdentifier": "$(PRODUCT_BUNDLE_IDENTIFIER)", "CFBundleInfoDictionaryVersion": "6.0", "CFBundleName": "$(PRODUCT_NAME)", "CFBundlePackageType": "APPL", "CFBundleShortVersionString": "$(MARKETING_VERSION)", "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)", "LSRequiresIPhoneOS": true, "NSCameraUsageDescription": "Take equipment and running-plan photos when you choose to.", "NSLocationWhenInUseUsageDescription": "Measure outdoor running distance and pace while you track a run.", "NSPhotoLibraryUsageDescription": "Choose photos for meal planning, equipment guidance and your private progress log.", "UIApplicationSceneManifest": {"UIApplicationSupportsMultipleScenes": false, "UISceneConfigurations": {"UIWindowSceneSessionRoleApplication": [{"UISceneConfigurationName": "Default Configuration", "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate", "UISceneStoryboardFile": "Main"}]}}, "UILaunchStoryboardName": "LaunchScreen", "UIMainStoryboardFile": "Main", "UIRequiredDeviceCapabilities": ["armv7"], "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"], "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"], "UIViewControllerBasedStatusBarAppearance": true}
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.strideandstrength.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: '1,2'
         INFOPLIST_KEY_CFBundleDisplayName: Stride & Strength
     dependencies:
