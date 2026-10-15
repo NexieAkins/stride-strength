@@ -160,6 +160,7 @@
 
       const payload = {
         action: $("menuAction").value,
+        training_context: window.strideTrainingContext?.($("mealTrainingDate")?.value),
         style: $("mealStyle").value,
         replace: $("menuReplace").value,
         likes: $("menuLikes").value,

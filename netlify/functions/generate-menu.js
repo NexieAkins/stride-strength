@@ -1,3 +1,4 @@
+const training=require('./lib/training-context.cjs');
 
 const SUPABASE_URL =
   "https://gwagccrxnqicorqmcrma.supabase.co";
@@ -10,7 +11,8 @@ function reply(statusCode, body) {
     statusCode,
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "no-store"
+      "Cache-Control": "no-store",
+      "X-Training-Context-Version": "1"
     },
     body: JSON.stringify(body)
   };
@@ -99,6 +101,7 @@ exports.handler = async function (event) {
 
     const prompt = [
       "Task: " + action,
+      "Planned training: " + JSON.stringify(training.sanitize(input.training_context)),
       "Meal preference: " + ({balanced:"Balanced meals",protein:"Higher-protein meals",plant:"Plant-based meals without meat, fish, eggs or dairy",custom:"User-supplied food preferences"}[input.style] || "User-supplied food preferences"),
       "Meal to replace: " +
         String(input.replace || "").slice(0, 300),
@@ -129,7 +132,7 @@ exports.handler = async function (event) {
             {
               role: "system",
               content:
-                "You are a nutrition menu assistant. " +
+                training.instructions + " You are a nutrition menu assistant. " +
                 "Create practical meal suggestions. " +
                 "Respect food allergies, restrictions, and the selected meal preference. Use the foods and food culture the user supplies, never assume a nationality. " +
                 "If substituting, offer three alternatives " +
