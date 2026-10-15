@@ -1,0 +1,46 @@
+name: Mobile build validation
+on:
+  push:
+    branches: [native/store-launch]
+    paths: ['mobile/**', '.github/workflows/mobile-validation.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ios-watch:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
+        working-directory: mobile
+      - run: npm run sync
+        working-directory: mobile
+      - run: brew install xcodegen
+      - run: xcodegen generate
+        working-directory: mobile/ios/App
+      - run: xcodebuild -project mobile/ios/App/App.xcodeproj -scheme App -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/stride-derived CODE_SIGNING_ALLOWED=NO build
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
+        working-directory: mobile
+      - run: npm run sync
+        working-directory: mobile
+      - run: chmod +x gradlew && ./gradlew assembleDebug
+        working-directory: mobile/android
