@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.cjs",
-    "test": "node test-session-dom.cjs && node test-kitchen.cjs && node test-photos.cjs && node test-photo-policies.cjs && node test-onboarding.cjs && node test-nutrition-targets.cjs && node test-workout-checkin.cjs && node test-kitchen-quality.cjs && node test-kitchen-cuisine.cjs && node test-run-log.cjs && node test-equipment-photo.cjs && node test-session-close.cjs && node test-short-workouts.cjs && node test-workout-history.cjs && node test-run-review.cjs && node test-running-plan.cjs && node test-training-context.cjs",
+    "test": "node test-session-dom.cjs && node test-kitchen.cjs && node test-photos.cjs && node test-photo-policies.cjs && node test-onboarding.cjs && node test-nutrition-targets.cjs && node test-workout-checkin.cjs && node test-kitchen-quality.cjs && node test-kitchen-cuisine.cjs && node test-run-log.cjs && node test-equipment-photo.cjs && node test-session-close.cjs && node test-short-workouts.cjs && node test-workout-history.cjs && node test-run-review.cjs && node test-running-plan.cjs && node test-training-context.cjs && node test-nutrition-history.cjs",
     "test:browser": "node test-session.cjs"
   },
   "devDependencies": {
