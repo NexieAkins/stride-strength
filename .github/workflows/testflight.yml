@@ -2,7 +2,7 @@ name: TestFlight upload
 on:
   push:
     branches: [native/store-launch]
-    paths: ['.github/workflows/testflight.yml', 'mobile/scripts/sign-ios.sh', 'mobile/scripts/prepare-signing.py', 'mobile/ios/App/App/SceneDelegate.swift', 'v5-ui.js', 'run-log.js', 'mobile/scripts/layout-qa.cjs']
+    paths: ['.github/workflows/testflight.yml', 'mobile/scripts/sign-ios.sh', 'mobile/scripts/prepare-signing.py', 'mobile/ios/App/App/SceneDelegate.swift', 'workout-history.js', 'index.html', 'v5-ui.js', 'run-log.js', 'mobile/scripts/layout-qa.cjs']
   workflow_dispatch:
 permissions:
   contents: read

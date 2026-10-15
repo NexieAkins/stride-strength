@@ -401,8 +401,8 @@ get('aiUseEstimate').onclick=()=>{
           /\d{4}-\d{2}-\d{2}/
         );
 
-        const day=match?
-          match[0]:"Other entries";
+        const day=card.dataset.date||(match?
+          match[0]:"Other entries");
 
         if(!groups.has(day)){
           groups.set(day,[]);
@@ -419,7 +419,8 @@ get('aiUseEstimate').onclick=()=>{
           section.className="diary-day";
 
           const title=document.createElement("h3");
-          title.textContent="📅 "+day;
+          const parsed=new Date(day+"T12:00:00");
+          title.textContent=Number.isNaN(parsed.getTime())?day:parsed.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"});
 
           section.appendChild(title);
 
