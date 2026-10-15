@@ -59,7 +59,7 @@ foods.forEach(p=>{let x=document.createElement('div');x.className='card';x.textC
 $('saveGoals').onclick=()=>{if(db.profile?.user_id===window.cloudRecordOwner?.())db.profile.nutrition_mode='manual';db.goals={calories:Math.max(1200,Number($('calGoal').value)||1900),protein:Math.max(20,Number($('proGoal').value)||110)};save();render()};
 $('mealForm').onsubmit=e=>{e.preventDefault();db.meals.push({date:$('mealDate').value,type:$('mealType').value,food:$('food').value,calories:Number($('calories').value),protein:Number($('protein').value)});if(save()){$('food').value='';$('calories').value='';$('protein').value='';render()}};
 $('addWater').onclick=()=>{db.water[today]=(db.water[today]||0)+1;save();render()};
-$('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}};
+$('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('workoutDate').value,type:$('workoutType').value,miles:Number($('distance').value)||0,minutes:Number($('duration').value)||0,notes:$('notes').value,energy:$('energy').value,soreness:$('soreness').value});if(save()){$('status').textContent='Workout saved';$('workoutForm').reset();$('workoutDate').value=today;render()}else{db.workouts.pop();$('status').textContent='Could not save the workout. Your entry is still here; try again.'}};
 $('weightForm').onsubmit=e=>{e.preventDefault();let w=Number($('weightValue').value);db.weights.push({date:$('weightDate').value,weight:$('weightUnit').value==='kg'?w*2.20462262:w});if(save()){$('status').textContent='Weight saved';$('weightValue').value='';render()}};
 function total(a,k){return a.reduce((s,x)=>s+(Number(x[k])||0),0)}
 function history(id,items,fmt){let box=$(id);box.replaceChildren();if(!items.length){box.textContent='No entries yet';return}items.slice().reverse().forEach(item=>{let x=document.createElement('div');x.className='card';x.textContent=fmt(item);box.appendChild(x)})}
@@ -99,6 +99,7 @@ save();render();
 <script src="workout-utils.js"></script>
 <script src="training-loads.js"></script>
 <script src="energy-estimate.js"></script>
+<script src="run-tracking-utils.js"></script>
 <script src="running-plan-utils.js"></script>
 <script src="photo-input.js"></script>
 <script src="v4.js"></script>
@@ -473,5 +474,6 @@ get('aiUseEstimate').onclick=()=>{
 <script src="./workout-history.js"></script>
 <script src="./running-plan.js"></script>
 <script src="./training-context.js"></script>
+<script src="./run-tracker.js"></script>
 </body></html>
 
