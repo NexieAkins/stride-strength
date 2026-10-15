@@ -23,6 +23,7 @@ for kind, bundle in [('ios', 'com.strideandstrength.app'), ('watch', 'com.stride
     marker = '        PRODUCT_BUNDLE_IDENTIFIER: ' + bundle + '\n'
     assert marker in spec, 'Missing target in project specification'
     spec = spec.replace(marker, marker + '        CODE_SIGN_STYLE: Manual\n        CODE_SIGN_IDENTITY: Apple Distribution\n        DEVELOPMENT_TEAM: ' + team + '\n        PROVISIONING_PROFILE_SPECIFIER: ' + p['UUID'] + '\n')
+spec = spec.replace('        WKApplication: true', '        CFBundleVersion: \"$(CURRENT_PROJECT_VERSION)\"\n        CFBundleShortVersionString: \"$(MARKETING_VERSION)\"\n        WKApplication: true')
 spec_path.write_text(spec)
 # A watchOS app requires a separate app-icon catalog even when sharing the initial test artwork.
 icons = pathlib.Path('mobile/watch/Assets.xcassets/AppIcon.appiconset')
