@@ -1,0 +1,7 @@
+(function(root){
+'use strict';
+const normalize=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+function history(workouts){const found=new Set(),rows=[];for(const w of workouts.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)))){for(const e of w.session?.exercises||[]){const name=normalize(e.name);if(found.has(name))continue;const sets=(e.sets||[]).filter(s=>s.done&&Number.isFinite(s.weight)&&s.weight>0&&['lb','kg'].includes(s.weightUnit));if(!sets.length)continue;const unit=sets[0].weightUnit,weights=sets.filter(s=>s.weightUnit===unit).map(s=>s.weight);rows.push({name:e.name,weight:Math.min(...weights),unit,date:w.date});found.add(name);if(rows.length>=20)return rows;}}return rows;}
+function apply(plan,rows=[]){plan.exercises.forEach(e=>{const previous=rows.find(r=>normalize(r.name)===normalize(e.name));if(previous){e.starting_weight=previous.weight;e.weight_unit=previous.unit;e.load='Last logged starting load: '+previous.weight+' '+previous.unit+' ('+previous.date+'). Begin with a lighter warm-up; use this reference only on comparable equipment and adjust for today.';}else if(/machine|cable|pulldown/i.test(e.name)){e.load='No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.';}});return plan;}
+root.strideTrainingLoads={history,apply};if(typeof module==='object')module.exports=root.strideTrainingLoads;
+})(typeof window==='object'?window:globalThis);

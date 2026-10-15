@@ -63,7 +63,7 @@ $('workoutForm').onsubmit=e=>{e.preventDefault();db.workouts.push({date:$('worko
 $('weightForm').onsubmit=e=>{e.preventDefault();let w=Number($('weightValue').value);db.weights.push({date:$('weightDate').value,weight:$('weightUnit').value==='kg'?w*2.20462262:w});if(save()){$('status').textContent='Weight saved';$('weightValue').value='';render()}};
 function total(a,k){return a.reduce((s,x)=>s+(Number(x[k])||0),0)}
 function history(id,items,fmt){let box=$(id);box.replaceChildren();if(!items.length){box.textContent='No entries yet';return}items.slice().reverse().forEach(item=>{let x=document.createElement('div');x.className='card';x.textContent=fmt(item);box.appendChild(x)})}
-function render(){$('homeStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles';let m=db.meals.filter(x=>x.date===today);$('nutrition').textContent=total(m,'calories')+' / '+db.goals.calories+' kcal · '+total(m,'protein').toFixed(1)+' / '+db.goals.protein+' g protein';$('water').textContent=(db.water[today]||0)+' glasses of water';let w=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=w.at(-1),prev=w.at(-2);$('progressStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles · Latest weight: '+(last?Number(last.weight).toFixed(1)+' lb':'—')+' · Change: '+(last&&prev?(last.weight-prev.weight).toFixed(1)+' lb':'—');history('weightHistory',w,x=>x.date+' · '+Number(x.weight).toFixed(1)+' lb');history('workoutHistory',db.workouts,x=>x.date+' · '+x.type+' · '+(x.miles||0)+' mi · '+(x.minutes||0)+' min · '+(x.notes||''));history('mealHistory',db.meals,x=>x.date+' · '+x.food+' · '+x.calories+' kcal · '+x.protein+'g')}
+function render(){$('homeStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles';let m=db.meals.filter(x=>x.date===today);$('nutrition').textContent=total(m,'calories')+' / '+db.goals.calories+' kcal · '+total(m,'protein').toFixed(1)+' / '+db.goals.protein+' g protein';$('water').textContent=(db.water[today]||0)+' glasses of water';let w=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=w.at(-1),prev=w.at(-2);$('progressStats').textContent=db.workouts.length+' workouts · '+total(db.workouts,'miles').toFixed(1)+' miles · Latest weight: '+(last?Number(last.weight).toFixed(1)+' lb':'—')+' · Change: '+(last&&prev?(last.weight-prev.weight).toFixed(1)+' lb':'—');history('weightHistory',w,x=>x.date+' · '+Number(x.weight).toFixed(1)+' lb');history('workoutHistory',db.workouts,x=>x.date+' · '+x.type+' · '+(x.miles||0)+' mi · '+(window.strideWorkoutUtils?.formatDuration(x.minutes)||(x.minutes||0)+' min')+' · '+(x.notes||''));history('mealHistory',db.meals,x=>x.date+' · '+x.food+' · '+x.calories+' kcal · '+x.protein+'g')}
 
 const originalRender=render;
 render=function(){
@@ -96,6 +96,9 @@ $('daily').onclick=()=>report(false);$('weekly').onclick=()=>report(true);
 $('backup').onclick=()=>{let u=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='stride-strength-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 save();render();
 </script>
+<script src="workout-utils.js"></script>
+<script src="training-loads.js"></script>
+<script src="photo-input.js"></script>
 <script src="v4.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -463,5 +466,7 @@ get('aiUseEstimate').onclick=()=>{
 <script src="./nutrition-targets.js"></script>
 <script src="./onboarding.js"></script>
 <script src="./workout-checkin.js"></script>
+<script src="./run-log.js"></script>
+<script src="./equipment-photo.js"></script>
 </body></html>
 
