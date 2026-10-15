@@ -16,10 +16,13 @@ const plan=meals=>({title:'Kitchen plan',note:'Leave ingredients unused when the
 (async()=>{
 process.env.OPENAI_API_KEY='test';let requests=[];
 global.fetch=async(url,options)=>{if(url.includes('/auth/v1/user'))return {ok:true,json:async()=>({id:'user'})};requests.push(JSON.parse(options.body));return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(requests.length===1?plan([garri,shake]):plan([good]))}}]})};};
-let response=await handler(event);assert.equal(response.statusCode,200);assert.equal(requests.length,3);let output=JSON.parse(response.body);assert.deepEqual(output.meals.map(m=>m.name),[good.name]);assert.equal(output.planner_version,3);assert.equal(response.headers['X-Kitchen-Planner-Version'],'3');assert.match(requests[1].messages[1].content,/cold-soaked/);assert.match(requests[1].messages[1].content,/Meat\/offal/);
+let response=await handler(event);assert.equal(response.statusCode,200);assert.equal(requests.length,3);let output=JSON.parse(response.body);assert.deepEqual(output.meals.map(m=>m.name),[good.name]);assert.equal(output.planner_version,4);assert.equal(response.headers['X-Kitchen-Planner-Version'],'4');assert.match(requests[1].messages[1].content,/cold-soaked/);assert.match(requests[1].messages[1].content,/Meat\/offal/);
 // Even if the second model repeats both mistakes, neither recipe can reach the user.
 global.fetch=async url=>url.includes('/auth/v1/user')?{ok:true,json:async()=>({id:'user'})}:{ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(plan([garri,shake,good]))}}]})};
 response=await handler(event);assert.equal(response.statusCode,200);output=JSON.parse(response.body);assert.deepEqual(output.meals.map(m=>m.name),[good.name]);
+// Keep an otherwise sensible dish when the only defect is calorie arithmetic.
+global.fetch=async url=>url.includes('/auth/v1/user')?{ok:true,json:async()=>({id:'user'})}:{ok:true,json:async()=>({choices:[{message:{content:JSON.stringify({title:'Three meals',note:'This plan includes three meals.',meals:[{...good,calories:900}]})}}]})};
+response=await handler(event);output=JSON.parse(response.body);assert.equal(output.meals.length,1);assert.equal(output.meals[0].calories,280);assert.doesNotMatch(output.note,/includes three meals/);assert.match(output.note,/Still needed: Lunch, Dinner/);
 // A failed review must never fall back to the unchecked first draft.
 let count=0;global.fetch=async url=>{if(url.includes('/auth/v1/user'))return {ok:true,json:async()=>({id:'user'})};return ++count===1?{ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(plan([good]))}}]})}:{ok:false};};assert.equal((await handler(event)).statusCode,502);
 console.log('PASS: screenshot regressions, renamed meat/powder dishes, assumed prep, calorie consistency, legitimate eba, independent repair, fail-closed review and final deterministic filtering.');
