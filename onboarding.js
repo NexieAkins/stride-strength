@@ -43,6 +43,6 @@ const finished=p?.onboarding_completed_at;const existing=db.workouts.length||db.
 if(!finished&&!existing&&!dismissed.has(id)&&!dialog.open)open();}
 window.addEventListener('stride-account-change',()=>{if(dialog.open)dialog.close();editingOwner=null;seenOwner=null;});
 const edit=$('setName');edit.textContent='Edit fitness profile';edit.onclick=open;
-const previousSave=save;save=function(){const p=db.profile;if(p?.user_id===owner()&&p.nutrition_mode==='auto'){const weight=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)).at(-1)?.weight,t=window.strideNutritionEstimate(p,weight);if(t){db.goals={calories:t.calories,protein:t.protein};$('calGoal').value=t.calories;$('proGoal').value=t.protein;}}return previousSave();};
+const previousSave=save;save=function(){const p=db.profile;if(p&&p.user_id===owner()&&p.nutrition_mode==='auto'){const weight=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)).at(-1)?.weight,t=window.strideNutritionEstimate(p,weight);if(t){db.goals={calories:t.calories,protein:t.protein};$('calGoal').value=t.calories;$('proGoal').value=t.protein;}}return previousSave();};
 window.strideOnboarding={open,update};const previous=render;render=function(){previous();update();};update();
 })();
