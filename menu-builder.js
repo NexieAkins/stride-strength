@@ -74,10 +74,7 @@
       <label>Suggested menu (editable)</label>
       <textarea id="menuDraft" rows="12"></textarea>
 
-      <p>
-        Review the suggested portions and nutrition.
-        This is not automatically added to your food diary.
-      </p>
+      <p>Review, then add it to your diary if it looks right.</p>
 
       <button type="button" id="menuCopy">
         Copy Menu
