@@ -14,7 +14,7 @@
 <button type="submit">Sign in</button><button type="button" id="signup">Create account</button></form></div>
 <div id="signedIn" class="hidden"><p id="accountEmail"></p>
 <button id="cloudRefresh">Refresh cloud data</button><button id="cloudImport">Import this browser's saved records</button>
-<button id="signout">Sign out</button><p class="muted">Import is optional and merges records into your cloud account. Export a backup first.</p></div>
+<button id="signout">Sign out</button><button id="deleteAccount" type="button">Delete account</button><p class="muted">Import is optional and merges records into your cloud account. Export a backup first. Deleting your account permanently removes your cloud records and private photos.</p></div>
 <p id="cloudStatus" role="status">Cloud connection loading…</p></div><main>
 <section id="home"><div class="hero"><h2>Your strength. Your stride.</h2><button data-go="log">Log workout →</button></div><div class="card" id="homeStats"></div><h2>Your weekly schedule</h2><div id="schedule"></div></section>
 <section id="train" class="hidden"><h2>Interactive training</h2><p>Select a day and check off activities. Monday and Wednesday standing core are flexible, and extra activities can be logged separately. Follow your own running plan on running days.</p><select id="daySelect"></select><div id="dayDetails" class="card"></div><button data-go="log">Log workout →</button></section>
@@ -222,6 +222,32 @@ async function login(signup){
 $('loginForm').onsubmit=e=>{e.preventDefault();login(false)};
 $('signup').onclick=()=>login(true);
 $('signout').onclick=async()=>{clearTimeout(pending);await writeCloud();await client.auth.signOut();message('Signed out. Local data remains on this device.')};
+$('deleteAccount').onclick=async()=>{
+ if(!user||authBusy)return;
+ if(!confirm('Permanently delete your account and all cloud records and private photos? This cannot be undone. Export a backup first if you want a copy.'))return;
+ if(!confirm('Final confirmation: delete your account now?'))return;
+ authBusy=true;clearTimeout(pending);
+ const buttons=[...document.querySelectorAll('#signedIn button')];buttons.forEach(b=>b.disabled=true);
+ message('Deleting your account…');
+ try{
+  const bucket='stride-transformation-private-v5';
+  const {data:photos,error:photoError}=await client.from('transformation_photos').select('storage_path').eq('user_id',user.id);
+  if(photoError)throw photoError;
+  const paths=(photos||[]).map(p=>p.storage_path).filter(p=>typeof p==='string'&&p.startsWith(user.id+'/'));
+  for(let i=0;i<paths.length;i+=100){
+   const {error}=await client.storage.from(bucket).remove(paths.slice(i,i+100));
+   if(error)throw error;
+  }
+  const {error:rpcError}=await client.rpc('delete_my_account');
+  if(rpcError)throw rpcError;
+  await client.auth.signOut();
+  message('Your account and cloud records were deleted. Records saved only on this device stay here until you clear this browser’s data.');
+ }catch(e){
+  message('Could not finish deleting your account. Some photos may already be removed. Check your connection and try again, or contact support.');
+ }finally{
+  authBusy=false;buttons.forEach(b=>b.disabled=false);
+ }
+};
 $('cloudRefresh').onclick=loadCloud;
 $('cloudImport').onclick=async()=>{
  if(!user)return;
@@ -476,5 +502,9 @@ get('aiUseEstimate').onclick=()=>{
 <script src="./running-plan.js"></script>
 <script src="./training-context.js"></script>
 <script src="./run-tracker.js"></script>
+<footer class="muted" style="max-width:720px;margin:24px auto;padding:0 16px;font-size:.9em">
+<p>Stride &amp; Strength is a fitness and nutrition tracking tool, not medical advice. Calorie, energy and nutrition estimates are approximate. Talk with a doctor or qualified professional before starting a new exercise or nutrition plan, especially if you are pregnant, recovering from illness or injury, or managing a health condition.</p>
+<p><a href="privacy.html">Privacy policy</a> · <a href="privacy.html#delete">Delete your account</a></p>
+</footer>
 </body></html>
 
