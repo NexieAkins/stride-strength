@@ -30,6 +30,7 @@
   if (account) {
     const fold = document.createElement("details");
     fold.className = "calm-account";
+    fold.open = true;
 
     const heading = document.createElement("summary");
     heading.textContent = "⚙ Account & Sync";
