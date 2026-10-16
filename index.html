@@ -93,8 +93,8 @@ render=function(){
  const x=i=>45+(weights.length===1?275:i*550/(weights.length-1)),y=v=>205-(v-low)/(high-low)*165;
  for(let i=0;i<4;i++){let v=low+(high-low)*i/3;add('line',{x1:45,y1:y(v),x2:610,y2:y(v),stroke:'#475569','stroke-width':1});add('text',{x:3,y:y(v)+4,fill:'#b6c4d9','font-size':13},v.toFixed(1))}
  const points=vals.map((v,i)=>x(i)+','+y(v)).join(' ');
- if(vals.length>1)add('polyline',{points,fill:'none',stroke:'#a5b4fc','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'});
- vals.forEach((v,i)=>add('circle',{cx:x(i),cy:y(v),r:5,fill:'#a5b4fc'}));
+ if(vals.length>1)add('polyline',{points,fill:'none',stroke:getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#a5b4fc",'stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'});
+ vals.forEach((v,i)=>add('circle',{cx:x(i),cy:y(v),r:5,fill:getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#a5b4fc"}));
  $('weightGraphNote').textContent=weights.length+' weigh-in(s) · '+weights[0].date+' to '+weights.at(-1).date+' · latest '+vals.at(-1).toFixed(1)+' lb';
 };
 function report(weekly){let d=new Date();if(weekly)d.setDate(d.getDate()-6);let from=date(d),within=x=>x.date>=from&&x.date<=today,w=db.workouts.filter(within),m=db.meals.filter(within),weights=db.weights.filter(within).sort((a,b)=>a.date.localeCompare(b.date));let text=['STRIDE & STRENGTH '+(weekly?'WEEKLY':'DAILY')+' REPORT','Period: '+from+' to '+today,'Workouts: '+w.length,'Running: '+total(w,'miles').toFixed(2)+' miles',...w.map(x=>x.type+'; '+(x.notes||'')+'; energy '+(x.energy||'N/A')+'; soreness '+(x.soreness||'N/A')),'Meals logged: '+m.length,'Calories logged: '+total(m,'calories'),'Protein logged: '+total(m,'protein').toFixed(1)+' g','Weight: '+(weights.length?weights.at(-1).weight.toFixed(1)+' lb':'not logged'),'Please review my progress and suggest adjustments.'].join('\n');if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>$('reportStatus').textContent='Copied! Paste into ChatGPT.').catch(()=>prompt('Copy report',text));else prompt('Copy report',text)}
@@ -348,7 +348,7 @@ get('aiUseEstimate').onclick=()=>{
 <style>
 /* Cleaner meal diary */
 #mealRecommendations {
-  background:#1b273a;
+  background:var(--card,#1b273a);
   border-radius:15px;
   padding:16px;
   margin:14px 0;
@@ -366,8 +366,8 @@ get('aiUseEstimate').onclick=()=>{
   margin:8px 0;
 }
 #mealHistory .diary-day {
-  background:#152033;
-  border:1px solid #334155;
+  background:var(--card,#152033);
+  border:1px solid var(--soft,#334155);
   border-radius:14px;
   padding:12px;
   margin:14px 0;
@@ -379,7 +379,7 @@ get('aiUseEstimate').onclick=()=>{
   margin:5px 0;
   padding:12px;
   border-radius:8px;
-  background:#24334a;
+  background:var(--soft,#24334a);
   font-size:13px;
   line-height:1.5;
 }

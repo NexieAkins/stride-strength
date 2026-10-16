@@ -3,9 +3,9 @@
 
 :root {
   --bg: #0d1424;
-  --surface: #192438;
-  --surface-soft: #202e43;
-  --border: #304158;
+  --surface: var(--card, #192438);
+  --surface-soft: var(--soft, #202e43);
+  --border: var(--soft, #304158);
   --text: #f5f7fc;
   --muted: #a9b8cc;
   --accent: #7568ed;
@@ -64,7 +64,7 @@ main > section {
 
 .hero {
   background: linear-gradient(
-    125deg, #443a9b, #145e77
+    125deg, var(--soft, #443a9b), var(--card, #145e77)
   );
   border-radius: 20px;
   padding: 24px;
@@ -101,9 +101,9 @@ summary:focus-visible {
 }
 
 input, textarea, select {
-  background: #111d2f;
+  background: var(--bg, #111d2f);
   color: var(--text);
-  border: 1px solid #43526a;
+  border: 1px solid var(--soft, #43526a);
   border-radius: 11px;
   padding: 12px;
   font: inherit;
@@ -200,7 +200,7 @@ nav {
   display: grid;
   grid-template-columns: repeat(6, minmax(0,1fr));
   gap: 3px;
-  background: #101a2b;
+  background: var(--bg, #101a2b);
   border-top: 1px solid var(--border);
   padding: 9px 5px max(
     12px, env(safe-area-inset-bottom)
@@ -324,3 +324,11 @@ main button:not(.link-btn){margin:5px 8px 5px 0}
 main .watch-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 main .watch-row button{margin:0;flex:1 1 140px}
 main button.secondary{background:var(--soft,#2b3a52);color:var(--fg,#fff)}
+
+/* Meal menu preview */
+.menu-preview{margin:10px 0}
+.menu-meal{background:var(--soft,#253852);border-radius:14px;padding:12px 14px;margin:8px 0}
+.menu-meal-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.menu-meal-head span{color:var(--muted,#a9bbd1);font-size:13px}
+.menu-meal ul{margin:6px 0 0;padding-left:18px}
+.menu-meal li{margin:2px 0}
