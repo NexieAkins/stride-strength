@@ -50,7 +50,7 @@ targets:
         WKApplication: true
         ITSAppUsesNonExemptEncryption: false
         WKCompanionAppBundleIdentifier: com.strideandstrength.app
-        NSHealthShareUsageDescription: Read heart rate and running distance during the workout you start.
+        NSHealthShareUsageDescription: Read heart rate, distance and active calories during the workout you start.
         NSHealthUpdateUsageDescription: Save the running workouts you finish to Apple Health.
         WKBackgroundModes: [workout-processing]
     entitlements:

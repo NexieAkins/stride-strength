@@ -17,6 +17,7 @@ struct StrideWatchApp: App {
                         }
                         Text(String(format: "%.2f mi", workout.metres / 1609.344))
                         Text(workout.heartRate > 0 ? "\(Int(workout.heartRate)) bpm" : "Heart rate —")
+                        Text("\(Int(workout.kcal)) active kcal")
                         if workout.state != "ended" {
                             Button(workout.state == "paused" ? "Resume" : "Pause") { workout.control(workout.state == "paused" ? "resume" : "pause") }
                             Button("Finish workout") { workout.control("finish") }
@@ -36,6 +37,7 @@ final class WatchWorkout: NSObject, ObservableObject, WCSessionDelegate, HKWorko
     @Published var state = "ready"
     @Published var metres = 0.0
     @Published var heartRate = 0.0
+    @Published var kcal = 0.0
     @Published var session: HKWorkoutSession?
     private let health = HKHealthStore()
     private var builder: HKLiveWorkoutBuilder?
@@ -56,7 +58,8 @@ final class WatchWorkout: NSObject, ObservableObject, WCSessionDelegate, HKWorko
         starting = true
         let heart = HKQuantityType.quantityType(forIdentifier: .heartRate)!
         let distance = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
-        health.requestAuthorization(toShare: [HKObjectType.workoutType()], read: [heart, distance]) { success, error in
+        let energy = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
+        health.requestAuthorization(toShare: [HKObjectType.workoutType()], read: [heart, distance, energy]) { success, error in
             DispatchQueue.main.async {
                 self.starting = false
                 guard success else { reply(["ok":false,"error":"Allow workout access on the watch to start."]); return }
@@ -67,7 +70,7 @@ final class WatchWorkout: NSObject, ObservableObject, WCSessionDelegate, HKWorko
                     builder.dataSource = HKLiveWorkoutDataSource(healthStore: self.health, workoutConfiguration: config)
                     session.delegate = self; builder.delegate = self
                     self.runId = id; self.session = session; self.builder = builder
-                    self.accumulated = 0; self.metres = 0; self.heartRate = 0
+                    self.accumulated = 0; self.metres = 0; self.heartRate = 0; self.kcal = 0
                     let now = Date(); self.runningSince = now; self.state = "running"; self.message = "Recording on your watch"
                     session.startActivity(with: now)
                     builder.beginCollection(withStart: now) { ok, _ in
@@ -89,7 +92,7 @@ final class WatchWorkout: NSObject, ObservableObject, WCSessionDelegate, HKWorko
         publish()
     }
     private func publish() {
-        let value: [String: Any] = ["runId":runId,"state":state,"elapsedSeconds":seconds,"distanceMeters":metres,"heartRate":Date().timeIntervalSince(lastHeartAt ?? .distantPast) <= 15 ? heartRate : 0,"measuredAt":Date().timeIntervalSince1970]
+        let value: [String: Any] = ["runId":runId,"state":state,"elapsedSeconds":seconds,"distanceMeters":metres,"activeKcal":kcal,"heartRate":Date().timeIntervalSince(lastHeartAt ?? .distantPast) <= 15 ? heartRate : 0,"measuredAt":Date().timeIntervalSince1970]
         guard WCSession.default.activationState == .activated else { return }
         try? WCSession.default.updateApplicationContext(value)
         if WCSession.default.isReachable { WCSession.default.sendMessage(value, replyHandler:nil, errorHandler:nil) }
@@ -112,6 +115,8 @@ final class WatchWorkout: NSObject, ObservableObject, WCSessionDelegate, HKWorko
                 if quantity.identifier == HKQuantityTypeIdentifier.heartRate.rawValue {
                     self.lastHeartAt = Date()
                     self.heartRate = stat.mostRecentQuantity()?.doubleValue(for: .count().unitDivided(by: .minute())) ?? 0
+                } else if quantity.identifier == HKQuantityTypeIdentifier.activeEnergyBurned.rawValue {
+                    self.kcal = stat.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? self.kcal
                 } else if quantity.identifier == HKQuantityTypeIdentifier.distanceWalkingRunning.rawValue {
                     self.metres = stat.sumQuantity()?.doubleValue(for:.meter()) ?? self.metres
                 }
