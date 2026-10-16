@@ -17,7 +17,7 @@ body:not(.authenticated) .calm-account{display:none}
 <h2 class="welcome-title">Welcome</h2><p class="welcome-sub">Sign in or create an account to keep your workouts, meals and progress synced across your devices.</p>
 <form id="loginForm"><label for="authEmail">Email</label><input id="authEmail" type="email" required autocomplete="email">
 <label for="authPassword">Password (at least 6 characters)</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password">
-<button type="submit">Sign in</button><button type="button" id="signup">Create account</button></form><p class="guest-row"><button type="button" id="continueGuest" class="link-btn">Continue without an account</button></p></div>
+<button type="submit">Sign in</button><button type="button" id="signup">Create account</button></form><p class="guest-row"><button type="button" id="forgotPw" class="link-btn">Forgot password?</button><br><button type="button" id="continueGuest" class="link-btn">Continue without an account</button></p></div>
 <div id="signedIn" class="hidden"><p id="accountEmail"></p>
 <button id="cloudRefresh">Refresh cloud data</button><button id="cloudImport">Import this browser's saved records</button>
 <button id="signout">Sign out</button><button id="deleteAccount" type="button">Delete account</button><p class="muted">Import is optional and merges records into your cloud account. Export a backup first. Deleting your account permanently removes your cloud records and private photos.</p></div>
@@ -218,15 +218,23 @@ async function login(signup){
  message(signup?'Creating account…':'Signing in…');
  try{
  const {data,error}=signup?
- await client.auth.signUp({email,password}):
+ await client.auth.signUp({email,password,options:{emailRedirectTo:'https://stridenstrength.com/'}}):
  await client.auth.signInWithPassword({email,password});
- if(error){message(error.code==='over_email_send_rate_limit'||/email rate limit exceeded/i.test(error.message)?'Account confirmation emails are temporarily unavailable. Please try again later. If you already confirmed your account, use Sign in.':error.message);return}
- if(signup&&!data.session)message('Check your email for a confirmation link, then sign in.');
+ if(error){if(!signup&&error.code==='invalid_credentials'){message('Email or password is incorrect. Tap Forgot password if you need to reset it.');return}message(error.code==='over_email_send_rate_limit'||/email rate limit exceeded/i.test(error.message)?'Account confirmation emails are temporarily unavailable. Please try again later. If you already confirmed your account, use Sign in.':error.message);return}
+ if(signup&&data.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){message('This email already has an account. Sign in, or tap Forgot password to reset it.');return}
+ if(signup&&!data.session)message('Check your email (and spam folder) for a confirmation link, then sign in.');
  }catch(e){message('Could not connect. Please try again.');}
  finally{authBusy=false;buttons.forEach(b=>b.disabled=false);}
 }
 $('loginForm').onsubmit=e=>{e.preventDefault();login(false)};
 $('signup').onclick=()=>login(true);
+$('forgotPw').onclick=async()=>{
+ const email=$('authEmail').value.trim();
+ if(!email){message('Enter your email above, then tap Forgot password.');$('authEmail').focus();return}
+ message('Sending reset link…');
+ const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:'https://stridenstrength.com/'});
+ message(error?(/rate limit/i.test(error.message)?'Too many emails sent. Please try again in a little while.':error.message):'If that email has an account, a reset link is on its way. Check your spam folder too.');
+};
 $('signout').onclick=async()=>{clearTimeout(pending);await writeCloud();await client.auth.signOut();message('Signed out. Local data remains on this device.')};
 $('deleteAccount').onclick=async()=>{
  if(!user||authBusy)return;
@@ -274,6 +282,7 @@ $('cloudImport').onclick=async()=>{
  message('Import completed. Check your history and cloud sync status.');
 };
 client.auth.onAuthStateChange((event,session)=>{
+ if(event==='PASSWORD_RECOVERY')setTimeout(async()=>{const pw=prompt('Choose a new password (at least 6 characters):');if(pw&&pw.length>=6){const {error}=await client.auth.updateUser({password:pw});message(error?error.message:'Password updated. You are signed in.')}else if(pw)message('Password must be at least 6 characters. Use Forgot password to try again.')},300);
  const next=session?.user||null,changed=next?.id!==user?.id;
  if(next&&changed){
   localBeforeLogin=JSON.parse(JSON.stringify(db));
