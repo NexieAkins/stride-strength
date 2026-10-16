@@ -49,7 +49,7 @@
       margin: 8px 0;
       padding: 10px;
       border-radius: 12px;
-      background: #19263b;
+      background: var(--card, #19263b);
     }
 
     #mealPlan summary {
@@ -64,7 +64,7 @@
     }
 
     #menuApproval {
-      background: #19263b;
+      background: var(--card, #19263b);
       padding: 14px;
       border-radius: 14px;
       margin: 14px 0;
@@ -82,7 +82,7 @@
     #mealHistory .diary-day > .card {
       padding: 12px;
       margin: 6px 0;
-      background: #24334a;
+      background: var(--soft, #24334a);
     }
 
     #mealHistory .diary-day button {

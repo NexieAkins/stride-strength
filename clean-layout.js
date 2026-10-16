@@ -89,9 +89,9 @@
 
   style.textContent = `
     .calm-fold {
-      border: 1px solid #304158;
+      border: 1px solid var(--soft, #304158);
       border-radius: 15px;
-      background: #192438;
+      background: var(--card, #192438);
       padding: 15px;
       margin: 12px 0;
     }
@@ -105,7 +105,7 @@
 
     .calm-fold[open] > summary {
       padding-bottom: 12px;
-      border-bottom: 1px solid #304158;
+      border-bottom: 1px solid var(--soft, #304158);
     }
 
     .calm-account {
