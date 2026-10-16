@@ -30,8 +30,14 @@ public class StrideWatchPlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
             call.reject("Finish the workout already running on your watch first."); return
         }
         guard WCSession.default.activationState == .activated,
-              WCSession.default.isWatchAppInstalled, WCSession.default.isReachable else {
-            call.reject("Open Stride & Strength on your paired Apple Watch, then try again."); return
+              WCSession.default.isPaired else {
+            call.reject("No paired Apple Watch found. Pair your watch in the iPhone Watch app."); return
+        }
+        guard WCSession.default.isWatchAppInstalled else {
+            call.reject("Install Stride & Strength on your watch: open the iPhone Watch app, find Stride & Strength and tap Install."); return
+        }
+        guard WCSession.default.isReachable else {
+            call.reject("Open Stride & Strength on your watch and keep it on screen, then tap Start again. You can also start the workout from the watch."); return
         }
         activeRun = id
         WCSession.default.sendMessage(["action": "start", "runId": id], replyHandler: { result in
@@ -60,7 +66,9 @@ public class StrideWatchPlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
     }
     private func receive(_ message: [String: Any]) {
         DispatchQueue.main.async {
-            guard let id = message["runId"] as? String, id == self.activeRun else { return }
+            guard let id = message["runId"] as? String else { return }
+            if self.activeRun == nil || self.lastMetrics?["state"] as? String == "ended", (message["state"] as? String) != "ended" { self.activeRun = id }
+            guard id == self.activeRun else { return }
             self.lastMetrics = message
             self.notifyListeners("watchMetrics", data: message, retainUntilConsumed: true)
         }

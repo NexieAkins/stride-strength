@@ -21,7 +21,10 @@ struct StrideWatchApp: App {
                             Button(workout.state == "paused" ? "Resume" : "Pause") { workout.control(workout.state == "paused" ? "resume" : "pause") }
                             Button("Finish workout") { workout.control("finish") }
                         }
-                    } else { Text("Open this app, then tap Start on Apple Watch in the iPhone app.").font(.caption) }
+                    } else {
+                        Button("Start workout") { workout.startHere() }
+                        Text("Or tap Start on Apple Watch in the iPhone app.").font(.caption2).foregroundStyle(.secondary)
+                    }
                 }.padding()
             }
         }
@@ -77,6 +80,7 @@ final class WatchWorkout: NSObject, ObservableObject, WCSessionDelegate, HKWorko
             }
         }
     }
+    func startHere() { start(UUID().uuidString) { result in if result["ok"] as? Bool != true { self.message = result["error"] as? String ?? "Could not start." } } }
     func control(_ action: String) {
         guard let session, state != "ended" else { return }
         if action == "pause", state == "running" { accumulated = seconds; runningSince = nil; state = "paused"; session.pause() }
