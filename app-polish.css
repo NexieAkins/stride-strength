@@ -305,15 +305,16 @@ body nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 
 /* Sign-in (welcome) screen */
 .welcome-title{display:none}
-body.welcome main{max-width:620px;margin:0 auto}
-body.welcome #account{max-width:100%!important;width:100%;box-sizing:border-box;margin:12px 0 0!important;padding:24px 20px!important}
-body.welcome #account .acct-title{display:none}
-body.welcome .welcome-title{display:block;margin:0 0 6px;font-size:26px}
-body.welcome .welcome-sub{margin:0 0 18px}
-body.welcome #account input{max-width:100%!important;width:100%;box-sizing:border-box;margin:6px 0 14px;min-height:46px}
-body.welcome #account label{display:block;font-weight:600}
-body.welcome #loginForm button{width:100%;margin:6px 0 0!important}
-body.welcome #signup{background:transparent!important;border:1px solid var(--accent,#8f7dff)!important;color:var(--fg,#fff)!important}
-body.welcome .guest-row{margin:16px 0 0}
+body:not(.authenticated) main{max-width:620px;margin:0 auto}
+body:not(.authenticated) #account{max-width:100%!important;width:100%;box-sizing:border-box;margin:12px 0 0!important;padding:24px 20px!important}
+body:not(.authenticated) #account .acct-title{display:none}
+body:not(.authenticated) .welcome-title{display:block;margin:0 0 6px;font-size:26px}
+body:not(.authenticated) .welcome-sub{margin:0 0 18px}
+body:not(.authenticated) #account input{max-width:100%!important;width:100%;box-sizing:border-box;margin:6px 0 14px;min-height:46px}
+body:not(.authenticated) #account label{display:block;font-weight:600}
+body:not(.authenticated) #loginForm button{width:100%;margin:6px 0 0!important}
+body:not(.authenticated) #signup{background:transparent!important;border:1px solid var(--accent,#8f7dff)!important;color:var(--fg,#fff)!important}
+body:not(.authenticated) .guest-row{margin:16px 0 0}
 body.welcome footer{margin-top:28px}
 body.welcome footer p:first-child{display:none}
+body:not(.authenticated) #accountpage{max-width:620px;margin:0 auto}
