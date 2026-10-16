@@ -282,6 +282,6 @@ body nav button.active {
 }
 
 /* Footer disclaimer and privacy link read as fine print */
-body footer { font-size: 12px; line-height: 1.5; opacity: 0.7; margin-top: 32px; }
-body footer p { font-size: 12px; line-height: 1.5; margin: 6px 0; }
-body footer a { font-size: 12px; }
+body footer { font-size: 11px; line-height: 1.5; opacity: 0.7; margin-top: 32px; }
+body footer p { font-size: 11px; line-height: 1.5; margin: 6px 0; }
+body footer a { font-size: 11px; }
