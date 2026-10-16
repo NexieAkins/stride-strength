@@ -1,5 +1,10 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stride & Strength V5</title><style>
 *{box-sizing:border-box}body{background:#0d1424;color:white;font:15px system-ui;margin:0;padding:18px 16px 110px}header,main{max-width:720px;margin:auto}p{color:#b6c4d9}.card{background:#1b273a;padding:16px;border-radius:15px;margin:12px 0}.hero{background:linear-gradient(120deg,#5145cd,#087e80);padding:22px;border-radius:18px}button{background:#5145cd;color:white;border:0;border-radius:9px;padding:12px;cursor:pointer}input,select,textarea{width:100%;padding:12px;background:#101b2c;color:white;border:1px solid #475569;border-radius:9px;margin:7px 0 13px}label{display:block}.hidden{display:none!important}nav{position:fixed;bottom:0;left:0;right:0;margin:0 auto;max-width:720px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#111c2e;padding:10px 3px;z-index:9}nav button{font-size:11px;min-width:0;background:transparent;padding:10px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}nav button.active{background:#5145cd}.exercise{padding:10px 0;border-bottom:1px solid #475569}.exercise label{display:flex;gap:10px}.exercise input{width:20px;height:20px;margin:0}
+body.welcome nav{display:none!important}
+body:not(.authenticated) .calm-account{display:none}
+.guest-row{margin-top:14px;text-align:center}
+.link-btn{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--accent,#8f7dff)!important;text-decoration:underline;min-height:0!important;padding:6px!important}
+#cloudStatus:empty{display:none}
 </style><style>
 #account{max-width:440px;margin:8vh auto;padding:26px;background:#1b273a;border-radius:20px}body.authenticated #account{max-width:720px;margin:8px auto;padding:10px 16px;background:transparent}body.authenticated #account>h3{display:none}body.authenticated #signedIn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}body.authenticated #signedIn p{margin:4px}body.authenticated #account #cloudStatus{margin:3px 0}
 #account input{max-width:340px;display:block}#account button{margin:4px}
@@ -12,7 +17,7 @@
 <p>Sign in to sync your fitness records across devices.</p>
 <form id="loginForm"><label for="authEmail">Email</label><input id="authEmail" type="email" required autocomplete="email">
 <label for="authPassword">Password (at least 6 characters)</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password">
-<button type="submit">Sign in</button><button type="button" id="signup">Create account</button></form></div>
+<button type="submit">Sign in</button><button type="button" id="signup">Create account</button></form><p class="guest-row"><button type="button" id="continueGuest" class="link-btn">Continue without an account</button></p></div>
 <div id="signedIn" class="hidden"><p id="accountEmail"></p>
 <button id="cloudRefresh">Refresh cloud data</button><button id="cloudImport">Import this browser's saved records</button>
 <button id="signout">Sign out</button><button id="deleteAccount" type="button">Delete account</button><p class="muted">Import is optional and merges records into your cloud account. Export a backup first. Deleting your account permanently removes your cloud records and private photos.</p></div>
@@ -275,11 +280,11 @@ client.auth.onAuthStateChange((event,session)=>{
   user=next;db.profile=null;window.strideProfileReadyOwner=null;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.add('authenticated');
   $('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');
   $('accountEmail').textContent='Signed in: '+user.email;
-  document.querySelector('main').inert=true;setTimeout(loadCloud,0);
+  document.querySelector('main').inert=true;setTimeout(loadCloud,0);window.strideSignedOut=false;document.body.classList.remove('welcome');if(!document.getElementById('accountpage').classList.contains('hidden'))document.querySelector('nav [data-go=home]').click();
  }else if(!next){
   user=null;db.profile=null;window.strideProfileReadyOwner=null;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.remove('authenticated');clearTimeout(pending);
   $('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');
-  message('Not signed in — entries are saved only in this browser.');
+  message('');window.strideSignedOut=true;window.strideShowWelcome&&window.strideShowWelcome();
  }
 });
 })();
@@ -520,6 +525,24 @@ get('aiUseEstimate').onclick=()=>{
  }
  buttons.forEach(b=>b.onclick=()=>{try{localStorage.setItem('stride-text-size',b.dataset.textSize)}catch(e){}apply(b.dataset.textSize)});
  apply(saved);
+})();
+</script>
+<script>
+(function(){
+ var GUEST='stride-guest';
+ function guest(){try{return localStorage.getItem(GUEST)==='1'}catch(e){return false}}
+ window.strideShowWelcome=function(){
+  if(guest())return;
+  document.body.classList.add('welcome');
+  var b=document.querySelector('[data-go=accountpage]');if(b)b.click();
+ };
+ if(window.strideSignedOut)window.strideShowWelcome();
+ var g=document.getElementById('continueGuest');
+ if(g)g.onclick=function(){
+  try{localStorage.setItem(GUEST,'1')}catch(e){}
+  document.body.classList.remove('welcome');
+  document.querySelector('nav [data-go=home]').click();
+ };
 })();
 </script>
 </body></html>
