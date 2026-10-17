@@ -332,3 +332,7 @@ main button.secondary{background:var(--soft,#2b3a52);color:var(--fg,#fff)}
 .menu-meal-head span{color:var(--muted,#a9bbd1);font-size:13px}
 .menu-meal ul{margin:6px 0 0;padding-left:18px}
 .menu-meal li{margin:2px 0}
+
+/* iOS date inputs: keep inside their card */
+input[type=date],input[type=time],input[type=datetime-local]{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
