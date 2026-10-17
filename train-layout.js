@@ -31,4 +31,5 @@ const originalStart=window.strideSessionTracker.start;window.strideSessionTracke
 const originalRender=render;render=function(){originalRender();update();};
 const style=node('style');style.textContent='#workoutControls{position:sticky;top:8px;z-index:6;border-color:var(--accent)}#workoutControls button{width:100%}#workoutControls p{margin:8px 0}#workoutControls[hidden]{display:none}#trainingTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:5px;background:var(--card);border-radius:12px;margin:16px 0}#trainingTabs button{background:transparent;color:var(--muted);padding:10px 4px}#trainingTabs button[aria-selected=true]{background:var(--accent);color:var(--on-accent)}#todayTraining button{margin:4px 4px 4px 0}#trainingWeek summary{cursor:pointer;font-weight:700}#trainingView-today #sessionTracker>h2{margin-top:0}';document.head.append(style);
 select('today');
+window.addEventListener('stride-train-view',e=>{if(e.detail&&views[e.detail])select(e.detail);});
 })();
