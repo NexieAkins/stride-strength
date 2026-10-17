@@ -29,4 +29,6 @@ const previousRender=render;render=function(){previousRender();restore()};restor
 })();
 
 
-window.addEventListener('stride-session-start',()=>{const b=document.getElementById('trainUsePlan');if(b){b.textContent='Workout started ✓';b.disabled=true;}});window.addEventListener('stride-session-end',()=>{const b=document.getElementById('trainUsePlan');if(b){b.textContent='Start this workout';b.disabled=false;}});
+(function(){const T=window.strideSessionTracker;function setState(active){const b=document.getElementById('trainUsePlan');if(!b)return;let c=document.getElementById('trainCancelPlan');if(active){b.textContent='Go to my workout';b.disabled=false;b.dataset.mode='go';if(!c){c=document.createElement('button');c.type='button';c.id='trainCancelPlan';c.className='secondary';c.textContent='Cancel workout & adjust plan';c.onclick=()=>{window.strideSessionTracker?.discardActive();};b.after(c);}c.hidden=false;}else{b.textContent='Start this workout';b.disabled=false;b.dataset.mode='';if(c)c.hidden=true;}}
+const use=document.getElementById('trainUsePlan');if(use){const orig=use.onclick;use.onclick=e=>{if(use.dataset.mode==='go'){window.show?.('train');window.dispatchEvent(new Event('stride-session-start'));setTimeout(()=>document.getElementById('sessionTracker')?.scrollIntoView({behavior:'smooth',block:'start'}),250);return;}orig&&orig.call(use,e);};}
+window.addEventListener('stride-session-start',()=>setState(true));window.addEventListener('stride-session-end',()=>setState(false));})();
