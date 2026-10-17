@@ -17,7 +17,8 @@ body:not(.authenticated) .calm-account{display:none}
 <h2 class="welcome-title">Welcome</h2><p class="welcome-sub">Sign in or create an account to keep your workouts, meals and progress synced across your devices.</p>
 <form id="loginForm"><label for="authEmail">Email</label><input id="authEmail" type="email" required autocomplete="email">
 <label for="authPassword">Password (at least 6 characters)</label><input id="authPassword" type="password" minlength="6" required autocomplete="current-password">
-<button type="submit">Sign in</button><button type="button" id="signup">Create account</button></form><p class="guest-row"><button type="button" id="forgotPw" class="link-btn">Forgot password?</button><br><button type="button" id="continueGuest" class="link-btn">Continue without an account</button></p></div>
+<div id="authConfirmWrap" hidden><label for="authConfirm">Confirm password</label><input id="authConfirm" type="password" minlength="6" autocomplete="new-password"></div>
+<button type="submit" id="authSubmit">Sign in</button><button type="button" id="signup">Create account</button></form><p class="guest-row"><button type="button" id="forgotPw" class="link-btn">Forgot password?</button><br><button type="button" id="continueGuest" class="link-btn">Continue without an account</button></p></div>
 <div id="signedIn" class="hidden"><p id="accountEmail"></p>
 <button id="cloudRefresh">Refresh cloud data</button><button id="cloudImport">Import this browser's saved records</button>
 <button id="signout">Sign out</button><button id="deleteAccount" type="button">Delete account</button><p class="muted">Import is optional and merges records into your cloud account. Export a backup first. Deleting your account permanently removes your cloud records and private photos.</p></div>
@@ -226,8 +227,10 @@ async function login(signup){
  }catch(e){message('Could not connect. Please try again.');}
  finally{authBusy=false;buttons.forEach(b=>b.disabled=false);}
 }
-$('loginForm').onsubmit=e=>{e.preventDefault();login(false)};
-$('signup').onclick=()=>login(true);
+let authMode='signin';
+function setAuthMode(mode){authMode=mode;const up=mode==='signup';document.querySelector('.welcome-title').textContent=up?'Create your account':'Welcome';document.querySelector('.welcome-sub').textContent=up?'Enter your email and choose a password (at least 6 characters).':'Sign in or create an account to keep your workouts, meals and progress synced across your devices.';$('authConfirmWrap').hidden=!up;$('authConfirm').required=up;$('authPassword').autocomplete=up?'new-password':'current-password';$('authSubmit').textContent=up?'Create account':'Sign in';$('signup').textContent=up?'I already have an account':'Create account';$('forgotPw').hidden=up;message('');(up?$('authEmail'):$('authEmail')).focus();}
+$('loginForm').onsubmit=e=>{e.preventDefault();if(authMode==='signup'){if($('authPassword').value!==$('authConfirm').value){message('Passwords don’t match.');return;}login(true);}else login(false);};
+$('signup').onclick=()=>setAuthMode(authMode==='signup'?'signin':'signup');
 $('forgotPw').onclick=async()=>{
  const email=$('authEmail').value.trim();
  if(!email){message('Enter your email above, then tap Forgot password.');$('authEmail').focus();return}
