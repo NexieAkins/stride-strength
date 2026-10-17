@@ -1,0 +1,73 @@
+name: Android Play bundle
+on:
+  push:
+    branches: [native/store-launch]
+    paths: ['.github/workflows/android-play.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_UPLOAD_KEY_BASE64: ${{ secrets.ANDROID_UPLOAD_KEY_BASE64 }}
+    steps:
+      - name: Check signing password
+        run: |
+          test -n "$ANDROID_KEYSTORE_PASSWORD" || { echo "Add the ANDROID_KEYSTORE_PASSWORD repository secret, then rerun this workflow."; exit 1; }
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
+        working-directory: mobile
+      - run: npm run sync
+        working-directory: mobile
+      - name: Build release bundle
+        working-directory: mobile/android
+        run: |
+          python3 - <<'PY'
+          import os, pathlib
+          path = pathlib.Path("app/build.gradle")
+          source = path.read_text().replace("versionCode 1", "versionCode " + str(int(os.environ["GITHUB_RUN_NUMBER"])))
+          path.write_text(source)
+          PY
+          chmod +x gradlew
+          ./gradlew bundleRelease
+      - name: Sign and verify
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/stride-android" play-upload
+          key="$RUNNER_TEMP/stride-android/upload.p12"
+          if [ -n "$ANDROID_UPLOAD_KEY_BASE64" ]; then
+            printf '%s' "$ANDROID_UPLOAD_KEY_BASE64" | base64 --decode > "$key"
+          else
+            test "$GITHUB_RUN_NUMBER" = "1" || { echo "Restore ANDROID_UPLOAD_KEY_BASE64 before another release; never replace an enrolled upload key."; exit 1; }
+            keytool -genkeypair -keystore "$key" -storetype PKCS12 -storepass:env ANDROID_KEYSTORE_PASSWORD -keypass:env ANDROID_KEYSTORE_PASSWORD -alias stride-upload -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=Stride and Strength Upload"
+            openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$key" -out play-upload/android-upload-key.p12.enc -pass env:ANDROID_KEYSTORE_PASSWORD
+          fi
+          cp mobile/android/app/build/outputs/bundle/release/app-release.aab play-upload/stride-strength.aab
+          jarsigner -keystore "$key" -storetype PKCS12 -storepass:env ANDROID_KEYSTORE_PASSWORD -keypass:env ANDROID_KEYSTORE_PASSWORD play-upload/stride-strength.aab stride-upload
+          jarsigner -verify play-upload/stride-strength.aab | tee "$RUNNER_TEMP/stride-android/verification.txt"
+          grep -q "jar verified" "$RUNNER_TEMP/stride-android/verification.txt"
+          keytool -exportcert -rfc -keystore "$key" -storepass:env ANDROID_KEYSTORE_PASSWORD -alias stride-upload -file play-upload/upload-certificate.pem
+          printf '%s\n' "Keep the encrypted upload key and password. Before another release, decrypt the key and save its base64 contents in ANDROID_UPLOAD_KEY_BASE64 so future builds reuse the same upload identity." > play-upload/README.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stride-strength-google-play
+          path: play-upload/
+          retention-days: 7
+          if-no-files-found: error
+      - name: Remove private signing files
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stride-android"

@@ -1,0 +1,69 @@
+name: App
+options:
+  bundleIdPrefix: com.strideandstrength
+packages:
+  CapApp-SPM:
+    path: CapApp-SPM
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    MARKETING_VERSION: '1.0'
+    CURRENT_PROJECT_VERSION: '1'
+targets:
+  App:
+    type: application
+    platform: iOS
+    deploymentTarget: '15.0'
+    sources:
+      - path: App
+        excludes: [public, capacitor.config.json, config.xml]
+      - path: App/public
+        type: folder
+        buildPhase: resources
+      - path: App/capacitor.config.json
+        buildPhase: resources
+      - path: App/config.xml
+        buildPhase: resources
+    info:
+      path: App/Info.plist
+      properties: {"CAPACITOR_DEBUG": "$(CAPACITOR_DEBUG)", "ITSAppUsesNonExemptEncryption": false, "CFBundleDevelopmentRegion": "en", "CFBundleDisplayName": "Stride & Strength", "CFBundleExecutable": "$(EXECUTABLE_NAME)", "CFBundleIdentifier": "$(PRODUCT_BUNDLE_IDENTIFIER)", "CFBundleInfoDictionaryVersion": "6.0", "CFBundleName": "$(PRODUCT_NAME)", "CFBundlePackageType": "APPL", "CFBundleShortVersionString": "$(MARKETING_VERSION)", "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)", "LSRequiresIPhoneOS": true, "NSCameraUsageDescription": "Take equipment and running-plan photos when you choose to.", "NSLocationWhenInUseUsageDescription": "Measure outdoor running distance and pace while you track a run.", "NSPhotoLibraryUsageDescription": "Choose photos for meal planning, equipment guidance and your private progress log.", "UIApplicationSceneManifest": {"UIApplicationSupportsMultipleScenes": false, "UISceneConfigurations": {"UIWindowSceneSessionRoleApplication": [{"UISceneConfigurationName": "Default Configuration", "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate", "UISceneStoryboardFile": "Main"}]}}, "UILaunchStoryboardName": "LaunchScreen", "UIMainStoryboardFile": "Main", "UIRequiredDeviceCapabilities": ["armv7"], "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"], "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"], "UIViewControllerBasedStatusBarAppearance": true}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.strideandstrength.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: '1'
+        INFOPLIST_KEY_CFBundleDisplayName: Stride & Strength
+    dependencies:
+      - package: CapApp-SPM
+      - target: StrideWatch
+        embed: true
+  StrideWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: '10.0'
+    sources:
+      - path: ../../watch
+    info:
+      path: ../../watch/Info.plist
+      properties:
+        CFBundleDisplayName: Stride & Strength
+        WKApplication: true
+        ITSAppUsesNonExemptEncryption: false
+        WKCompanionAppBundleIdentifier: com.strideandstrength.app
+        NSHealthShareUsageDescription: Read heart rate, distance and active calories during the workout you start.
+        NSHealthUpdateUsageDescription: Save the running workouts you finish to Apple Health.
+        WKBackgroundModes: [workout-processing]
+    entitlements:
+      path: ../../watch/StrideWatch.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.strideandstrength.app.watchkitapp
+        SDKROOT: watchos
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+schemes:
+  App:
+    build:
+      targets:
+        App: all
