@@ -28,3 +28,5 @@ $('trainCompletion').style.display='none';
 const previousRender=render;render=function(){previousRender();restore()};restore();
 })();
 
+
+window.addEventListener('stride-session-start',()=>{const b=document.getElementById('trainUsePlan');if(b){b.textContent='Workout started ✓';b.disabled=true;}});window.addEventListener('stride-session-end',()=>{const b=document.getElementById('trainUsePlan');if(b){b.textContent='Start this workout';b.disabled=false;}});
