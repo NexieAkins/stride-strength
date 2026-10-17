@@ -336,3 +336,6 @@ main button.secondary{background:var(--soft,#2b3a52);color:var(--fg,#fff)}
 /* iOS date inputs: keep inside their card */
 input[type=date],input[type=time],input[type=datetime-local]{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-align:left}
 input[type=date]::-webkit-date-and-time-value{text-align:left}
+
+/* iPhone zooms in on inputs under 16px; keep them at 16px so the page never zooms */
+input,select,textarea{font-size:16px!important}
