@@ -162,6 +162,7 @@
         replace: $("menuReplace").value,
         likes: $("menuLikes").value,
         avoid: $("menuAvoid").value,
+        diet: window.strideDietRules?.() || [],
         count: Number($("menuCount").value),
         calories: Number($("calGoal").value) || 1900,
         protein: Number($("proGoal").value) || 110
