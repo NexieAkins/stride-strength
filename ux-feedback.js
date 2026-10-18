@@ -134,6 +134,27 @@ function compressMeals(panel,today,use){
   const kfold=$('kitchenFold');if(kfold&&kf){kfold.before(kf);kfold.remove();}
 }
 
+
+// Menus › My meal plan: always a full week (unless a custom menu is active).
+const WEEK={
+ balanced:[['Yogurt, oats & berries','Chicken rice bowl','Salmon, potatoes & greens'],['Eggs & wholegrain toast','Turkey wrap & fruit','Chicken stir-fry'],['Peanut butter oats','Tuna sandwich & salad','Lentil stew & bread'],['Egg avocado toast','Quinoa salad with chickpeas','Fish, rice & vegetables'],['Yogurt parfait','Burrito bowl','Turkey meatballs & pasta'],['Veggie omelette','Chicken sandwich & soup','Tofu curry & rice'],['Pancakes & fruit','Leftovers or grain bowl','Roast chicken & vegetables']],
+ protein:[['Greek yogurt, protein oats','Double-chicken rice bowl','Steak, potatoes & greens'],['3-egg omelette & toast','Turkey & cottage cheese wrap','Shrimp stir-fry'],['Protein smoothie','Tuna & egg salad','Chicken chili'],['Egg whites & avocado toast','Chicken quinoa bowl','Salmon & rice'],['Cottage cheese & fruit','Beef burrito bowl','Turkey meatballs & pasta'],['Eggs, turkey bacon & toast','Grilled chicken salad','Pork tenderloin & veg'],['Protein pancakes','Leftover protein bowl','Roast chicken & beans']],
+ plant:[['Oats, chia & berries','Chickpea rice bowl','Lentil bolognese'],['Tofu scramble & toast','Hummus veggie wrap','Tofu stir-fry'],['Peanut butter smoothie','Black bean salad','Vegetable & bean stew'],['Avocado toast & seeds','Quinoa & edamame bowl','Chickpea curry & rice'],['Soy yogurt parfait','Bean burrito bowl','Lentil meatballs & pasta'],['Veggie breakfast burrito','Falafel pita','Tempeh & roasted veg'],['Banana pancakes','Leftovers or grain bowl','Bean & sweet potato chili']]};
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+function drawWeek(){
+  const plan=$('mealPlan');if(!plan)return;
+  if(plan.querySelector('details.card:not(.stride-week)'))return; // custom AI menu is active
+  const pref={mealStyle:$('mealStyle')?.value};
+  const style=WEEK[pref.mealStyle]?pref.mealStyle:'balanced';
+  if(plan.dataset.week===style&&plan.querySelector('.stride-week'))return;
+  plan.dataset.week=style;
+  const todayIdx=(new Date().getDay()+6)%7;
+  plan.replaceChildren(el('p',{className:'muted',textContent:({balanced:'Balanced',protein:'Higher-protein',plant:'Plant-based'})[style]+' week · change it in Edit preferences on Home, or build your own below.'}),
+   ...DAYS.map((d,i)=>{const det=el('details',{className:'card stride-week',open:i===todayIdx},[el('summary',{textContent:d+(i===todayIdx?' · today':'')})]);
+     const ul=el('ul');['Breakfast','Lunch','Dinner'].forEach((t,j)=>ul.append(el('li',{},[el('b',{textContent:t+': '}),document.createTextNode(WEEK[style][i][j])])));det.append(ul);return det;}));
+}
+{const r0=render;render=function(){r0();drawWeek();};setTimeout(drawWeek,800);document.addEventListener('change',e=>{if(e.target.id==='mealStyle')setTimeout(drawWeek,50);});}
+
 const css=document.createElement('style');
 css.textContent=`header{position:relative}
 #topTools{position:absolute;top:12px;right:12px;display:flex;gap:8px;z-index:60}
@@ -158,7 +179,8 @@ body>.size-row{display:none}
 .mbar{grid-column:1/-1;height:6px;background:var(--soft);border-radius:4px;overflow:hidden;margin-top:8px}.mbar i{display:block;height:100%;background:var(--accent)}.mgoal{grid-column:1/-1;margin:2px 0 0;text-align:left}
 #manualMeal,#pastDays,#kitchenMore{margin-top:12px}#manualMeal>summary,#pastDays>summary,#kitchenMore>summary{font-weight:700;cursor:pointer}
 .past-day{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px}
-#kitchenPantry>summary{display:none}`;
+#kitchenPantry>summary{display:none}
+.stride-week ul{margin:8px 0 0;padding-left:18px;line-height:1.7}.stride-week>summary{font-weight:700;cursor:pointer}`;
 document.head.append(css);
 
 if(document.readyState==='complete')setup();else window.addEventListener('load',()=>setTimeout(setup,0));
