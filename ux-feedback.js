@@ -136,24 +136,55 @@ function compressMeals(panel,today,use){
 
 
 // Menus › My meal plan: always a full week (unless a custom menu is active).
-const WEEK={
- balanced:[['Yogurt, oats & berries','Chicken rice bowl','Salmon, potatoes & greens'],['Eggs & wholegrain toast','Turkey wrap & fruit','Chicken stir-fry'],['Peanut butter oats','Tuna sandwich & salad','Lentil stew & bread'],['Egg avocado toast','Quinoa salad with chickpeas','Fish, rice & vegetables'],['Yogurt parfait','Burrito bowl','Turkey meatballs & pasta'],['Veggie omelette','Chicken sandwich & soup','Tofu curry & rice'],['Pancakes & fruit','Leftovers or grain bowl','Roast chicken & vegetables']],
- protein:[['Greek yogurt, protein oats','Double-chicken rice bowl','Steak, potatoes & greens'],['3-egg omelette & toast','Turkey & cottage cheese wrap','Shrimp stir-fry'],['Protein smoothie','Tuna & egg salad','Chicken chili'],['Egg whites & avocado toast','Chicken quinoa bowl','Salmon & rice'],['Cottage cheese & fruit','Beef burrito bowl','Turkey meatballs & pasta'],['Eggs, turkey bacon & toast','Grilled chicken salad','Pork tenderloin & veg'],['Protein pancakes','Leftover protein bowl','Roast chicken & beans']],
- plant:[['Oats, chia & berries','Chickpea rice bowl','Lentil bolognese'],['Tofu scramble & toast','Hummus veggie wrap','Tofu stir-fry'],['Peanut butter smoothie','Black bean salad','Vegetable & bean stew'],['Avocado toast & seeds','Quinoa & edamame bowl','Chickpea curry & rice'],['Soy yogurt parfait','Bean burrito bowl','Lentil meatballs & pasta'],['Veggie breakfast burrito','Falafel pita','Tempeh & roasted veg'],['Banana pancakes','Leftovers or grain bowl','Bean & sweet potato chili']]};
+// Meal pool tagged by what each dish contains, so the week can follow any mix of diet rules.
+const POOL={
+ Breakfast:['Greek yogurt, oats & berries|dairy gluten carb hp','Veggie omelette & toast|egg gluten hp','Oats with chia & banana|gluten carb','Tofu scramble & toast|gluten hp','Peanut butter banana smoothie|nuts dairy carb','Egg & avocado toast|egg gluten','Cottage cheese & fruit|dairy hp','Akara (bean fritters) & pap|carb hp','Chicken sausage & egg wrap|poultry egg gluten hp','Turkey bacon, eggs & toast|poultry egg gluten hp','Smoked salmon & cream cheese bagel|fish dairy gluten hp','Rice porridge with fruit|carb','Overnight soy-milk oats & seeds|gluten carb','Spinach & mushroom egg muffins|egg hp','Coconut yogurt & granola|nuts gluten carb','Breakfast potatoes, beans & avocado|carb'],
+ Lunch:['Chicken rice bowl|poultry carb hp','Turkey & lettuce wrap|poultry gluten hp','Tuna salad sandwich|fish egg gluten hp','Chickpea & quinoa salad|carb hp','Lentil soup & bread|gluten carb','Beef burrito bowl|beef carb hp','Black bean burrito bowl|carb','Grilled chicken salad|poultry hp','Hummus & falafel pita|gluten carb','Egg fried rice with vegetables|egg carb','Jollof rice & grilled chicken|poultry carb hp','Shrimp tacos|shellfish gluten carb hp','Sardines on rice crackers & salad|fish hp','Tofu & edamame noodle bowl|gluten carb hp','Cheese & tomato toastie|dairy gluten carb','Ham & cheese sandwich|pork dairy gluten meatdairy','Baked potato with beans|carb','Salmon poke bowl|fish carb hp'],
+ Dinner:['Salmon, potatoes & greens|fish carb hp','Chicken stir-fry & rice|poultry carb hp','Lentil curry & rice|carb hp','Beef stew & yam|beef carb hp','Turkey meatballs & pasta|poultry gluten carb egg hp','Tofu & vegetable curry|carb hp','Roast chicken & vegetables|poultry hp','Grilled fish & plantain|fish carb hp','Bean & sweet potato chili|carb','Chickpea & spinach stew|hp','Pork chops & mashed potatoes|pork dairy carb meatdairy hp','Shrimp & vegetable stir-fry|shellfish hp','Egusi soup with fish & swallow|fish carb hp','Steak, salad & roast potatoes|beef carb hp','Vegetable lasagne|dairy gluten egg carb','Lamb kofta & salad|hp','Chicken suya & coleslaw|poultry nuts hp','Grilled chicken, broccoli & avocado|poultry hp']};
+const FORBID={halal:['pork'],kosher:['pork','shellfish','meatdairy'],vegetarian:['pork','beef','poultry','fish','shellfish','meat'],vegan:['pork','beef','poultry','fish','shellfish','meat','egg','dairy','meatdairy'],pescatarian:['pork','beef','poultry','meat'],noPork:['pork'],noBeef:['beef'],glutenFree:['gluten'],dairyFree:['dairy','meatdairy'],eggFree:['egg'],nutFree:['nuts'],lowCarb:['carb']};
+const DIET_LABELS={halal:'Halal',kosher:'Kosher',vegetarian:'Vegetarian',vegan:'Vegan',pescatarian:'Pescatarian',noPork:'No pork',noBeef:'No beef',glutenFree:'Gluten-free',dairyFree:'Dairy-free',eggFree:'Egg-free',nutFree:'Nut-free',lowCarb:'Lower-carb'};
+const dietKey=()=>'stride-diet-'+(window.cloudRecordOwner?.()||'browser');
+function dietRules(){try{const v=JSON.parse(localStorage.getItem(dietKey())||'[]');return Array.isArray(v)?v.filter(k=>DIET_LABELS[k]):[];}catch(e){return [];}}
+window.strideDietRules=()=>{const r=dietRules();if($('mealStyle')?.value==='plant'&&!r.includes('vegan'))r.push('vegan');return r;};
+// Lamb is meat for vegetarian checks.
+POOL.Dinner=POOL.Dinner.map(x=>/Lamb/.test(x)?x+' meat':x);
 const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+function weekFor(style,rules){
+  const bad=new Set(rules.flatMap(r=>FORBID[r]||[]));
+  const out={};
+  for(const slot of Object.keys(POOL)){
+    let list=POOL[slot].map(x=>{const [n,t]=x.split('|');return {n,t:new Set((t||'').split(' '))};}).filter(m=>![...m.t].some(t=>bad.has(t)));
+    if(style==='protein')list.sort((a,b)=>(b.t.has('hp')?1:0)-(a.t.has('hp')?1:0));
+    out[slot]=list;
+  }
+  return out;
+}
 function drawWeek(){
   const plan=$('mealPlan');if(!plan)return;
-  if(plan.querySelector('details.card:not(.stride-week)'))return; // custom AI menu is active
-  const pref={mealStyle:$('mealStyle')?.value};
-  const style=WEEK[pref.mealStyle]?pref.mealStyle:'balanced';
-  if(plan.dataset.week===style&&plan.querySelector('.stride-week'))return;
-  plan.dataset.week=style;
-  const todayIdx=(new Date().getDay()+6)%7;
-  plan.replaceChildren(el('p',{className:'muted',textContent:({balanced:'Balanced',protein:'Higher-protein',plant:'Plant-based'})[style]+' week · change it in Edit preferences on Home, or build your own below.'}),
-   ...DAYS.map((d,i)=>{const det=el('details',{className:'card stride-week',open:i===todayIdx},[el('summary',{textContent:d+(i===todayIdx?' · today':'')})]);
-     const ul=el('ul');['Breakfast','Lunch','Dinner'].forEach((t,j)=>ul.append(el('li',{},[el('b',{textContent:t+': '}),document.createTextNode(WEEK[style][i][j])])));det.append(ul);return det;}));
+  if(plan.querySelector('details.card:not(.stride-week)'))return; // custom menu is active
+  const style=$('mealStyle')?.value||'balanced',rules=window.strideDietRules(),sig=style+'|'+rules.join(',');
+  if(plan.dataset.week===sig&&plan.querySelector('.stride-week'))return;
+  plan.dataset.week=sig;
+  const w=weekFor(style,rules),todayIdx=(new Date().getDay()+6)%7;
+  const label=({balanced:'Balanced',protein:'Higher-protein',plant:'Plant-based',custom:'Your'})[style]||'Balanced';
+  const ruleTxt=rules.filter(r=>!(style==='plant'&&r==='vegan')).map(r=>DIET_LABELS[r]).join(', ');
+  const head=el('p',{className:'muted',textContent:label+' week'+(ruleTxt?' · '+ruleTxt:'')+'. Change this in Edit preferences on Home.'});
+  if(Object.values(w).some(l=>!l.length)){plan.replaceChildren(head,el('p',{textContent:'Not enough meals fit all your diet rules for a full week. Use “Build or substitute a menu” below and we’ll create one that fits.'}));return;}
+  const note=rules.includes('halal')?' (halal)':'';
+  plan.replaceChildren(head,...DAYS.map((d,i)=>{const det=el('details',{className:'card stride-week',open:i===todayIdx},[el('summary',{textContent:d+(i===todayIdx?' · today':'')})]);
+    const ul=el('ul');Object.keys(w).forEach((slot,j)=>{const l=w[slot],m=l[(i*(j+2)+j)%l.length].n;ul.append(el('li',{},[el('b',{textContent:slot+': '}),document.createTextNode(m+(note&&/chicken|beef|lamb|turkey|steak|meatball|suya/i.test(m)?note:''))]));});det.append(ul);return det;}));
 }
-{const r0=render;render=function(){r0();drawWeek();};setTimeout(drawWeek,800);document.addEventListener('change',e=>{if(e.target.id==='mealStyle')setTimeout(drawWeek,50);});}
+// Home › Edit preferences: diet rules checklist.
+function dietPicker(){
+  const style=$('mealStyle');if(!style||$('dietRules'))return;
+  const box=el('fieldset',{id:'dietRules'},[el('legend',{textContent:'Diet rules (tick any that apply)'})]);
+  const saved=new Set(dietRules());
+  Object.entries(DIET_LABELS).forEach(([k,l])=>{const cb=el('input',{type:'checkbox',value:k,id:'diet-'+k,checked:saved.has(k)});box.append(el('label',{htmlFor:'diet-'+k,className:'diet-chip'},[cb,document.createTextNode(' '+l)]));});
+  box.append(el('p',{className:'muted',textContent:'Your 7-day plan, My Kitchen and menu building all follow these.'}));
+  box.addEventListener('change',()=>{const v=[...box.querySelectorAll('input:checked')].map(c=>c.value);try{localStorage.setItem(dietKey(),JSON.stringify(v));}catch(e){}drawWeek();});
+  (style.closest('label')||style).after(box);
+}
+{const r0=render;render=function(){r0();drawWeek();};setTimeout(()=>{dietPicker();drawWeek();},800);document.addEventListener('change',e=>{if(e.target.id==='mealStyle')setTimeout(drawWeek,50);});}
 
 const css=document.createElement('style');
 css.textContent=`header{position:relative}
@@ -180,6 +211,7 @@ body>.size-row{display:none}
 #manualMeal,#pastDays,#kitchenMore{margin-top:12px}#manualMeal>summary,#pastDays>summary,#kitchenMore>summary{font-weight:700;cursor:pointer}
 .past-day{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px}
 #kitchenPantry>summary{display:none}
+#dietRules{border:1px solid var(--soft);border-radius:14px;padding:12px;margin:12px 0;display:flex;flex-wrap:wrap;gap:8px}#dietRules legend{font-weight:700;padding:0 6px}.diet-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:999px;padding:6px 12px;margin:0!important;font-weight:500;cursor:pointer}.diet-chip input{width:auto!important;margin:0}.diet-chip:has(input:checked){background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}#dietRules p{flex-basis:100%;margin:4px 0 0}
 .stride-week ul{margin:8px 0 0;padding-left:18px;line-height:1.7}.stride-week>summary{font-weight:700;cursor:pointer}`;
 document.head.append(css);
 

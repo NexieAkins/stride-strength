@@ -1,4 +1,5 @@
 const training=require('./lib/training-context.cjs');
+const diet=require('./lib/diet-rules.cjs');
 
 const SUPABASE_URL =
   "https://gwagccrxnqicorqmcrma.supabase.co";
@@ -109,6 +110,7 @@ exports.handler = async function (event) {
         String(input.likes || "").slice(0, 800),
       "Foods to avoid / allergies: " +
         String(input.avoid || "").slice(0, 800),
+      "Strict diet rules (never break these): " + (diet.describe(input.diet).join(" ") || "none"),
       "Meals per day: " + count,
       "Daily calorie target: " + calories,
       "Daily protein target: " + protein
