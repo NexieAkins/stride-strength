@@ -83,29 +83,55 @@ function quickMeal(){
 // Meals: Today (add + your meals) · Kitchen · Menus. Diary merges into Today.
 function compressMeals(panel,today,use){
   const form=$('mealForm'),oldFormBox=form&&(form.closest('details')||form.closest('.card'));
+  const h=panel.querySelector('h3');if(h)h.textContent='Add a meal';
+  const p=panel.querySelector('h3+p');if(p)p.textContent='Snap a photo or type it. We’ll estimate the numbers.';
+  $('aiAddDiary').textContent='Add to today';
   // Manual entry lives inside the one "add" box.
   const manual=el('details',{id:'manualMeal'},[el('summary',{textContent:'Enter it myself'})]);
-  if(form){manual.append(form);panel.append(manual);}
+  if(form){manual.append(form);panel.append(manual);const dl=form.querySelector('label[for=mealDate]');}
   if(oldFormBox&&oldFormBox!==panel&&!oldFormBox.contains(form))oldFormBox.remove();
   const goToday=()=>setTimeout(()=>{$('mealTab-today')?.click();manual.open=true;form?.scrollIntoView({behavior:'smooth',block:'center'});},0);
   use.textContent='Edit details first';use.addEventListener('click',goToday);
   $('kitchenResult')?.addEventListener('click',e=>{if(e.target.closest('button')?.textContent==='Review in meal log')goToday();});
   form?.addEventListener('submit',()=>setTimeout(()=>{if(!$('food').value)manual.open=false;},300));
-  // Drop the duplicate shortcuts and preview; show the real, editable list instead.
+  // Drop duplicate shortcuts/preview; show the real, editable list.
   today.querySelector(':scope>.actions')?.remove();
   $('todayMealPreview')?.closest('.card')?.remove();
-  const hist=$('mealHistory');
-  if(hist){const box=hist.closest('details')||hist;const card=el('div',{className:'card',id:'yourMeals'},[el('h3',{textContent:'Your meals'})]);card.append(hist);if(box!==hist)box.remove();panel.after(card);}
+  const hist=$('mealHistory');let past=null,pastList=null;
+  if(hist){const box=hist.closest('details')||hist;const card=el('div',{className:'card',id:'yourMeals'},[el('h3',{textContent:'Your meals'})]);
+    const empty=el('p',{id:'noMealsToday',className:'muted',textContent:'Nothing logged today yet.'});
+    pastList=el('div',{id:'pastMeals'});past=el('details',{id:'pastDays'},[el('summary',{textContent:'Past days'}),pastList]);
+    card.append(empty,hist,past);if(box!==hist)box.remove();panel.after(card);}
+  const day=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  function splitDays(){if(!hist||!pastList)return;pastList.replaceChildren();const t=day();let n=0,last=null;
+    [...hist.querySelectorAll(':scope .meal-diary-entry')].forEach(c=>{if(c.dataset.date===t){n++;return;}if(c.dataset.date!==last){last=c.dataset.date;pastList.append(el('p',{className:'past-day',textContent:new Date(last+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}));}pastList.append(c);});
+    hist.querySelectorAll(':scope>.diary-day,:scope>h3').forEach(x=>{if(!x.querySelector('.meal-diary-entry'))x.remove();});
+    $('noMealsToday').hidden=n>0||db.meals.some(x=>x.date===t);past.hidden=!pastList.children.length;}
+  // Totals as four tiles.
+  const nut=$('nutrition');let tiles=null;
+  if(nut){tiles=el('div',{id:'macroTiles'});nut.before(tiles);nut.hidden=true;const h3=nut.closest('.card')?.querySelector('h3');if(h3)h3.remove();}
+  function drawTiles(){if(!tiles)return;const t=day(),m=db.meals.filter(x=>x.date===t),sum=k=>m.reduce((n,x)=>n+(Number(x[k])||0),0),g=Number(db.goals?.calories)||1900;
+    tiles.innerHTML='';[['calories','kcal',0],['protein','protein',1],['carbs','carbs',1],['fat','fat',1]].forEach(([k,l,gr])=>tiles.append(el('div',{},[el('b',{textContent:Math.round(sum(k))+(gr?'g':'')}),el('span',{textContent:l})])));
+    const bar=el('div',{className:'mbar'},[el('i')]);bar.firstChild.style.width=Math.min(100,sum('calories')/g*100)+'%';tiles.append(bar,el('p',{className:'muted mgoal',textContent:'of '+g+' kcal · '+(db.goals?.protein||110)+' g protein'}));}
+  const prevR=render;render=function(){prevR();splitDays();drawTiles();};splitDays();drawTiles();
   // Goals + achievements in one small fold.
   const goal=$('calGoal')?.closest('details'),ach=$('nutritionComplete')?.closest('.nutrition-achievement');
   if(goal){const s=goal.querySelector('summary');if(s)s.textContent='Goals & achievements';if(ach){const old=ach.closest('details');goal.append(ach);if(old&&old!==goal)old.remove();}today.append(goal);}
-  // Tabs: hide Diary, rename tools to Menus, move meal ideas there.
-  const diaryTab=$('mealTab-diary');if(diaryTab)diaryTab.style.display='none';
+  // Tabs: Today · Kitchen · Menus.
+  const diaryTab=$('mealTab-diary');if(diaryTab)diaryTab.remove();
   const tools=$('mealTab-tools');if(tools)tools.textContent='Menus';
   const menus=$('mealView-tools');
-  if(menus){const rec=$('mealRecommendations');if(rec){const hd=document.querySelector('#meals h2');}
-    [...document.querySelectorAll('#mealView-kitchen > *')].forEach(n=>{if(n.id!=='myKitchen')menus.append(n);});
-    const mf=menus.querySelector('details>summary');if(mf&&/menu/i.test(mf.textContent))mf.parentElement.open=false;}
+  if(menus){[...document.querySelectorAll('#mealView-kitchen > *')].forEach(n=>{if(n.id!=='myKitchen'){if(n.tagName==='BUTTON')menus.append(n);else menus.prepend(n);}});}
+  // Kitchen: essentials up top, the rest under "More options".
+  const kf=$('kitchenForm');
+  if(kf&&!$('kitchenMore')){const more=el('details',{id:'kitchenMore'});const sum=el('summary',{textContent:'More options '});const hint=el('span',{className:'muted',id:'kitchenHint'});sum.append(hint);more.append(sum);
+    ['kitchenAvoid','kitchenCuisine','kitchenPreference','kitchenMinutes'].forEach(id=>{const f=$(id);if(!f)return;const l=kf.querySelector('label[for='+id+']');if(l)more.append(l);more.append(f);});
+    const pantry=$('kitchenPantry');if(pantry){pantry.open=true;const s=pantry.querySelector('summary');if(s){const lab=el('label',{textContent:'Pantry basics I have'});s.replaceWith(lab);}more.append(pantry);}
+    more.append(el('p',{className:'muted',textContent:'Saved for next time.'}));
+    const anchor=$('kitchenGenerate');(anchor?.closest('.actions')||anchor)?.before(more);
+    const upd=()=>{const a=$('kitchenAvoid')?.value.trim(),c=$('kitchenCuisine')?.value.trim();hint.textContent=[a&&'· avoid '+a,c&&'· '+c].filter(Boolean).join(' ');};
+    ['kitchenAvoid','kitchenCuisine'].forEach(i=>$(i)?.addEventListener('input',upd));setTimeout(upd,500);}
+  const kfold=$('kitchenFold');if(kfold&&kf){kfold.before(kf);kfold.remove();}
 }
 
 const css=document.createElement('style');
@@ -124,7 +150,15 @@ body.welcome #topTools{display:none}
 .calm-account>summary{font-weight:800!important;color:var(--fg)!important;opacity:1!important;font-size:18px}
 .macro-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.macro-row input{width:100%}
 header h1,header p{padding-right:100px}
-body>.size-row{display:none}`;
+body>.size-row{display:none}
+#aiMealPanel{background:var(--card)!important;border:1px solid var(--soft)!important;border-radius:18px!important;padding:18px!important}
+#pastMeals .meal-diary-entry{padding:16px;margin:10px 0;border:1px solid var(--soft);border-radius:18px}#pastMeals .meal-diary-metrics{display:flex;gap:18px;flex-wrap:wrap}
+#mealTabs{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#macroTiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}#macroTiles>div{display:flex;flex-direction:column;gap:2px}#macroTiles b{font-size:19px;font-variant-numeric:tabular-nums}#macroTiles span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.mbar{grid-column:1/-1;height:6px;background:var(--soft);border-radius:4px;overflow:hidden;margin-top:8px}.mbar i{display:block;height:100%;background:var(--accent)}.mgoal{grid-column:1/-1;margin:2px 0 0;text-align:left}
+#manualMeal,#pastDays,#kitchenMore{margin-top:12px}#manualMeal>summary,#pastDays>summary,#kitchenMore>summary{font-weight:700;cursor:pointer}
+.past-day{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px}
+#kitchenPantry>summary{display:none}`;
 document.head.append(css);
 
 if(document.readyState==='complete')setup();else window.addEventListener('load',()=>setTimeout(setup,0));
