@@ -91,7 +91,7 @@ exports.handler = async (event) => {
       {
         type: 'text',
         text:
-          'Estimate total calories and protein for this meal: ' +
+          'Estimate total calories, protein, carbohydrates, fat and fiber for this meal: ' +
           (description || '(photo only)') +
           '. State assumptions about portions. ' +
           'Do not claim precision.'
@@ -143,12 +143,18 @@ exports.handler = async (event) => {
                 food_name: { type: 'string' },
                 calories: { type: 'number' },
                 protein_g: { type: 'number' },
+                carbs_g: { type: 'number' },
+                fat_g: { type: 'number' },
+                fiber_g: { type: 'number' },
                 notes: { type: 'string' }
               },
               required: [
                 'food_name',
                 'calories',
                 'protein_g',
+                'carbs_g',
+                'fat_g',
+                'fiber_g',
                 'notes'
               ]
             }
@@ -196,6 +202,9 @@ exports.handler = async (event) => {
       food_name: String(estimate.food_name).slice(0, 500),
       calories: Math.round(calories),
       protein_g: Math.round(protein * 10) / 10,
+      carbs_g: Math.max(0, Math.round((Number(estimate.carbs_g) || 0) * 10) / 10),
+      fat_g: Math.max(0, Math.round((Number(estimate.fat_g) || 0) * 10) / 10),
+      fiber_g: Math.max(0, Math.round((Number(estimate.fiber_g) || 0) * 10) / 10),
       notes: String(estimate.notes).slice(0, 800)
     });
 
