@@ -77,6 +77,35 @@ function quickMeal(){
     if(save()){res.classList.add('hidden');$('aiMealDescription').value='';['aiMealPhoto','mealCamera'].forEach(i=>{if($(i))$(i).value='';});$('mealPreview')?.classList.add('hidden');$('clearMealPhoto')?.classList.add('hidden');if(st)st.textContent='✓ Added to today’s diary.';render();}
     else{db.meals.pop();if(st)st.textContent='Could not save. Try again.';}
   };
+  compressMeals(panel,today,use);
+}
+
+// Meals: Today (add + your meals) · Kitchen · Menus. Diary merges into Today.
+function compressMeals(panel,today,use){
+  const form=$('mealForm'),oldFormBox=form&&(form.closest('details')||form.closest('.card'));
+  // Manual entry lives inside the one "add" box.
+  const manual=el('details',{id:'manualMeal'},[el('summary',{textContent:'Enter it myself'})]);
+  if(form){manual.append(form);panel.append(manual);}
+  if(oldFormBox&&oldFormBox!==panel&&!oldFormBox.contains(form))oldFormBox.remove();
+  const goToday=()=>setTimeout(()=>{$('mealTab-today')?.click();manual.open=true;form?.scrollIntoView({behavior:'smooth',block:'center'});},0);
+  use.textContent='Edit details first';use.addEventListener('click',goToday);
+  $('kitchenResult')?.addEventListener('click',e=>{if(e.target.closest('button')?.textContent==='Review in meal log')goToday();});
+  form?.addEventListener('submit',()=>setTimeout(()=>{if(!$('food').value)manual.open=false;},300));
+  // Drop the duplicate shortcuts and preview; show the real, editable list instead.
+  today.querySelector(':scope>.actions')?.remove();
+  $('todayMealPreview')?.closest('.card')?.remove();
+  const hist=$('mealHistory');
+  if(hist){const box=hist.closest('details')||hist;const card=el('div',{className:'card',id:'yourMeals'},[el('h3',{textContent:'Your meals'})]);card.append(hist);if(box!==hist)box.remove();panel.after(card);}
+  // Goals + achievements in one small fold.
+  const goal=$('calGoal')?.closest('details'),ach=$('nutritionComplete')?.closest('.nutrition-achievement');
+  if(goal){const s=goal.querySelector('summary');if(s)s.textContent='Goals & achievements';if(ach){const old=ach.closest('details');goal.append(ach);if(old&&old!==goal)old.remove();}today.append(goal);}
+  // Tabs: hide Diary, rename tools to Menus, move meal ideas there.
+  const diaryTab=$('mealTab-diary');if(diaryTab)diaryTab.style.display='none';
+  const tools=$('mealTab-tools');if(tools)tools.textContent='Menus';
+  const menus=$('mealView-tools');
+  if(menus){const rec=$('mealRecommendations');if(rec){const hd=document.querySelector('#meals h2');}
+    [...document.querySelectorAll('#mealView-kitchen > *')].forEach(n=>{if(n.id!=='myKitchen')menus.append(n);});
+    const mf=menus.querySelector('details>summary');if(mf&&/menu/i.test(mf.textContent))mf.parentElement.open=false;}
 }
 
 const css=document.createElement('style');
