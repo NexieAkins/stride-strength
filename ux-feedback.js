@@ -84,6 +84,8 @@ function quickMeal(){
 
 // Meals: Today (add + your meals) · Kitchen · Menus. Diary merges into Today.
 function compressMeals(panel,today,use){
+  // Progress › Nutrition history folds like the other history sections.
+  {const hp=document.querySelector('.nutrition-history-panel');if(hp&&!hp.closest('details#nutritionFold')){const d=el('details',{id:'nutritionFold',className:'card'},[el('summary',{textContent:'View Nutrition History'})]);const h=hp.querySelector('h3');hp.before(el('h2',{textContent:'Nutrition history'}),d);if(h)h.remove();d.append(hp);hp.style.border='0';hp.style.padding='0';hp.style.background='transparent';}}
   // Clear buttons for the manual meal form and the workout log.
   const addClear=(formId,after)=>{const f=$(formId);if(!f||f.querySelector('.form-clear'))return;const btn=el('button',{type:'button',className:'secondary-btn form-clear',textContent:'Clear',onclick:()=>{const d=f.querySelector('input[type=date]'),keep=d?.value;f.reset();if(d)d.value=keep;after?.();}});const sub=f.querySelector('button:not([type=button])')||f.lastElementChild;sub.after(btn);};
   addClear('mealForm');addClear('workoutForm',()=>{const t=$('workoutType');if(t){t.value='';t.dispatchEvent(new Event('change'));}});
@@ -216,6 +218,7 @@ body>.size-row{display:none}
 #manualMeal,#pastDays,#kitchenMore{margin-top:12px}#manualMeal>summary,#pastDays>summary,#kitchenMore>summary{font-weight:700;cursor:pointer}
 .past-day{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px}
 #kitchenPantry>summary{display:none}
+#nutritionFold>summary{font-weight:700;cursor:pointer}
 #dietRules{border:1px solid var(--soft);border-radius:14px;padding:12px;margin:12px 0;display:flex;flex-wrap:wrap;gap:8px}#dietRules legend{font-weight:700;padding:0 6px}.diet-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:999px;padding:6px 12px;margin:0!important;font-weight:500;cursor:pointer}.diet-chip input{width:auto!important;margin:0}.diet-chip:has(input:checked){background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}#dietRules p{flex-basis:100%;margin:4px 0 0}
 .stride-week ul{margin:8px 0 0;padding-left:18px;line-height:1.7}.stride-week>summary{font-weight:700;cursor:pointer}`;
 document.head.append(css);
