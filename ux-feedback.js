@@ -67,6 +67,8 @@ function quickMeal(){
   const add=el('button',{type:'button',id:'aiAddDiary',textContent:'Add to today’s diary'});
   use.textContent='Edit in full form';use.classList.add('secondary-btn');
   use.before(el('label',{htmlFor:'aiMealType',textContent:'Meal'}),type,add);
+  const clr=el('button',{type:'button',id:'aiClearEstimate',className:'secondary-btn',textContent:'Clear',onclick:()=>{res.classList.add('hidden');['aiMealDescription','aiEstimateName','aiEstimateCalories','aiEstimateProtein','aiEstimateCarbs','aiEstimateFat','aiEstimateFiber','aiMealPhoto','mealCamera'].forEach(i=>{if($(i))$(i).value='';});if($('aiEstimateNotes'))$('aiEstimateNotes').textContent='';$('mealPreview')?.classList.add('hidden');$('clearMealPhoto')?.classList.add('hidden');const st=$('aiMealStatus');if(st)st.textContent='';$('aiMealDescription')?.focus();}});
+  use.after(clr);
   const num=id=>{const v=$(id)?.value;return v===''||v==null?'':Number(v);};
   add.onclick=()=>{
     const food=$('aiEstimateName').value.trim(),cal=Number($('aiEstimateCalories').value),pro=Number($('aiEstimateProtein').value);
@@ -82,6 +84,9 @@ function quickMeal(){
 
 // Meals: Today (add + your meals) · Kitchen · Menus. Diary merges into Today.
 function compressMeals(panel,today,use){
+  // Clear buttons for the manual meal form and the workout log.
+  const addClear=(formId,after)=>{const f=$(formId);if(!f||f.querySelector('.form-clear'))return;const btn=el('button',{type:'button',className:'secondary-btn form-clear',textContent:'Clear',onclick:()=>{const d=f.querySelector('input[type=date]'),keep=d?.value;f.reset();if(d)d.value=keep;after?.();}});const sub=f.querySelector('button:not([type=button])')||f.lastElementChild;sub.after(btn);};
+  addClear('mealForm');addClear('workoutForm',()=>{const t=$('workoutType');if(t){t.value='';t.dispatchEvent(new Event('change'));}});
   const form=$('mealForm'),oldFormBox=form&&(form.closest('details')||form.closest('.card'));
   const h=panel.querySelector('h3');if(h)h.textContent='Add a meal';
   const p=panel.querySelector('h3+p');if(p)p.textContent='Snap a photo or type it. We’ll estimate the numbers.';
