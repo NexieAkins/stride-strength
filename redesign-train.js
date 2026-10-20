@@ -234,6 +234,58 @@ function buildPlan(){
   document.querySelectorAll('#trainingTabs button').forEach(b=>b.addEventListener('click',()=>{if(!/plan/i.test(b.textContent))closePlan();}));
   window.addEventListener('stride-plan-workout',()=>openPlan('plannerFold'));
 }
+/* ---------- Train · Plan: Build your workout + weekly schedule (mock-up) ---------- */
+function buildBuilder(){
+  const v=$('trainingView-plan'),form=$('trainingPlannerForm');if(!v||!form||$('builder6'))return;
+  const g=$('planTiles6');if(!g)return;
+  const card=el('div',{id:'builder6',className:'card v6-card'});
+  const chipsRow=(opts,multi,get,set)=>{const r=el('div',{className:'v6-chips'});const draw=()=>{r.replaceChildren();opts.forEach(([v,l])=>{const on=get().includes(v);const b=el('button',{type:'button',className:on?'on':'',textContent:(on&&multi?'✓ ':'')+l});b.onclick=()=>{set(v);draw();};r.append(b);});};draw();r.redraw=draw;return r;};
+  // What you want
+  const req=$('trainRequest');const inp=el('input',{id:'b6req',placeholder:'What would you like to train? e.g. upper body, extra back work',value:req?.value||''});inp.oninput=()=>{if(req)req.value=inp.value;};
+  // Focus (Upper + Back together = upper body with back priority)
+  let focus=new Set([$('trainFocus')?.value==='upperback'?'upper':$('trainFocus')?.value||'full']);if($('trainFocus')?.value==='upperback')focus.add('back');
+  const applyFocus=()=>{const f=$('trainFocus');if(!f)return;const has=x=>focus.has(x);f.value=has('upper')&&has('back')?'upperback':[...focus][0]||'full';f.dispatchEvent(new Event('change',{bubbles:true}));};
+  const fr=chipsRow([['full','Full body'],['upper','Upper'],['lower','Lower'],['back','Back'],['core','Core'],['cardio','Run / cardio'],['mobility','Mobility']],true,()=>[...focus],x=>{const combo=(x==='upper'||x==='back')&&(focus.has('upper')||focus.has('back'));if(focus.has(x)){focus.delete(x);}else{if(!combo)focus.clear();focus.add(x);}if(!focus.size)focus.add('full');applyFocus();fr.redraw();});
+  // Time + level
+  const mins=$('trainMinutes'),lvl=$('trainLevel');
+  const timeSel=el('select',{id:'b6time','aria-label':'Workout length'});[15,20,30,45,60,75,90].forEach(m=>timeSel.append(el('option',{value:String(m),textContent:m+' min'})));timeSel.value=String(mins?.value||30);if(!timeSel.value)timeSel.value='30';timeSel.onchange=()=>{if(mins){mins.value=timeSel.value;mins.dispatchEvent(new Event('input',{bubbles:true}));}};
+  const lvlSel=el('select',{id:'b6lvl','aria-label':'Experience level'});[['beginner','Beginner'],['intermediate','Intermediate'],['advanced','Advanced']].forEach(([v,l])=>lvlSel.append(el('option',{value:v,textContent:l})));lvlSel.value=lvl?.value||'beginner';lvlSel.onchange=()=>{if(lvl){lvl.value=lvlSel.value;lvl.dispatchEvent(new Event('change',{bubbles:true}));}};
+  const twoSel=el('div',{className:'v6-kgrid'},[el('label',{className:'v6-kcell',htmlFor:'b6lvl'},[el('small',{textContent:'Experience'}),lvlSel]),el('label',{className:'v6-kcell',htmlFor:'b6time'},[el('small',{textContent:'Duration'}),timeSel])]);
+  // Equipment
+  const eq=$('trainEquipment'),ceq=$('trainCustomEquipment');
+  const er=chipsRow([['Bodyweight only','Bodyweight'],['Dumbbells and a bench','Dumbbells & bench'],['Full gym: machines, cables, dumbbells, barbell, treadmill','Full gym'],['custom','My equipment']],false,()=>[eq?.value],x=>{if(eq){eq.value=x;eq.dispatchEvent(new Event('change',{bubbles:true}));}myEq.hidden=x!=='custom';});
+  const myEq=el('div',{hidden:eq?.value!=='custom'});const myIn=el('input',{placeholder:'e.g. Lat pulldown; chest press; cable machine',value:ceq?.value||''});myIn.oninput=()=>{if(ceq){ceq.value=myIn.value;ceq.dispatchEvent(new Event('input',{bubbles:true}));}};
+  const snap=el('button',{type:'button',className:'v6-linkbtn',textContent:'Not sure what it is? Take a picture'});snap.onclick=()=>window.strideOpenPlan?.('equipmentPhoto');myEq.append(myIn,snap);
+  // How are you feeling / limits
+  const lim=$('trainLimitations');const feel=el('details',{className:'v6-feelrow'},[el('summary',{},[icon('leaf',20),el('span',{},[el('b',{textContent:'How are you feeling today?'}),el('small',{textContent:'Soreness, pain or movements to avoid · adjusts the plan'})])])]);
+  const limIn=el('textarea',{placeholder:'e.g. sore legs; avoid overhead movements; no jumping',value:lim?.value||''});limIn.oninput=()=>{if(lim){lim.value=limIn.value;lim.dispatchEvent(new Event('input',{bubbles:true}));}};feel.append(limIn);
+  const ok=()=>{const bad=form.querySelector(':invalid');if(!bad)return true;const st=$('trainPlannerStatus');const map={trainCustomEquipment:[myIn,'Describe your equipment first (or pick Bodyweight, Dumbbells or Full gym).'],trainRequest:[inp,'Tell us what you’d like to train.'],trainMinutes:[timeSel,'Choose how long you have.']};const m=map[bad.id]||[null,'Please check: '+(form.querySelector('label[for='+bad.id+']')?.textContent||bad.id)];if(st)st.textContent=m[1];st?.scrollIntoView({behavior:'smooth',block:'center'});m[0]?.focus();return false;};
+  const gen=el('button',{type:'button',className:'v6-start',textContent:'Generate workout'});gen.onclick=()=>{applyFocus();if(!ok())return;$('trainGenerate')?.click();setTimeout(()=>res.scrollIntoView({behavior:'smooth',block:'start'}),400);};
+  const def=el('button',{type:'button',className:'v6-linkbtn',textContent:'Use a default routine instead'});def.onclick=()=>{applyFocus();if(!ok())return;$('trainDefault')?.click();setTimeout(()=>res.scrollIntoView({behavior:'smooth',block:'start'}),300);};
+  const res=el('div',{id:'builder6Result'});['trainPlannerStatus','trainPlanResult','trainUsePlan','trainCancelPlan','trainCheckedStatus','trainCompletedMinutes','trainLogChecked'].forEach(id=>{const n=$(id);if(n)res.append(n);});
+  setInterval(()=>{const n=$('trainCancelPlan');if(n&&n.parentElement!==res)res.append(n);const has=!!$('trainPlanResult')?.children.length;['trainCheckedStatus','trainCompletedMinutes','trainLogChecked'].forEach(id=>{const x=$(id);if(x)x.classList.toggle('v6-gone',!has);});const lb=res.querySelector('label[for=trainCompletedMinutes]');if(lb)lb.classList.toggle('v6-gone',!has);},700);
+  card.append(el('h3',{className:'t6-sec',textContent:'Build your workout',style:'margin-top:0'}),inp,el('small',{className:'v6-lbl',textContent:'Focus'}),fr,twoSel,el('small',{className:'v6-lbl',textContent:'Equipment'}),er,myEq,feel,gen,def,res);
+  // Weekly schedule
+  const sch=el('div',{id:'schedule6'});
+  g.after(card,sch);
+  // Hide the old planner tile and section (the builder replaces them)
+  [...g.children].forEach(b=>{if(/build your workout/i.test(b.textContent))b.remove();});
+  const old=$('trainingPlanner');const oldTop=old&&[...v.children].find(c=>c===old||c.contains(old));if(oldTop)oldTop.classList.add('v6-gone');
+  window.addEventListener('stride-plan-workout',()=>setTimeout(()=>{const back=v.querySelector('.t6-back');if(back&&!back.hidden)back.click();card.scrollIntoView({behavior:'smooth',block:'start'});inp.focus();},120));
+  drawSchedule();
+}
+let schedAll=false;
+function drawSchedule(){
+  const sch=$('schedule6');if(!sch||typeof plan==='undefined')return;const idx=(new Date().getDay()+6)%7;
+  const days=['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  const edit=el('button',{type:'button',className:'v6-linkbtn',textContent:'Edit'});edit.onclick=()=>window.strideOpenPrefs?.();
+  sch.replaceChildren(el('div',{className:'v6-sechead'},[el('h3',{textContent:'Your weekly schedule'}),edit]));
+  if(plan.every(x=>/choose your schedule/i.test(x[1]))){const b=el('button',{type:'button',className:'v6-ghost',textContent:'Set my weekly schedule'});b.onclick=()=>window.strideOpenPrefs?.();sch.append(b);return;}
+  const order=[...Array(7)].map((_,o)=>(idx+o)%7).slice(0,schedAll?7:2);
+  order.forEach(i=>{const p=plan[i];const ic=/run|walk/i.test(p[1])?'run':/upper|lower|strength|full/i.test(p[1])?'dumb':/core/i.test(p[1])?'core':/rest|recover|mobil/i.test(p[1])?'leaf':'dumb';sch.append(el('div',{className:'v6-sched'+(i===idx?' today':'')},[el('span',{className:'v6-day',textContent:days[i]}),icon(ic,18),el('b',{textContent:p[1]})]));});
+  const more=el('button',{type:'button',className:'v6-linkbtn',textContent:schedAll?'Show less':'View full week ›'});more.onclick=()=>{schedAll=!schedAll;drawSchedule();};sch.append(more);
+}
+
 /* ---------- Train · Recovery: pick a type, then a routine ---------- */
 const REC={warm:{t:'Warm-ups',s:'Before you train',i:'walk',m:n=>/^warm-up|before running/i.test(n)},cool:{t:'Cool-downs',s:'After strength & core',i:'leaf',m:n=>/^after (a strength|upper|leg|core)/i.test(n)},mob:{t:'Mobility',s:'Rest-day movement',i:'core',m:n=>/mobility|quick upper/i.test(n)},run:{t:'Post-run stretch',s:'Calves, hips & hamstrings',i:'run',m:n=>/after running/i.test(n)},breath:{t:'Breathing',s:'Slow things down',i:'leaf',m:()=>false}};
 const BREATH=[['Calm down · 4-7-8',[['Breathe in',4],['Hold',7],['Breathe out',8]],4,'Settles your body after a hard session or before sleep.'],['Box breathing · 4-4-4-4',[['Breathe in',4],['Hold',4],['Breathe out',4],['Hold',4]],6,'Steadies you before a run or a heavy set.'],['Recovery breaths · 5 min',[['Breathe in',4],['Breathe out',6]],30,'Long, easy exhales bring your heart rate down after training.']];
@@ -306,6 +358,13 @@ const css=el('style');css.textContent=`
 #restTimer div{display:flex;gap:8px;justify-content:center;margin-top:6px}#restTimer button{margin:0!important;padding:6px 12px!important;border-radius:999px!important;background:transparent!important;color:var(--fg)!important;border:1px solid var(--soft)!important;font-size:13px}
 .br-circle{width:200px;height:200px;margin:18px auto;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 55%,transparent),color-mix(in srgb,var(--accent) 15%,transparent));display:flex;flex-direction:column;align-items:center;justify-content:center;transform:scale(.6);transition:transform 4s ease-in-out;text-align:center}.br-circle b{font-size:20px}.br-circle small{font-size:12px;color:var(--fg);opacity:.8}
 @media (prefers-reduced-motion:reduce){.br-circle{transition:none!important}}
+.v6-gone{display:none!important}
+#builder6 input,#builder6 textarea{width:100%}
+.v6-lbl{display:block;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:12px 0 2px}
+.v6-feelrow{border:1px solid var(--soft);border-radius:14px;padding:10px 12px;margin:12px 0}.v6-feelrow>summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none}.v6-feelrow>summary::-webkit-details-marker{display:none}.v6-feelrow>summary svg{color:var(--accent);flex:none}.v6-feelrow b{display:block}.v6-feelrow small{display:block;color:var(--muted);font-size:12px}.v6-feelrow textarea{margin-top:10px}
+#builder6Result{margin-top:10px}#builder6Result label{display:block;margin:8px 0 4px}#builder6Result input,#builder6Result select{width:100%}
+#schedule6{margin:6px 0 14px}.v6-sched{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--soft);border-radius:14px;padding:11px 12px;margin:0 0 6px}.v6-sched svg{color:var(--accent)}.v6-sched.today{border-color:var(--accent)}
+.v6-day{font-size:11px;font-weight:800;border:1px solid var(--soft);border-radius:6px;padding:2px 6px;min-width:38px;text-align:center}
 .t6-back{display:block;margin:0 0 10px!important;padding:6px 0!important;background:transparent!important;border:0!important;color:var(--accent)!important;font-weight:700;font-size:15px}
 .t6-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .t6-tile{display:flex!important;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;min-height:108px;background:var(--card)!important;color:var(--fg)!important;border:1px solid var(--soft)!important;border-radius:16px!important;padding:14px!important;margin:0!important}
@@ -330,7 +389,7 @@ body.lr-open{overflow:hidden}
 `;
 document.head.append(css);
 
-function init(){recoveryInstead();buildToday();buildPlan();buildRecovery();drawToday();const r0=render;render=function(){r0();drawToday();};window.addEventListener('stride-session-update',drawToday);window.addEventListener('stride-session-start',drawToday);window.addEventListener('stride-session-end',drawToday);
+function init(){recoveryInstead();buildToday();buildPlan();buildBuilder();buildRecovery();drawToday();const r0=render;render=function(){r0();drawToday();drawSchedule();};window.addEventListener('stride-session-update',drawToday);window.addEventListener('stride-session-start',drawToday);window.addEventListener('stride-session-end',drawToday);
   // Home's Start run uses the live screen too.
   const lr=$('liveRunStart');if(lr)lr.addEventListener('click',()=>setTimeout(()=>{if(window.strideLiveRun?.state()?.running)openLive();},300));
 }
