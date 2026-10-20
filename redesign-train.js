@@ -113,6 +113,15 @@ function focusExercise(){
   cards.forEach((c,i)=>{c.classList.toggle('v6-cur',c===cur);c.classList.toggle('v6-done',done(c)&&c!==cur);c.classList.toggle('v6-nextup',!done(c)&&c!==cur);let tag=c.querySelector('.v6-extag');if(c===cur){if(!tag){tag=el('p',{className:'v6-extag'});c.prepend(tag);}tag.textContent='EXERCISE '+(i+1)+' OF '+cards.length;}else tag?.remove();});
   const first=cards.find(c=>c.classList.contains('v6-nextup'));cards.forEach(c=>c.classList.toggle('v6-nexthead',c===first));
 }
+function compactSets(){
+  document.querySelectorAll('#sessionTracker details.exercise fieldset:not(.v6-set)').forEach(f=>{f.classList.add('v6-set');f.removeAttribute('style');
+    const ins=f.querySelectorAll('input:not([type=checkbox])');if(ins[0])ins[0].placeholder='Reps';if(ins[1])ins[1].placeholder='Load';
+    const rm=[...f.querySelectorAll('button')].find(b=>/remove set/i.test(b.textContent));if(rm){rm.textContent='✕';rm.setAttribute('aria-label','Remove set');rm.classList.add('v6-rm');}
+    const ck=f.querySelector('input[type=checkbox]');if(ck){const l=ck.closest('label');l?.classList.add('v6-ck');const sync=()=>f.classList.toggle('v6-setdone',ck.checked);ck.addEventListener('change',sync);sync();}
+    const legend=f.querySelector('legend');if(legend){f.prepend(Object.assign(document.createElement('span'),{className:'v6-setno',textContent:legend.textContent.replace('Set ','')}));legend.classList.add('v6-srlegend');}
+  });
+}
+setInterval(compactSets,400);
 setInterval(focusExercise,600);
 function sessionProgress(){
   const tr=$('sessionTracker');if(!tr)return;let bar=$('sessionProgress');
@@ -213,12 +222,20 @@ const css=el('style');css.textContent=`
 .t6-mk>svg:first-child{color:var(--accent);flex:none}.t6-mk>span{flex:1;min-width:0}.t6-mk b{display:block;font-size:14px}.t6-mk small{display:block;color:var(--muted);font-size:11.5px;font-weight:500}.t6-mk>svg:last-child{color:var(--muted);flex:none}
 .t6-next{margin-top:12px!important}.t6-next small{letter-spacing:.08em;font-weight:700!important}.t6-next em{font-style:normal;color:var(--muted);font-size:12.5px;white-space:nowrap}
 #sessionTracker.v6-idle{display:none}
-#sessionTracker details.exercise.v6-cur{border:2px solid var(--accent)!important;border-radius:18px;padding:14px!important;margin:8px 0 14px!important}
+#sessionTracker details.exercise.v6-cur{border:2px solid var(--accent)!important;border-radius:18px;padding:12px 10px!important;margin:8px 0 14px!important}
 .v6-extag{margin:0 0 4px;font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
 #sessionTracker details.exercise.v6-cur>summary{font-size:20px;font-weight:800}
 #sessionTracker details.exercise.v6-nextup,#sessionTracker details.exercise.v6-done{border:1px solid var(--soft)!important;border-radius:14px;padding:10px 12px!important;margin:6px 0!important;opacity:.85}
 #sessionTracker details.exercise.v6-done>summary::after{content:'  ✓ done';color:var(--accent);font-weight:700;font-size:13px}
 #sessionTracker details.exercise.v6-nexthead{margin-top:16px!important;position:relative}#sessionTracker details.exercise.v6-nexthead::before{content:'NEXT UP';position:absolute;top:-18px;left:2px;font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+#sessionTracker fieldset.v6-set{display:grid!important;grid-template-columns:18px minmax(0,1fr) minmax(0,1fr) 56px 34px 24px;gap:4px;align-items:center;border:0!important;border-bottom:1px solid var(--soft)!important;border-radius:0!important;margin:0!important;padding:8px 0!important}
+#sessionTracker fieldset.v6-set legend.v6-srlegend{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}#sessionTracker fieldset.v6-set{position:relative}.v6-setno{font-weight:800;font-size:15px;color:var(--muted);text-align:center}
+#sessionTracker fieldset.v6-set label{font-size:0!important;margin:0!important;display:block}
+#sessionTracker fieldset.v6-set label input,#sessionTracker fieldset.v6-set label select{font-size:16px!important;width:100%;margin:0!important;padding:9px 6px!important;min-height:0}
+#sessionTracker fieldset.v6-set .v6-ck{display:grid!important;place-items:center}
+#sessionTracker fieldset.v6-set .v6-ck input{width:30px!important;height:30px!important;margin:0!important}
+#sessionTracker fieldset.v6-set .v6-rm{width:24px;height:24px;padding:0!important;margin:0!important;border-radius:50%!important;background:transparent!important;color:var(--muted)!important;border:1px solid var(--soft)!important;font-size:12px}
+#sessionTracker fieldset.v6-set.v6-setdone{background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:10px!important}
 #sessionProgress{height:6px;border-radius:4px;background:var(--soft);overflow:hidden;margin:0 0 12px}#sessionProgress i{display:block;height:100%;background:var(--accent);transition:width .3s}
 #sessionTracker input[type=checkbox]{width:26px!important;height:26px!important;accent-color:var(--accent)}
 #restTimer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--card);color:var(--fg);border:1px solid var(--soft);border-radius:20px;padding:12px 18px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);min-width:240px}
