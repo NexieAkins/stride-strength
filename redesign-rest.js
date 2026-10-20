@@ -14,7 +14,7 @@ const paceTxt=s=>{if(!isFinite(s)||s<=0||s>3600)return '';const m=Math.floor(s/6
 function buildLog(){
   const sec=$('log');if(!sec||sec.dataset.v6)return;sec.dataset.v6='1';
   const h=sec.querySelector('h2');if(h){h.textContent='Log';h.classList.add('v6-pagetitle');h.after(el('p',{className:'v6-pagesub',textContent:'Every effort counts.'}));}
-  const imp=$('runPhotoImport');if(imp){const s=imp.querySelector('summary');if(s){s.replaceChildren(icon('spark',20),el('span',{},[el('b',{textContent:'Import from photos'}),el('small',{textContent:'Read a workout plan or result · up to 4 photos'})]));}imp.classList.add('v6-import');}
+  const imp=$('runPhotoImport');if(imp){const s=imp.querySelector('summary');if(s){s.replaceChildren(icon('cam',20),el('span',{},[el('b',{textContent:'Import from photos'}),el('small',{textContent:'Read a workout plan or result · up to 4 photos'})]));}imp.classList.add('v6-import');}
   const type=$('workoutType');
   if(type&&!$('typeChips')){
     const chips=el('div',{id:'typeChips',className:'v6-chips',role:'group','aria-label':'Workout type'});
@@ -52,7 +52,7 @@ function buildMeals(){
   const panel=$('aiMealPanel');if(!panel||$('mealQuick'))return;
   const q=el('div',{id:'mealQuick',className:'v6-quick4'});
   const go=(i,l,f)=>{const b=el('button',{type:'button'},[icon(i,20),el('span',{textContent:l})]);b.onclick=f;q.append(b);};
-  go('spark','Camera',()=>$('mealCamera')?.click());
+  go('cam','Camera',()=>$('mealCamera')?.click());
   go('fork','Type it',()=>{const d=$('aiMealDescription');d?.focus();d?.scrollIntoView({behavior:'smooth',block:'center'});});
   go('redo','Recent',()=>{const y=$('yourMeals');const p=$('pastDays');if(p)p.open=true;y?.scrollIntoView({behavior:'smooth',block:'start'});});
   go('plus','Enter it',()=>{const m=$('manualMeal');if(m){m.open=true;m.scrollIntoView({behavior:'smooth',block:'center'});}});
@@ -91,7 +91,7 @@ function drawProgress(){
   box.replaceChildren();
   const seg=el('div',{className:'v6-seg',role:'group','aria-label':'Time range'});[['week','Week'],['month','Month'],['all','All time']].forEach(([k,l])=>{const b=el('button',{type:'button',textContent:l,className:range===k?'on':''});b.onclick=()=>{range=k;drawProgress();};seg.append(b);});box.append(seg);
   const tile=(i,v,l)=>el('div',{className:'v6-tile3'},[icon(i,18),el('b',{textContent:v}),el('small',{textContent:l})]);
-  box.append(el('div',{className:'v6-tri'},[tile('dumb',String(ws.length),'Workouts'),tile('run',sum(runs,'miles').toFixed(1)+' mi','Distance'),tile('spark',streak+(streak===1?' day':' days'),'Streak')]));
+  box.append(el('div',{className:'v6-tri'},[tile('dumb',String(ws.length),'Workouts'),tile('run',sum(runs,'miles').toFixed(1)+' mi','Distance'),tile('flame',streak+(streak===1?' day':' days'),'Streak')]));
   // Running: last 4 weeks (or 7 days) bars + average pace.
   const weeks=[...Array(4)].map((_,i)=>{const end=new Date(now);end.setDate(end.getDate()-7*(3-i));const st=new Date(end);st.setDate(end.getDate()-6);const r=db.workouts.filter(w=>/run|walk/i.test(w.type||'')&&w.date>=day(st)&&w.date<=day(end));return {l:i===3?'This wk':'W'+(i+1),mi:sum(r,'miles')};});
   const max=Math.max(1,...weeks.map(w=>w.mi)),minsR=sum(runs,'minutes'),miR=sum(runs,'miles');
