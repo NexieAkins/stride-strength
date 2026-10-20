@@ -50,6 +50,7 @@ function drawRecent(){
 /* ---------- MEALS ---------- */
 function buildMeals(){
   const panel=$('aiMealPanel');if(!panel||$('mealQuick'))return;
+  const tot=$('macroTiles')?.closest('.card'),tv=$('mealView-today');if(tot&&tv)tv.prepend(tot);const sub=$('meals')?.querySelector(':scope>p');
   const q=el('div',{id:'mealQuick',className:'v6-quick4'});
   const go=(i,l,f)=>{const b=el('button',{type:'button'},[icon(i,20),el('span',{textContent:l})]);b.onclick=f;q.append(b);};
   go('cam','Camera',()=>$('mealCamera')?.click());
