@@ -178,7 +178,7 @@ function drawToday(){
   if(noPlan){
     hero.append(el('div',{className:'t6-tag',textContent:'TODAY'}),el('h3',{className:'v6-h3',textContent:'Pick today’s workout'}),el('p',{className:'v6-sub',textContent:'Tell us your time, equipment and goal and we’ll build it.'}));
     const b=el('button',{type:'button',className:'v6-start'},[icon('spark',16),document.createTextNode(' Plan my workout')]);b.onclick=()=>{btnByText($('sessionTracker'),/plan my workout/i)?.click();};
-    const s=el('button',{type:'button',className:'v6-ghost',textContent:'Set my weekly schedule'});s.onclick=()=>{show('home');setTimeout(()=>{const m=$('homeMore');if(m){m.open=true;const pr=$('homePreferences');if(pr)pr.open=true;m.scrollIntoView({behavior:'smooth'});}},100);};
+    const s=el('button',{type:'button',className:'v6-ghost',textContent:'Set my weekly schedule'});s.onclick=()=>window.strideOpenPrefs?.();
     hero.append(b,s);
   }else{
     hero.append(el('div',{className:'t6-tag'},[el('i'),document.createTextNode('TODAY · '+(isRun?'ENDURANCE':/core/i.test(p[1])?'CORE':/rest|recovery/i.test(p[1])?'RECOVERY':'STRENGTH'))]));
