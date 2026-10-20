@@ -241,11 +241,14 @@ function buildBuilder(){
   const card=el('div',{id:'builder6',className:'card v6-card'});
   const chipsRow=(opts,multi,get,set)=>{const r=el('div',{className:'v6-chips'});const draw=()=>{r.replaceChildren();opts.forEach(([v,l])=>{const on=get().includes(v);const b=el('button',{type:'button',className:on?'on':'',textContent:(on&&multi?'✓ ':'')+l});b.onclick=()=>{set(v);draw();};r.append(b);});};draw();r.redraw=draw;return r;};
   // What you want
-  const req=$('trainRequest');const inp=el('input',{id:'b6req',placeholder:'What would you like to train? e.g. upper body, extra back work',value:req?.value||''});inp.oninput=()=>{if(req)req.value=inp.value;};
+  const req=$('trainRequest');const inp=el('input',{id:'b6req',placeholder:'What would you like to train? e.g. upper body, extra back work',value:req?.value||''});inp.oninput=()=>applyFocus?.();
   // Focus (Upper + Back together = upper body with back priority)
   let focus=new Set([$('trainFocus')?.value==='upperback'?'upper':$('trainFocus')?.value||'full']);if($('trainFocus')?.value==='upperback')focus.add('back');
-  const applyFocus=()=>{const f=$('trainFocus');if(!f)return;const has=x=>focus.has(x);f.value=has('upper')&&has('back')?'upperback':[...focus][0]||'full';f.dispatchEvent(new Event('change',{bubbles:true}));};
-  const fr=chipsRow([['full','Full body'],['upper','Upper'],['lower','Lower'],['back','Back'],['core','Core'],['cardio','Run / cardio'],['mobility','Mobility']],true,()=>[...focus],x=>{const combo=(x==='upper'||x==='back')&&(focus.has('upper')||focus.has('back'));if(focus.has(x)){focus.delete(x);}else{if(!combo)focus.clear();focus.add(x);}if(!focus.size)focus.add('full');applyFocus();fr.redraw();});
+  const NAMES={full:'full body',upper:'upper body',lower:'lower body',back:'back',core:'core',cardio:'running / cardio',mobility:'mobility'};
+  const applyFocus=()=>{const f=$('trainFocus');if(!f)return;const has=x=>focus.has(x);const list=[...focus];
+    f.value=has('upper')&&has('back')?'upperback':list.length>1&&!has('full')&&(has('upper')||has('lower'))&&list.length>2?'full':list[0]||'full';f.dispatchEvent(new Event('change',{bubbles:true}));
+    if(req){const base=inp.value.trim();req.value=(list.length>1?'Focus on '+list.map(x=>NAMES[x]).join(', ')+'. ':'')+base;}};
+  const fr=chipsRow([['full','Full body'],['upper','Upper'],['lower','Lower'],['back','Back'],['core','Core'],['cardio','Run / cardio'],['mobility','Mobility']],true,()=>[...focus],x=>{if(focus.has(x)){focus.delete(x);}else{if(x==='full')focus.clear();else focus.delete('full');focus.add(x);}if(!focus.size)focus.add('full');applyFocus();fr.redraw();});
   // Time + level
   const mins=$('trainMinutes'),lvl=$('trainLevel');
   const timeSel=el('select',{id:'b6time','aria-label':'Workout length'});[15,20,30,45,60,75,90].forEach(m=>timeSel.append(el('option',{value:String(m),textContent:m+' min'})));timeSel.value=String(mins?.value||30);if(!timeSel.value)timeSel.value='30';timeSel.onchange=()=>{if(mins){mins.value=timeSel.value;mins.dispatchEvent(new Event('input',{bubbles:true}));}};
