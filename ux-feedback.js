@@ -120,11 +120,11 @@ function compressMeals(panel,today,use){
   if(nut){tiles=el('div',{id:'macroTiles'});nut.before(tiles);nut.hidden=true;const h3=nut.closest('.card')?.querySelector('h3');if(h3)h3.remove();}
   function drawTiles(){if(!tiles)return;const t=day(),m=db.meals.filter(x=>x.date===t),sum=k=>m.reduce((n,x)=>n+(Number(x[k])||0),0),g=window.strideCalorieGoal(),burn=window.strideBurnedToday();
     tiles.innerHTML='';[['calories','kcal',0],['protein','protein',1],['carbs','carbs',1],['fat','fat',1]].forEach(([k,l,gr])=>tiles.append(el('div',{},[el('b',{textContent:Math.round(sum(k))+(gr?'g':'')}),el('span',{textContent:l})])));
-    const bar=el('div',{className:'mbar'},[el('i')]);bar.firstChild.style.width=Math.min(100,sum('calories')/g*100)+'%';tiles.append(bar,el('p',{className:'muted mgoal',textContent:'of '+g+' kcal'+(burn?' (incl. '+burn+' burned in workouts)':'')+' · '+(db.goals?.protein||110)+' g protein'}));}
+    const bar=el('div',{className:'mbar'},[el('i')]);bar.firstChild.style.width=Math.min(100,sum('calories')/g*100)+'%';tiles.append(bar,el('p',{className:'muted mgoal',textContent:'of '+g+' kcal'+(burn?' (incl. '+burn+' from workouts)':'')+' · '+(db.goals?.protein||110)+' g protein'}));}
   const prevR=render;render=function(){prevR();splitDays();drawTiles();};splitDays();drawTiles();
   // Goals + achievements in one small fold.
   const goal=$('calGoal')?.closest('details'),ach=$('nutritionComplete')?.closest('.nutrition-achievement');
-  if(goal){const eb=el('label',{className:'eat-back'},[el('input',{type:'checkbox',id:'eatBack',checked:eatBack(),onchange:e=>{try{localStorage.setItem(eatKey(),e.target.checked?'on':'off');}catch(x){}render();}}),document.createTextNode(' Add calories burned in workouts to today’s goal')]);$('calGoal')?.parentElement&&goal.append(eb);const s=goal.querySelector('summary');if(s)s.textContent='Goals & achievements';if(ach){const old=ach.closest('details');goal.append(ach);if(old&&old!==goal)old.remove();}today.append(goal);}
+  if(goal){const sel=el('select',{id:'eatBack'});[['half','Add half (recommended)'],['all','Add all of it'],['off','Don’t add it']].forEach(([v,t])=>sel.append(el('option',{value:v,textContent:t})));sel.value=({0:'off',1:'all'})[eatShare()]||'half';sel.onchange=()=>{try{localStorage.setItem(eatKey(),sel.value);}catch(x){}render();};const eb=el('div',{className:'eat-back'},[el('label',{htmlFor:'eatBack',textContent:'Calories burned in workouts'}),sel,el('p',{className:'muted',textContent:'Workout burn estimates often run high, so adding half is a safer default.'})]);$('calGoal')?.parentElement&&goal.append(eb);const s=goal.querySelector('summary');if(s)s.textContent='Goals & achievements';if(ach){const old=ach.closest('details');goal.append(ach);if(old&&old!==goal)old.remove();}today.append(goal);}
   // Tabs: Today · Kitchen · Menus.
   const diaryTab=$('mealTab-diary');if(diaryTab)diaryTab.remove();
   const tools=$('mealTab-tools');if(tools)tools.textContent='Menus';
@@ -217,7 +217,8 @@ function dietPicker(){
 // Calories burned today (watch reading first, then the session estimate, then a standard MET estimate).
 const MET=[[/long run|quality run|\brun/i,9.8],[/walk/i,3.5],[/bike|cycl/i,7],[/swim/i,7],[/upper|lower|strength|diagnostic|test/i,5],[/standing core|core/i,3.8],[/recovery|mobility|stretch/i,2.5]];
 const eatKey=()=>'stride-eatback-'+(window.cloudRecordOwner?.()||'browser');
-const eatBack=()=>{try{return localStorage.getItem(eatKey())!=='off';}catch(e){return true;}};
+const eatShare=()=>{let v='half';try{v=localStorage.getItem(eatKey())||'half';}catch(e){}return v==='off'?0:v==='on'||v==='all'?1:.5;};
+const eatBack=()=>eatShare()>0;
 function burnedOn(day){
   if(typeof db==='undefined')return 0;const owner=window.cloudRecordOwner?.()||'browser';
   const kg=window.strideEnergy?.weight(db,owner,day)?.kg||70;let sum=0;
@@ -232,7 +233,8 @@ function burnedOn(day){
   return Math.max(0,Math.min(3000,Math.round(sum/5)*5));
 }
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-window.strideBurnedToday=()=>eatBack()?burnedOn(todayStr()):0;
+window.strideBurnedTotal=()=>burnedOn(todayStr());
+window.strideBurnedToday=()=>Math.round(burnedOn(todayStr())*eatShare()/5)*5;
 window.strideCalorieGoal=()=>(Number(db.goals?.calories)||1900)+window.strideBurnedToday();
 const css=document.createElement('style');
 css.textContent=`header{position:relative}
@@ -261,7 +263,7 @@ body>.size-row{display:none}
 #kitchenPantry>summary{display:none}
 #yourMeals .repeat-meal{margin:10px 0 0!important;padding:8px 14px!important;font-size:14px}
 #kitchenSnap{border:1px dashed var(--soft);border-radius:14px;padding:12px;margin:8px 0 12px}#kitchenSnap label{margin-top:4px}#kitchenRead{margin-top:10px}
-.eat-back{display:flex;gap:8px;align-items:center;font-weight:500;margin:12px 0}.eat-back input{width:auto!important}
+.eat-back{margin:12px 0}.eat-back p{margin:6px 0 0}
 #nutritionFold>summary{font-weight:700;cursor:pointer}
 #dietRules{border:1px solid var(--soft);border-radius:14px;padding:12px;margin:12px 0;display:flex;flex-wrap:wrap;gap:8px}#dietRules legend{font-weight:700;padding:0 6px}.diet-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:999px;padding:6px 12px;margin:0!important;font-weight:500;cursor:pointer}.diet-chip input{width:auto!important;margin:0}.diet-chip:has(input:checked){background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}#dietRules p{flex-basis:100%;margin:4px 0 0}
 .stride-week ul{margin:8px 0 0;padding-left:18px;line-height:1.7}.stride-week>summary{font-weight:700;cursor:pointer}`;
