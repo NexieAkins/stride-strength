@@ -225,7 +225,7 @@ function buildPlan(){
     if(d.tagName==='DETAILS')d.open=true;d.closest('details')&&(d.closest('details').open=true);if(top&&top.tagName==='DETAILS')top.open=true;
     const sm=top?.querySelector(':scope>summary');if(sm)sm.hidden=true;
     window.scrollTo({top:0,behavior:'smooth'});};
-  const closePlan=()=>{sections().forEach(c=>{c.hidden=true;const sm=c.querySelector(':scope>summary');if(sm)sm.hidden=false;});g.hidden=false;head.hidden=false;back.hidden=true;};
+  const closePlan=()=>{sections().forEach(c=>{c.hidden=!['builder6','schedule6'].includes(c.id);const sm=c.querySelector(':scope>summary');if(sm)sm.hidden=false;});g.hidden=false;head.hidden=false;back.hidden=true;};
   tiles.forEach(([i,t,s,id])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(i,24),el('b',{textContent:t}),el('small',{textContent:s})]);b.onclick=()=>openPlan(id);g.append(b);});
   back.onclick=closePlan;
   v.prepend(back,head,g);closePlan();
@@ -273,6 +273,7 @@ function buildBuilder(){
   g.after(card,sch);
   // Hide the old planner tile and section (the builder replaces them)
   [...g.children].forEach(b=>{if(/build your workout/i.test(b.textContent))b.remove();});
+  const ep=$('equipmentPhoto');if(ep){v.append(ep);ep.hidden=true;}
   const old=$('trainingPlanner');const oldTop=old&&[...v.children].find(c=>c===old||c.contains(old));if(oldTop)oldTop.classList.add('v6-gone');
   window.addEventListener('stride-plan-workout',()=>setTimeout(()=>{const back=v.querySelector('.t6-back');if(back&&!back.hidden)back.click();card.scrollIntoView({behavior:'smooth',block:'start'});inp.focus();},120));
   drawSchedule();
