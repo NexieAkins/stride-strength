@@ -108,7 +108,7 @@ save();render();
 <script src="energy-estimate.js"></script>
 <script src="run-tracking-utils.js"></script>
 <script src="running-plan-utils.js"></script>
-<script src="photo-input.js"></script>
+<script src="photo-input.js"></script><script src="./photo-multi.js"></script>
 <script src="v4.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -318,13 +318,12 @@ async function imageData(file){
 get('aiAnalyzeMeal').onclick=async()=>{
  const btn=get('aiAnalyzeMeal');btn.disabled=true;
  try{
-  const description=get('aiMealDescription').value.trim(),file=get('mealCamera').files[0]||get('aiMealPhoto').files[0];
-  if(!description&&!file)throw Error('Describe a meal or choose a photo first.');
+  const description=get('aiMealDescription').value.trim(),photos=window.strideMealPhotos?.list()||[];
+  if(!description&&!photos.length)throw Error('Describe a meal or choose a photo first.');
   if(typeof window.mealAiGetToken!=='function')throw Error('Sign in to your cloud account first.');
   const token=await window.mealAiGetToken();if(!token)throw Error('Sign in before estimating a meal.');
   status('Analyzing meal…');
-  const photo=await imageData(file);
-  const res=await fetch('/.netlify/functions/analyze-meal',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({description,photo})});
+  const res=await fetch('/.netlify/functions/analyze-meal',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({description,photos})});
   const data=await res.json().catch(()=>({error:'Invalid server response'}));
   if(!res.ok)throw Error(data.error||'Analysis failed');
   get('aiEstimateName').value=data.food_name||description;

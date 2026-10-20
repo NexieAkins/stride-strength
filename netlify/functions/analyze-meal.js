@@ -67,10 +67,9 @@ exports.handler = async (event) => {
         ? payload.description.trim().slice(0, 1800)
         : '';
 
-    const photo =
-      typeof payload.photo === 'string'
-        ? payload.photo
-        : null;
+    const photos = (Array.isArray(payload.photos) ? payload.photos : [payload.photo])
+      .filter(p => typeof p === 'string' && p).slice(0, 4);
+    const photo = photos[0] || null;
 
     if (!description && !photo) {
       return reply(400, {
@@ -79,8 +78,7 @@ exports.handler = async (event) => {
     }
 
     if (
-      photo &&
-      !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(photo)
+      photos.some(p => !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p))
     ) {
       return reply(400, {
         error: 'Unsupported photo format.'
@@ -98,15 +96,10 @@ exports.handler = async (event) => {
       }
     ];
 
-    if (photo) {
-      content.push({
-        type: 'image_url',
-        image_url: {
-          url: photo,
-          detail: 'low'
-        }
-      });
+    for (const p of photos) {
+      content.push({ type: 'image_url', image_url: { url: p, detail: 'low' } });
     }
+    if (photos.length > 1) content[0].text += ' The photos show the same meal (or parts of one meal) from different angles or items; estimate the combined total once, without double counting.';
 
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',

@@ -67,7 +67,7 @@ function quickMeal(){
   const add=el('button',{type:'button',id:'aiAddDiary',textContent:'Add to today’s diary'});
   use.textContent='Edit in full form';use.classList.add('secondary-btn');
   use.before(el('label',{htmlFor:'aiMealType',textContent:'Meal'}),type,add);
-  const clr=el('button',{type:'button',id:'aiClearEstimate',className:'secondary-btn',textContent:'Clear',onclick:()=>{res.classList.add('hidden');['aiMealDescription','aiEstimateName','aiEstimateCalories','aiEstimateProtein','aiEstimateCarbs','aiEstimateFat','aiEstimateFiber','aiMealPhoto','mealCamera'].forEach(i=>{if($(i))$(i).value='';});if($('aiEstimateNotes'))$('aiEstimateNotes').textContent='';$('mealPreview')?.classList.add('hidden');$('clearMealPhoto')?.classList.add('hidden');const st=$('aiMealStatus');if(st)st.textContent='';$('aiMealDescription')?.focus();}});
+  const clr=el('button',{type:'button',id:'aiClearEstimate',className:'secondary-btn',textContent:'Clear',onclick:()=>{res.classList.add('hidden');['aiMealDescription','aiEstimateName','aiEstimateCalories','aiEstimateProtein','aiEstimateCarbs','aiEstimateFat','aiEstimateFiber','aiMealPhoto','mealCamera'].forEach(i=>{if($(i))$(i).value='';});if($('aiEstimateNotes'))$('aiEstimateNotes').textContent='';window.strideMealPhotos?.clear();$('mealPreview')?.classList.add('hidden');$('clearMealPhoto')?.classList.add('hidden');const st=$('aiMealStatus');if(st)st.textContent='';$('aiMealDescription')?.focus();}});
   use.after(clr);
   const num=id=>{const v=$(id)?.value;return v===''||v==null?'':Number(v);};
   add.onclick=()=>{
@@ -76,7 +76,7 @@ function quickMeal(){
     if(!food||!Number.isFinite(cal)||!Number.isFinite(pro)){if(st)st.textContent='Check the food, calories and protein first.';return;}
     const d=new Date(),day=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     db.meals.push({date:day,type:type.value,food,calories:cal,protein:pro,carbs:num('aiEstimateCarbs'),fat:num('aiEstimateFat'),fiber:num('aiEstimateFiber')});
-    if(save()){res.classList.add('hidden');$('aiMealDescription').value='';['aiMealPhoto','mealCamera'].forEach(i=>{if($(i))$(i).value='';});$('mealPreview')?.classList.add('hidden');$('clearMealPhoto')?.classList.add('hidden');if(st)st.textContent='✓ Added to today’s diary.';render();}
+    if(save()){res.classList.add('hidden');$('aiMealDescription').value='';window.strideMealPhotos?.clear();['aiMealPhoto','mealCamera'].forEach(i=>{if($(i))$(i).value='';});$('mealPreview')?.classList.add('hidden');$('clearMealPhoto')?.classList.add('hidden');if(st)st.textContent='✓ Added to today’s diary.';render();}
     else{db.meals.pop();if(st)st.textContent='Could not save. Try again.';}
   };
   compressMeals(panel,today,use);
