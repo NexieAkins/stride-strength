@@ -216,7 +216,7 @@ function moveDevices(){
 function buildPlan(){
   moveDevices();setInterval(moveDevices,1500);
   const v=$('trainingView-plan');if(!v||$('planTiles6'))return;
-  const tiles=[['watch','Devices','Apple Watch · treadmill · heart rate','devicesFold'],['run','Running plans','5K to ultra','runningGoalPlanner'],['core','Core routines','Standing, bed, floor & more','coreChoices'],['core','Bodyweight skills','Plank, push-ups, pull-ups & more','progressionChoices'],['bars','Starting weights','Find your starting point','startingWeights'],['dumb','Build your workout','Time, equipment & goal','plannerFold'],['cam','Equipment photo','Snap a machine, learn it','equipmentPhoto']];
+  const tiles=[['run','Running plans','5K to ultra','runningGoalPlanner'],['core','Core routines','Standing, bed, floor & more','coreChoices'],['core','Bodyweight skills','Plank, push-ups, pull-ups & more','progressionChoices'],['bars','Starting weights','Find your starting point','startingWeights'],['dumb','Build your workout','Time, equipment & goal','plannerFold'],['cam','Equipment photo','Snap a machine, learn it','equipmentPhoto'],['watch','Devices','Apple Watch · treadmill · heart rate','devicesFold']];
   const head=el('h3',{className:'t6-sec',textContent:'Explore plans'}),g=el('div',{id:'planTiles6',className:'t6-grid'});
   const back=el('button',{type:'button',className:'t6-back',textContent:'‹ All plans',hidden:true});
   const sections=()=>[...v.children].filter(c=>c!==head&&c!==g&&c!==back);
