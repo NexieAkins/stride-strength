@@ -104,6 +104,16 @@ function restUI(){
 function tickRest(){const b=restUI(),left=(restEnd-Date.now())/1000;if(left<=0){b.hidden=true;if(restEnd&&left>-1){try{navigator.vibrate?.(200);}catch(e){}}restEnd=0;return;}b.hidden=false;$('restLeft').textContent=clock(left);}
 setInterval(()=>{if(restEnd)tickRest();},250);
 document.addEventListener('change',e=>{const c=e.target;if(c.type!=='checkbox'||!c.checked||!c.closest('#sessionTracker'))return;if(!/completed .* set/i.test(c.getAttribute('aria-label')||''))return;restEnd=Date.now()+restBase*1000;tickRest();});
+function focusExercise(){
+  const tr=$('sessionTracker');if(!tr||!window.strideSessionTracker?.isActive?.())return;
+  const cards=[...tr.querySelectorAll('details.exercise')];if(!cards.length)return;
+  const done=c=>{const b=[...c.querySelectorAll('input[type=checkbox][aria-label^="Completed"]')];return b.length&&b.every(x=>x.checked);};
+  let cur=cards.find(c=>!done(c))||cards.at(-1);
+  if(tr.dataset.cur!==cur.dataset.exerciseIndex){tr.dataset.cur=cur.dataset.exerciseIndex;cur.open=true;cards.forEach(c=>{if(c!==cur)c.open=false;});}
+  cards.forEach((c,i)=>{c.classList.toggle('v6-cur',c===cur);c.classList.toggle('v6-done',done(c)&&c!==cur);c.classList.toggle('v6-nextup',!done(c)&&c!==cur);let tag=c.querySelector('.v6-extag');if(c===cur){if(!tag){tag=el('p',{className:'v6-extag'});c.prepend(tag);}tag.textContent='EXERCISE '+(i+1)+' OF '+cards.length;}else tag?.remove();});
+  const first=cards.find(c=>c.classList.contains('v6-nextup'));cards.forEach(c=>c.classList.toggle('v6-nexthead',c===first));
+}
+setInterval(focusExercise,600);
 function sessionProgress(){
   const tr=$('sessionTracker');if(!tr)return;let bar=$('sessionProgress');
   const boxes=[...tr.querySelectorAll('input[type=checkbox][aria-label^="Completed"]')];
@@ -132,8 +142,14 @@ function drawToday(){
   const logged=new Set(db.workouts.map(w=>w.date)),week=weekDays();
   const streak=(()=>{let n=0;const d=new Date();for(;;){if(logged.has(day(d))){n++;d.setDate(d.getDate()-1);}else if(n===0&&day(d)===t){d.setDate(d.getDate()-1);}else break;}return n;})();
   box.replaceChildren();
-  const strip=el('div',{className:'v6-week'});week.forEach(d=>{const k=day(d);strip.append(el('span',{className:(k===t?'t ':'')+(logged.has(k)?'dot':'')},[document.createTextNode('MTWTFSS'[(d.getDay()+6)%7]),el('b',{textContent:String(d.getDate())})]));});box.append(strip);
-  if(streak>1)box.append(el('p',{className:'t6-streak',textContent:'🔥 '+streak+'-day streak'}));
+  const selT=window.strideSelDay&&window.strideSelDay!==t?window.strideSelDay:t;box.append(window.strideWeekStrip?window.strideWeekStrip(selT):el('div'));
+  if(selT!==t){const sd=new Date(selT+'T12:00'),sp=plan[(sd.getDay()+6)%7]||['','Choose your schedule',[]],ws=db.workouts.filter(w=>w.date===selT);
+    const c=el('div',{className:'card v6-card'},[el('div',{className:'t6-tag',textContent:(selT<t?'LOOKING BACK · ':'COMING UP · ')+sd.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}).toUpperCase()})]);
+    if(ws.length)ws.forEach(w=>c.append(el('h3',{className:'v6-h3',textContent:w.type||'Workout'}),el('p',{className:'v6-sub',textContent:[Number(w.miles)?Number(w.miles).toFixed(2)+' mi':'',Number(w.minutes)?Math.round(w.minutes)+' min':''].filter(Boolean).join(' · ')||'Logged'})));
+    else c.append(el('h3',{className:'v6-h3',textContent:/choose your schedule/i.test(sp[1])?(selT<t?'Nothing logged':'Nothing planned yet'):(selT<t?'Nothing logged · planned '+sp[1]:sp[1])}),el('p',{className:'v6-sub',textContent:(sp[2]||[]).slice(0,3).join(' · ')}));
+    if(selT<t&&!ws.length){const r=el('button',{type:'button',className:'v6-ghost',textContent:'Log a workout for this day'});r.onclick=()=>{show('log');const d=$('workoutDate');if(d)d.value=selT;};c.append(r);}
+    const back=el('button',{type:'button',className:'v6-start',textContent:'Back to today'});back.onclick=()=>{window.strideSelDay=null;render();};c.append(back);box.append(c);return;}
+  if(streak>1)box.append(el('p',{className:'t6-streak',textContent:streak+'-day streak'}));
   const hero=el('div',{className:'card v6-card'});
   if(noPlan){
     hero.append(el('div',{className:'t6-tag',textContent:'TODAY'}),el('h3',{className:'v6-h3',textContent:'Pick today’s workout'}),el('p',{className:'v6-sub',textContent:'Tell us your time, equipment and goal and we’ll build it.'}));
@@ -169,7 +185,7 @@ function buildPlan(){
   const v=$('trainingView-plan');if(!v||$('planTiles6'))return;
   const tiles=[['run','Running plans','5K to ultra','runningGoalPlanner'],['core','Core routines','Standing, bed, floor & more','coreChoices'],['plank','Bodyweight skills','Plank, push-ups, pull-ups & more','progressionChoices'],['gauge','Starting weights','Find your starting point','startingWeights'],['dumb','Build your workout','Time, equipment & goal','plannerFold'],['cam','Equipment photo','Snap a machine, learn it','equipmentPhoto']];
   const g=el('div',{id:'planTiles6',className:'t6-grid'});
-  tiles.forEach(([i,t,s,id])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(i==='plank'?'core':i==='gauge'?'bars':i==='cam'?'spark':i,24),el('b',{textContent:t}),el('small',{textContent:s})]);b.onclick=()=>{const d=$(id)||($(id==='plannerFold'?'trainingPlanner':id));if(!d)return;v.querySelectorAll(':scope>details').forEach(x=>{if(x!==d)x.open=false;});if(d.tagName==='DETAILS')d.open=true;else{const f=d.closest('details');if(f)f.open=true;}setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'start'}),60);};g.append(b);});
+  tiles.forEach(([i,t,s,id])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(i==='plank'?'core':i==='gauge'?'bars':i,24),el('b',{textContent:t}),el('small',{textContent:s})]);b.onclick=()=>{const d=$(id)||($(id==='plannerFold'?'trainingPlanner':id));if(!d)return;v.querySelectorAll(':scope>details').forEach(x=>{if(x!==d)x.open=false;});if(d.tagName==='DETAILS')d.open=true;else{const f=d.closest('details');if(f)f.open=true;}setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'start'}),60);};g.append(b);});
   v.prepend(el('h3',{className:'t6-sec',textContent:'Explore plans'}),g);
 }
 /* ---------- Train · Recovery: header + quick picks ---------- */
@@ -197,6 +213,12 @@ const css=el('style');css.textContent=`
 .t6-mk>svg:first-child{color:var(--accent);flex:none}.t6-mk>span{flex:1;min-width:0}.t6-mk b{display:block;font-size:14px}.t6-mk small{display:block;color:var(--muted);font-size:11.5px;font-weight:500}.t6-mk>svg:last-child{color:var(--muted);flex:none}
 .t6-next{margin-top:12px!important}.t6-next small{letter-spacing:.08em;font-weight:700!important}.t6-next em{font-style:normal;color:var(--muted);font-size:12.5px;white-space:nowrap}
 #sessionTracker.v6-idle{display:none}
+#sessionTracker details.exercise.v6-cur{border:2px solid var(--accent)!important;border-radius:18px;padding:14px!important;margin:8px 0 14px!important}
+.v6-extag{margin:0 0 4px;font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+#sessionTracker details.exercise.v6-cur>summary{font-size:20px;font-weight:800}
+#sessionTracker details.exercise.v6-nextup,#sessionTracker details.exercise.v6-done{border:1px solid var(--soft)!important;border-radius:14px;padding:10px 12px!important;margin:6px 0!important;opacity:.85}
+#sessionTracker details.exercise.v6-done>summary::after{content:'  ✓ done';color:var(--accent);font-weight:700;font-size:13px}
+#sessionTracker details.exercise.v6-nexthead{margin-top:16px!important;position:relative}#sessionTracker details.exercise.v6-nexthead::before{content:'NEXT UP';position:absolute;top:-18px;left:2px;font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
 #sessionProgress{height:6px;border-radius:4px;background:var(--soft);overflow:hidden;margin:0 0 12px}#sessionProgress i{display:block;height:100%;background:var(--accent);transition:width .3s}
 #sessionTracker input[type=checkbox]{width:26px!important;height:26px!important;accent-color:var(--accent)}
 #restTimer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--card);color:var(--fg);border:1px solid var(--soft);border-radius:20px;padding:12px 18px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);min-width:240px}
