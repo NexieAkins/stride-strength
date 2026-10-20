@@ -194,13 +194,10 @@ function drawToday(){
     const wu=el('button',{type:'button',className:'t6-link',textContent:'Warm up first · 5 min'});wu.onclick=()=>window.strideOpenStretch?.(isRun?'before running':/lower|leg/i.test(p[1])?'warm leg':/upper/i.test(p[1])?'warm upper':'warm strength');hero.append(wu);
   }
   box.append(hero);
-  box.append(el('h3',{className:'t6-sec',textContent:'Quick start'}));
-  const qs=el('div',{className:'t6-qs'});
-  [['run','Run',()=>startRun('run')],['walk','Walk',()=>startRun('walk')],['dumb','Strength',()=>btnByText($('sessionTracker'),/plan my workout/i)?.click()],['core','Core',()=>window.strideOpenPlan?.('coreChoices')]].forEach(([i,l,f])=>{const b=el('button',{type:'button'},[icon(i,22),el('span',{textContent:l})]);b.onclick=f;qs.append(b);});
-  box.append(qs);
+
   box.append(el('h3',{className:'t6-sec',textContent:'Make it yours'}));
   const mk=(i,t,s,re)=>{const b=el('button',{type:'button',className:'t6-mk'},[icon(i,22),el('span',{},[el('b',{textContent:t}),el('small',{textContent:s})]),icon('chev',16)]);b.onclick=()=>btnByText($('sessionTracker'),re)?.click();return b;};
-  box.append(el('div',{className:'t6-two'},[mk('spark','Plan my workout','Built around your goals',/plan my workout/i),mk('redo','Repeat workout','From your history',/repeat workout/i)]),mk('plus','Custom session','Build it set by set',/custom session/i));
+  box.append(el('div',{className:'t6-two'},[mk('spark','Build my workout','Built around your goals',/plan my workout/i),mk('redo','Repeat workout','From your history',/repeat workout/i)]),mk('plus','Custom session','Build it set by set',/custom session/i));
   if(next&&next.p){const names=['','Tomorrow'];const dn=next.o===1?'Tomorrow':next.p[0];const u=el('button',{type:'button',className:'t6-mk t6-next'},[icon(/run|walk/i.test(next.p[1])?'run':/core/i.test(next.p[1])?'core':/rest|recover|mobil|stretch/i.test(next.p[1])?'leaf':'dumb',22),el('span',{},[el('small',{textContent:'UP NEXT'}),el('b',{textContent:next.p[1]})]),el('em',{textContent:dn+' ›'})]);u.onclick=()=>{const w=$('trainingWeek');if(w){w.open=true;w.scrollIntoView({behavior:'smooth'});}};box.append(u);}
 }
 
