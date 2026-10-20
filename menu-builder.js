@@ -65,7 +65,7 @@
     </select>
 
     <button type="button" id="menuGenerate">
-      ✨ Generate Menu
+      Generate Menu
     </button>
 
     <p id="menuStatus" role="status"></p>
