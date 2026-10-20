@@ -20,6 +20,7 @@ const ICONS={
  spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" fill="currentColor"/>',
  cal:'<g fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></g>',
  leaf:'<path d="M5 19C5 10 11 5 20 5c0 9-5 14-14 14zM5 19l7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+ redo:'<path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
  watch:'<g fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 6l1-3h4l1 3M9 18l1 3h4l1-3"/></g>'
 };
 const icon=(name,size=20)=>{const s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 24 24');s.setAttribute('width',size);s.setAttribute('height',size);s.setAttribute('aria-hidden','true');s.innerHTML=ICONS[name]||'';return s;};
@@ -101,7 +102,7 @@ function drawHome(){
     wc.append(el('div',{className:'v6-wk'},[el('div',{},[el('h3',{className:'v6-h3',textContent:plan0[1]}),el('p',{className:'v6-sub',textContent:items})])]));
     const route=document.createElementNS(NS,'svg');route.setAttribute('viewBox','0 0 110 44');route.setAttribute('class','v6-route');route.innerHTML='<path d="M2 34 C18 6, 30 6, 42 26 S 64 44, 76 20 S 98 4, 108 14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="108" cy="14" r="4" fill="currentColor"/>';wc.querySelector('.v6-wk').append(route);
     const b=el('button',{type:'button',className:'v6-start'},[icon('play',16),document.createTextNode(isRun?' Start '+(/walk/i.test(plan0[1])?'walk':'run'):' Start workout')]);
-    b.onclick=()=>{show('train');window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'today'}));if(isRun){const tr=$('liveRunTracker');if(tr){tr.open=true;setTimeout(()=>tr.scrollIntoView({behavior:'smooth',block:'start'}),150);}}};
+    b.onclick=()=>{show('train');window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'today'}));if(isRun&&window.strideStartRun)window.strideStartRun(/walk/i.test(plan0[1])?'walk':/quality/i.test(plan0[1])?'quality':'run');};
     wc.append(b);
   }
   wrap.append(wc);
