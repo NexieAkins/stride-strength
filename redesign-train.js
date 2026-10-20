@@ -201,7 +201,7 @@ function drawToday(){
   box.append(el('h3',{className:'t6-sec',textContent:'Make it yours'}));
   const mk=(i,t,s,re)=>{const b=el('button',{type:'button',className:'t6-mk'},[icon(i,22),el('span',{},[el('b',{textContent:t}),el('small',{textContent:s})]),icon('chev',16)]);b.onclick=()=>btnByText($('sessionTracker'),re)?.click();return b;};
   box.append(el('div',{className:'t6-two'},[mk('spark','Plan my workout','Built around your goals',/plan my workout/i),mk('redo','Repeat workout','From your history',/repeat workout/i)]),mk('plus','Custom session','Build it set by set',/custom session/i));
-  if(next&&next.p){const names=['','Tomorrow'];const dn=next.o===1?'Tomorrow':next.p[0];const u=el('button',{type:'button',className:'t6-mk t6-next'},[icon(/run|walk/i.test(next.p[1])?'run':'dumb',22),el('span',{},[el('small',{textContent:'UP NEXT'}),el('b',{textContent:next.p[1]})]),el('em',{textContent:dn+' ›'})]);u.onclick=()=>{const w=$('trainingWeek');if(w){w.open=true;w.scrollIntoView({behavior:'smooth'});}};box.append(u);}
+  if(next&&next.p){const names=['','Tomorrow'];const dn=next.o===1?'Tomorrow':next.p[0];const u=el('button',{type:'button',className:'t6-mk t6-next'},[icon(/run|walk/i.test(next.p[1])?'run':/core/i.test(next.p[1])?'core':/rest|recover|mobil|stretch/i.test(next.p[1])?'leaf':'dumb',22),el('span',{},[el('small',{textContent:'UP NEXT'}),el('b',{textContent:next.p[1]})]),el('em',{textContent:dn+' ›'})]);u.onclick=()=>{const w=$('trainingWeek');if(w){w.open=true;w.scrollIntoView({behavior:'smooth'});}};box.append(u);}
 }
 
 /* ---------- Train · Plan: tiles first; a section only appears when you pick it ---------- */
