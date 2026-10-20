@@ -139,6 +139,26 @@ function compressMeals(panel,today,use){
     const anchor=$('kitchenGenerate');(anchor?.closest('.actions')||anchor)?.before(more);
     const upd=()=>{const a=$('kitchenAvoid')?.value.trim(),c=$('kitchenCuisine')?.value.trim();hint.textContent=[a&&'· avoid '+a,c&&'· '+c].filter(Boolean).join(' ');};
     ['kitchenAvoid','kitchenCuisine'].forEach(i=>$(i)?.addEventListener('input',upd));setTimeout(upd,500);}
+  // Kitchen photos: snap the fridge/pantry and we list what we see.
+  const ki=$('kitchenIngredients');
+  if(ki&&!$('kitchenSnap')&&window.strideMultiPhoto){
+    const box=el('div',{id:'kitchenSnap'});
+    const camL=el('label',{htmlFor:'kitchenCamera',textContent:'📷 Take a photo of your fridge or pantry'}),cam=el('input',{type:'file',id:'kitchenCamera',accept:'image/*'});cam.setAttribute('capture','environment');
+    const libL=el('label',{htmlFor:'kitchenLibrary',textContent:'Or choose photos'}),lib=el('input',{type:'file',id:'kitchenLibrary',accept:'image/*'});
+    const read=el('button',{type:'button',id:'kitchenRead',textContent:'Read my photos',hidden:true}),st=el('p',{id:'kitchenSnapStatus',className:'muted',role:'status'});
+    box.append(camL,cam,libL,lib,read,st);
+    (kf.querySelector('label[for=kitchenIngredients]')||ki).before(box);
+    let pics=[];const mp=window.strideMultiPhoto.attach({inputs:[cam,lib],after:lib,onChange:(l,err)=>{pics=l;read.hidden=!l.length;st.textContent=err||(l.length?l.length+' photo'+(l.length>1?'s':'')+' ready.':'');}});
+    read.onclick=async()=>{if(!pics.length)return;read.disabled=true;st.textContent='Looking at your photos…';
+      try{const token=await window.mealAiGetToken?.();if(!token)throw Error('Sign in to read kitchen photos.');
+        const r=await fetch('/.netlify/functions/read-pantry',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({photos:pics})});
+        const d=await r.json().catch(()=>({error:'Invalid server response'}));if(!r.ok)throw Error(d.error||'Could not read the photos.');
+        if(!d.items.length){st.textContent='No food found. Try a clearer, closer photo.';return;}
+        const have=ki.value.trim(),line=d.items.map(i=>(i.amount?i.amount+' ':'')+i.name+(i.confidence==='uncertain'?' (?)':'')).join(', ');
+        ki.value=have?have+', '+line:line;ki.dispatchEvent(new Event('input',{bubbles:true}));mp.clear();pics=[];read.hidden=true;
+        st.textContent='Added '+d.items.length+' items below. Check them, fix anything marked (?), then plan.';ki.focus();
+      }catch(e){st.textContent=e.message;}finally{read.disabled=false;}};
+  }
   const kfold=$('kitchenFold');if(kfold&&kf){kfold.before(kf);kfold.remove();}
 }
 
@@ -220,6 +240,7 @@ body>.size-row{display:none}
 .past-day{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px}
 #kitchenPantry>summary{display:none}
 #yourMeals .repeat-meal{margin:10px 0 0!important;padding:8px 14px!important;font-size:14px}
+#kitchenSnap{border:1px dashed var(--soft);border-radius:14px;padding:12px;margin:8px 0 12px}#kitchenSnap label{margin-top:4px}#kitchenRead{margin-top:10px}
 #nutritionFold>summary{font-weight:700;cursor:pointer}
 #dietRules{border:1px solid var(--soft);border-radius:14px;padding:12px;margin:12px 0;display:flex;flex-wrap:wrap;gap:8px}#dietRules legend{font-weight:700;padding:0 6px}.diet-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:999px;padding:6px 12px;margin:0!important;font-weight:500;cursor:pointer}.diet-chip input{width:auto!important;margin:0}.diet-chip:has(input:checked){background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}#dietRules p{flex-basis:100%;margin:4px 0 0}
 .stride-week ul{margin:8px 0 0;padding-left:18px;line-height:1.7}.stride-week>summary{font-weight:700;cursor:pointer}`;
