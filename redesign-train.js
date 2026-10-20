@@ -205,9 +205,17 @@ function drawToday(){
 }
 
 /* ---------- Train · Plan: tiles first; a section only appears when you pick it ---------- */
+function moveDevices(){
+  const v=$('trainingView-plan');if(!v)return;let d=$('devicesFold');
+  if(!d){d=el('details',{id:'devicesFold',className:'card'},[el('summary',{textContent:'Devices'})]);v.append(d);}
+  const tr=$('liveRunTracker');if(tr&&tr.parentElement!==d){d.append(tr);tr.open=true;}
+  const w=[...document.querySelectorAll('details.card')].find(x=>/^apple watch workout/i.test(x.querySelector(':scope>summary')?.textContent||''));if(w&&w.parentElement!==d){d.prepend(w);}
+  const wk=$('trainingWeek');if(wk)wk.hidden=true;
+}
 function buildPlan(){
+  moveDevices();setInterval(moveDevices,1500);
   const v=$('trainingView-plan');if(!v||$('planTiles6'))return;
-  const tiles=[['run','Running plans','5K to ultra','runningGoalPlanner'],['core','Core routines','Standing, bed, floor & more','coreChoices'],['core','Bodyweight skills','Plank, push-ups, pull-ups & more','progressionChoices'],['bars','Starting weights','Find your starting point','startingWeights'],['dumb','Build your workout','Time, equipment & goal','plannerFold'],['cam','Equipment photo','Snap a machine, learn it','equipmentPhoto']];
+  const tiles=[['watch','Devices','Apple Watch · treadmill · heart rate','devicesFold'],['run','Running plans','5K to ultra','runningGoalPlanner'],['core','Core routines','Standing, bed, floor & more','coreChoices'],['core','Bodyweight skills','Plank, push-ups, pull-ups & more','progressionChoices'],['bars','Starting weights','Find your starting point','startingWeights'],['dumb','Build your workout','Time, equipment & goal','plannerFold'],['cam','Equipment photo','Snap a machine, learn it','equipmentPhoto']];
   const head=el('h3',{className:'t6-sec',textContent:'Explore plans'}),g=el('div',{id:'planTiles6',className:'t6-grid'});
   const back=el('button',{type:'button',className:'t6-back',textContent:'‹ All plans',hidden:true});
   const sections=()=>[...v.children].filter(c=>c!==head&&c!==g&&c!==back);
