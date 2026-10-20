@@ -562,7 +562,7 @@ get('aiUseEstimate').onclick=()=>{
 (function(){var t=document.getElementById('workoutType'),f=document.getElementById('workoutForm');if(!t||!f)return;var last=null;function sync(){var chosen=!!t.value;if(chosen===last)return;last=chosen;var on=false;[].slice.call(f.children).forEach(function(n){if(n===t){on=true;return;}if(!on||n.tagName==='LABEL'&&n.htmlFor==='workoutType')return;if(n.id==='workoutDate'||n.htmlFor==='workoutDate')return;n.classList.toggle('log-hidden',!chosen);});}t.addEventListener('change',sync);f.addEventListener('reset',function(){setTimeout(sync,0)});setInterval(sync,400);sync();})();
 </script>
 <style>.log-hidden{display:none!important}</style>
-<script src="./tidy.js"></script><script src="./ux-feedback.js"></script>
+<script src="./tidy.js"></script><script src="./ux-feedback.js"></script><script src="./redesign.js"></script>
 <script>(function(){var t=document.getElementById('workoutType'),d=document.getElementById('distance');if(!t||!d)return;var l=document.querySelector('label[for="distance"]');function m(){var show=/Run|Walk|Bike|Swim/.test(t.value);d.classList.toggle('dist-hidden',!show);if(l)l.classList.toggle('dist-hidden',!show);if(!show)d.value='';}t.addEventListener('change',m);setInterval(m,400);m();})();</script><style>.dist-hidden{display:none!important}</style>
 </body></html>
 
