@@ -110,10 +110,11 @@ function compressMeals(panel,today,use){
     pastList=el('div',{id:'pastMeals'});past=el('details',{id:'pastDays'},[el('summary',{textContent:'Past days'}),pastList]);
     card.append(empty,hist,past);if(box!==hist)box.remove();panel.after(card);}
   const day=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  function repeatButtons(){const t=day();document.querySelectorAll('#yourMeals .meal-diary-entry').forEach(c=>{if(c.querySelector('.repeat-meal'))return;const food=c.querySelector('h3')?.textContent,kind=c.querySelector('.workout-history-kind')?.textContent;const m=db.meals.find(x=>x.date===c.dataset.date&&x.food===food&&(!kind||x.type===kind));if(!m)return;const b=el('button',{type:'button',className:'secondary-btn repeat-meal',textContent:c.dataset.date===t?'＋ Log again':'＋ Log again today',onclick:()=>{const copy={...m,date:t};delete copy.id;db.meals.push(copy);if(save()){render();const st=$('aiMealStatus');if(st)st.textContent='✓ '+m.food+' added to today.';$('yourMeals')?.scrollIntoView({behavior:'smooth',block:'start'});}else db.meals.pop();}});c.append(b);});}
   function splitDays(){if(!hist||!pastList)return;pastList.replaceChildren();const t=day();let n=0,last=null;
     [...hist.querySelectorAll(':scope .meal-diary-entry')].forEach(c=>{if(c.dataset.date===t){n++;return;}if(c.dataset.date!==last){last=c.dataset.date;pastList.append(el('p',{className:'past-day',textContent:new Date(last+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}));}pastList.append(c);});
     hist.querySelectorAll(':scope>.diary-day,:scope>h3').forEach(x=>{if(!x.querySelector('.meal-diary-entry'))x.remove();});
-    $('noMealsToday').hidden=n>0||db.meals.some(x=>x.date===t);past.hidden=!pastList.children.length;}
+    repeatButtons();$('noMealsToday').hidden=n>0||db.meals.some(x=>x.date===t);past.hidden=!pastList.children.length;}
   // Totals as four tiles.
   const nut=$('nutrition');let tiles=null;
   if(nut){tiles=el('div',{id:'macroTiles'});nut.before(tiles);nut.hidden=true;const h3=nut.closest('.card')?.querySelector('h3');if(h3)h3.remove();}
@@ -218,6 +219,7 @@ body>.size-row{display:none}
 #manualMeal,#pastDays,#kitchenMore{margin-top:12px}#manualMeal>summary,#pastDays>summary,#kitchenMore>summary{font-weight:700;cursor:pointer}
 .past-day{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px}
 #kitchenPantry>summary{display:none}
+#yourMeals .repeat-meal{margin:10px 0 0!important;padding:8px 14px!important;font-size:14px}
 #nutritionFold>summary{font-weight:700;cursor:pointer}
 #dietRules{border:1px solid var(--soft);border-radius:14px;padding:12px;margin:12px 0;display:flex;flex-wrap:wrap;gap:8px}#dietRules legend{font-weight:700;padding:0 6px}.diet-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:999px;padding:6px 12px;margin:0!important;font-weight:500;cursor:pointer}.diet-chip input{width:auto!important;margin:0}.diet-chip:has(input:checked){background:var(--accent);color:var(--on-accent,#fff);border-color:var(--accent)}#dietRules p{flex-basis:100%;margin:4px 0 0}
 .stride-week ul{margin:8px 0 0;padding-left:18px;line-height:1.7}.stride-week>summary{font-weight:700;cursor:pointer}`;
