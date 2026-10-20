@@ -218,7 +218,7 @@ function drawProgress(){document.querySelectorAll('.v6-wgraph').forEach(c=>c.hid
   const weeks=[...Array(4)].map((_,i)=>{const end=new Date(now);end.setDate(end.getDate()-7*(3-i));const st=new Date(end);st.setDate(end.getDate()-6);const r=db.workouts.filter(w=>/run|walk/i.test(w.type||'')&&w.date>=day(st)&&w.date<=day(end));return {l:i===3?'This wk':'W'+(i+1),mi:sum(r,'miles')};});
   const max=Math.max(1,...weeks.map(w=>w.mi)),minsR=sum(runs,'minutes'),miR=sum(runs,'miles');
   const chart=el('div',{className:'v6-chart'});weeks.forEach(w=>{const c=el('div',{},[el('em',{textContent:w.mi?w.mi.toFixed(1):''}),el('span',{textContent:w.l})]);c.style.height=Math.max(4,w.mi/max*100)+'%';chart.append(c);});
-  box.append(el('div',{className:'card v6-card'},[el('div',{className:'v6-ch'},[icon('run',18),el('span',{textContent:'Running & walking'})]),el('p',{className:'v6-sub',textContent:miR?miR.toFixed(1)+' mi'+(minsR?' · avg pace '+paceTxt(minsR*60/miR)+' /mi':''):'No runs or walks in this period yet.'}),chart]));
+  box.append(el('div',{className:'card v6-card'},[el('div',{className:'v6-ch'},[icon('run',18),el('span',{textContent:'Running & walking'})]),...(weeks.some(w=>w.mi)?[]:[(chart.hidden=true,el('span'))]),el('p',{className:'v6-sub',textContent:miR?miR.toFixed(1)+' mi'+(minsR?' · avg pace '+paceTxt(minsR*60/miR)+' /mi':''):'No runs or walks in this period yet.'}),chart]));
   // Nutrition: last 7 days vs goal.
   const g=Number(db.goals.calories)||1900,dots=el('div',{className:'v6-dots7'});let on=0;
   for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=day(d),kc=sum(db.meals.filter(m=>m.date===k),'calories');const cls=!kc?'':kc>g*1.1?'o':kc>=g*.8?'g':'u';if(cls==='g')on++;dots.append(el('i',{className:cls,textContent:'MTWTFSS'[(d.getDay()+6)%7],title:kc?fmt(kc)+' kcal':'Nothing logged'}));}
@@ -268,6 +268,7 @@ const css=el('style');css.textContent=`
 .v6-awards{margin:0 0 10px!important}
 .v6-trans h2,.v6-trans h3{font-size:17px!important;margin:0 0 4px!important}.v6-trans{padding:16px!important}
 #waterRow{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--soft)}#waterRow>svg{color:var(--accent)}
+#mealTabs button:focus:not([aria-selected=true]),#trainingTabs button:focus:not([aria-selected=true]){background:transparent!important;color:var(--muted)!important}
 .v6-pace{margin:6px 0 4px;font-weight:700;color:var(--accent)}
 .v6-sechead{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px}.v6-sechead h3{margin:0;font-size:18px}
 .v6-linkbtn{background:transparent!important;color:var(--accent)!important;border:0!important;padding:4px!important;margin:0!important;font-weight:600}
