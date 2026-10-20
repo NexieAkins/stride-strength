@@ -176,12 +176,12 @@ function drawToday(){
     }else{
       const b=el('button',{type:'button',className:'v6-start'},[icon('play',16),document.createTextNode(' Start workout')]);b.onclick=()=>{btnByText($('sessionTracker'),/plan my workout/i)?.click();};hero.append(b);
     }
-    const wu=el('button',{type:'button',className:'t6-link',textContent:'Warm up first · 5 min'});wu.onclick=()=>window.strideOpenStretch?.('warm');hero.append(wu);
+    const wu=el('button',{type:'button',className:'t6-link',textContent:'Warm up first · 5 min'});wu.onclick=()=>window.strideOpenStretch?.(isRun?'before running':/lower|leg/i.test(p[1])?'warm leg':/upper/i.test(p[1])?'warm upper':'warm strength');hero.append(wu);
   }
   box.append(hero);
   box.append(el('h3',{className:'t6-sec',textContent:'Quick start'}));
   const qs=el('div',{className:'t6-qs'});
-  [['run','Run',()=>startRun('run')],['walk','Walk',()=>startRun('walk')],['dumb','Strength',()=>btnByText($('sessionTracker'),/plan my workout/i)?.click()],['core','Core',()=>{window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'plan'}));const c=$('coreChoices');if(c){c.open=true;setTimeout(()=>c.scrollIntoView({behavior:'smooth'}),100);}}]].forEach(([i,l,f])=>{const b=el('button',{type:'button'},[icon(i,22),el('span',{textContent:l})]);b.onclick=f;qs.append(b);});
+  [['run','Run',()=>startRun('run')],['walk','Walk',()=>startRun('walk')],['dumb','Strength',()=>btnByText($('sessionTracker'),/plan my workout/i)?.click()],['core','Core',()=>window.strideOpenPlan?.('coreChoices')]].forEach(([i,l,f])=>{const b=el('button',{type:'button'},[icon(i,22),el('span',{textContent:l})]);b.onclick=f;qs.append(b);});
   box.append(qs);
   box.append(el('h3',{className:'t6-sec',textContent:'Make it yours'}));
   const mk=(i,t,s,re)=>{const b=el('button',{type:'button',className:'t6-mk'},[icon(i,22),el('span',{},[el('b',{textContent:t}),el('small',{textContent:s})]),icon('chev',16)]);b.onclick=()=>btnByText($('sessionTracker'),re)?.click();return b;};
@@ -189,21 +189,52 @@ function drawToday(){
   if(next&&next.p){const names=['','Tomorrow'];const dn=next.o===1?'Tomorrow':next.p[0];const u=el('button',{type:'button',className:'t6-mk t6-next'},[icon(/run|walk/i.test(next.p[1])?'run':'dumb',22),el('span',{},[el('small',{textContent:'UP NEXT'}),el('b',{textContent:next.p[1]})]),el('em',{textContent:dn+' ›'})]);u.onclick=()=>{const w=$('trainingWeek');if(w){w.open=true;w.scrollIntoView({behavior:'smooth'});}};box.append(u);}
 }
 
-/* ---------- Train · Plan: tile grid that opens each section ---------- */
+/* ---------- Train · Plan: tiles first; a section only appears when you pick it ---------- */
 function buildPlan(){
   const v=$('trainingView-plan');if(!v||$('planTiles6'))return;
-  const tiles=[['run','Running plans','5K to ultra','runningGoalPlanner'],['core','Core routines','Standing, bed, floor & more','coreChoices'],['plank','Bodyweight skills','Plank, push-ups, pull-ups & more','progressionChoices'],['gauge','Starting weights','Find your starting point','startingWeights'],['dumb','Build your workout','Time, equipment & goal','plannerFold'],['cam','Equipment photo','Snap a machine, learn it','equipmentPhoto']];
-  const g=el('div',{id:'planTiles6',className:'t6-grid'});
-  tiles.forEach(([i,t,s,id])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(i==='plank'?'core':i==='gauge'?'bars':i,24),el('b',{textContent:t}),el('small',{textContent:s})]);b.onclick=()=>{const d=$(id)||($(id==='plannerFold'?'trainingPlanner':id));if(!d)return;v.querySelectorAll(':scope>details').forEach(x=>{if(x!==d)x.open=false;});if(d.tagName==='DETAILS')d.open=true;else{const f=d.closest('details');if(f)f.open=true;}setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'start'}),60);};g.append(b);});
-  v.prepend(el('h3',{className:'t6-sec',textContent:'Explore plans'}),g);
+  const tiles=[['run','Running plans','5K to ultra','runningGoalPlanner'],['core','Core routines','Standing, bed, floor & more','coreChoices'],['core','Bodyweight skills','Plank, push-ups, pull-ups & more','progressionChoices'],['bars','Starting weights','Find your starting point','startingWeights'],['dumb','Build your workout','Time, equipment & goal','plannerFold'],['cam','Equipment photo','Snap a machine, learn it','equipmentPhoto']];
+  const head=el('h3',{className:'t6-sec',textContent:'Explore plans'}),g=el('div',{id:'planTiles6',className:'t6-grid'});
+  const back=el('button',{type:'button',className:'t6-back',textContent:'‹ All plans',hidden:true});
+  const sections=()=>[...v.children].filter(c=>c!==head&&c!==g&&c!==back);
+  const openPlan=id=>{let d=$(id);if(!d&&id==='plannerFold')d=$('trainingPlanner');if(!d)return;const top=sections().find(c=>c===d||c.contains(d));
+    sections().forEach(c=>c.hidden=c!==top);g.hidden=true;head.hidden=true;back.hidden=false;
+    if(d.tagName==='DETAILS')d.open=true;d.closest('details')&&(d.closest('details').open=true);if(top&&top.tagName==='DETAILS')top.open=true;
+    const sm=top?.querySelector(':scope>summary');if(sm)sm.hidden=true;
+    window.scrollTo({top:0,behavior:'smooth'});};
+  const closePlan=()=>{sections().forEach(c=>{c.hidden=true;const sm=c.querySelector(':scope>summary');if(sm)sm.hidden=false;});g.hidden=false;head.hidden=false;back.hidden=true;};
+  tiles.forEach(([i,t,s,id])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(i,24),el('b',{textContent:t}),el('small',{textContent:s})]);b.onclick=()=>openPlan(id);g.append(b);});
+  back.onclick=closePlan;
+  v.prepend(back,head,g);closePlan();
+  window.strideOpenPlan=id=>{window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'plan'}));openPlan(id);};
+  // Leaving the Plan tab resets it to the tiles.
+  document.querySelectorAll('#trainingTabs button').forEach(b=>b.addEventListener('click',()=>{if(!/plan/i.test(b.textContent))closePlan();}));
+  window.addEventListener('stride-plan-workout',()=>openPlan('plannerFold'));
 }
-/* ---------- Train · Recovery: header + quick picks ---------- */
+/* ---------- Train · Recovery: pick a type, then a routine ---------- */
+const REC={warm:{t:'Warm-ups',s:'Before you train',i:'walk',m:n=>/^warm-up|before running/i.test(n)},cool:{t:'Cool-downs',s:'After strength & core',i:'leaf',m:n=>/^after (a strength|upper|leg|core)/i.test(n)},mob:{t:'Mobility',s:'Rest-day movement',i:'core',m:n=>/mobility|quick upper/i.test(n)},run:{t:'Post-run stretch',s:'Calves, hips & hamstrings',i:'run',m:n=>/after running/i.test(n)}};
 function buildRecovery(){
   const v=$('trainingView-recovery');if(!v||$('recHead6'))return;
+  const sel=$('stretchRoutine'),card=sel?.closest('.card');if(!sel||!card)return;
   const head=el('div',{id:'recHead6'},[el('h3',{className:'t6-sec',textContent:'Explore recovery'})]);
   const g=el('div',{className:'t6-grid'});
-  [['walk','Warm-ups','Before you train','warm'],['leaf','Cool-downs','Post-run & post-lift','cool'],['core','Mobility','Rest-day movement','mobility'],['leaf','Post-run stretch','Calves, hips & hamstrings','run']].forEach(([i,t,s,k])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(i,24),el('b',{textContent:t}),el('small',{textContent:s})]);b.onclick=()=>{window.strideOpenStretch?.(k);setTimeout(()=>$('stretchRoutine')?.scrollIntoView({behavior:'smooth',block:'center'}),120);};g.append(b);});
-  head.append(g);v.prepend(head);
+  const back=el('button',{type:'button',className:'t6-back',textContent:'‹ All recovery',hidden:true});
+  const chips=el('div',{className:'v6-chips',id:'recChips'});
+  const lab=card.querySelector('label[for=stretchRoutine]');
+  sel.classList.add('v6-hidden-select');if(lab)lab.hidden=true;sel.after(chips);
+  const pick=name=>{sel.value=name;sel.dispatchEvent(new Event('change',{bubbles:true}));chips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===name));};
+  const open=(key,want)=>{const r=REC[key];const names=[...sel.options].map(o=>o.value).filter(n=>n&&r.m(n));chips.replaceChildren();
+    names.forEach(n=>{const b=el('button',{type:'button',textContent:n.replace(/ · \d+ minutes?$/,'').replace(/^Warm-up · /,'')});b.dataset.v=n;b.onclick=()=>pick(n);chips.append(b);});
+    const h2=card.querySelector('h2,h3');if(h2)h2.textContent=r.t;
+    g.hidden=true;head.querySelector('h3').hidden=true;back.hidden=false;card.hidden=false;
+    pick(names.find(n=>want&&n.toLowerCase().includes(want))||names[0]);window.scrollTo({top:0,behavior:'smooth'});};
+  const close=()=>{g.hidden=false;head.querySelector('h3').hidden=false;back.hidden=true;card.hidden=true;};
+  Object.entries(REC).forEach(([k,r])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(r.i,24),el('b',{textContent:r.t}),el('small',{textContent:r.s})]);b.onclick=()=>open(k);g.append(b);});
+  back.onclick=close;head.append(g);v.prepend(back,head);close();
+  // Other buttons in the app ("Warm up first", cool-down after a workout) open the right routine.
+  window.strideOpenStretch=key=>{const k=String(key||'').toLowerCase();window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'recovery'}));
+    const group=/run/.test(k)&&/after|post/.test(k)?'run':/before running|warm.*run/.test(k)?'warm':/warm|before/.test(k)?'warm':/mobility|rest/.test(k)?'mob':/after|cool/.test(k)?'cool':'warm';
+    const want=/leg/.test(k)?'leg':/upper/.test(k)?'upper':/core/.test(k)?'core':/run/.test(k)?'running':/strength/.test(k)?'strength':'';open(group,want);};
+  document.querySelectorAll('#trainingTabs button').forEach(b=>b.addEventListener('click',()=>{if(!/recovery/i.test(b.textContent))close();}));
 }
 
 const css=el('style');css.textContent=`
@@ -241,6 +272,7 @@ const css=el('style');css.textContent=`
 #restTimer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--card);color:var(--fg);border:1px solid var(--soft);border-radius:20px;padding:12px 18px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);min-width:240px}
 #restTimer small{color:var(--muted)}#restTimer b{display:block;font-size:36px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
 #restTimer div{display:flex;gap:8px;justify-content:center;margin-top:6px}#restTimer button{margin:0!important;padding:6px 12px!important;border-radius:999px!important;background:transparent!important;color:var(--fg)!important;border:1px solid var(--soft)!important;font-size:13px}
+.t6-back{display:block;margin:0 0 10px!important;padding:6px 0!important;background:transparent!important;border:0!important;color:var(--accent)!important;font-weight:700;font-size:15px}
 .t6-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .t6-tile{display:flex!important;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;min-height:108px;background:var(--card)!important;color:var(--fg)!important;border:1px solid var(--soft)!important;border-radius:16px!important;padding:14px!important;margin:0!important}
 .t6-tile svg{color:var(--accent)}.t6-tile b{font-size:14.5px}.t6-tile small{color:var(--muted);font-size:12px;font-weight:500;line-height:1.35}
