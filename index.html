@@ -140,7 +140,7 @@ function cloudRows(){
  })).concat((db.trainingSessions||[]).filter(s=>s.owner===user.id&&s.status==='draft').map(s=>({id:s.id,user_id:user.id,workout_date:s.date,workout_type:s.type,source:'manual',distance_miles:0,duration_minutes:0,energy:null,soreness:null,notes:'STRIDE_SESSION_V1:'+JSON.stringify(s)}))),
  meals:db.meals.map(m=>({
  id:m.id,user_id:user.id,meal_date:m.date||today,meal_type:m.type||'Other',
- food_name:m.food||'Meal',calories:Number(m.calories)||0,protein_g:Number(m.protein)||0,carbs_g:m.carbs===''||m.carbs==null?null:Number(m.carbs),fat_g:m.fat===''||m.fat==null?null:Number(m.fat),fiber_g:m.fiber===''||m.fiber==null?null:Number(m.fiber)
+ food_name:m.food||'Meal',calories:Number(m.calories)||0,protein_g:Number(m.protein)||0,carbs_g:m.carbs===''||m.carbs==null?null:Number(m.carbs),fat_g:m.fat===''||m.fat==null?null:Number(m.fat),fiber_g:m.fiber===''||m.fiber==null?null:Number(m.fiber),photo_path:m.photo_path||null
  })),
  weigh_ins:db.weights.map(w=>({
  id:w.id,user_id:user.id,weigh_date:w.date||today,weight_lb:Number(w.weight)
@@ -199,7 +199,7 @@ async function loadCloud(){
    if(session?.status==='draft'){session.owner=user.id;db.trainingSessions.push(session);return [];}
    return [{id:x.id,date:x.workout_date,type:x.workout_type,miles:Number(x.distance_miles)||0,minutes:Number(x.duration_minutes)||0,source:x.source||'manual',notes:session?(session.summaryText||window.strideSessionTracker?.summary(session)||session.title||'Training session'):x.notes||'',session,energy:x.energy||'',soreness:x.soreness||''}];
   });
-  db.meals=m.map(x=>({id:x.id,date:x.meal_date,type:x.meal_type,food:x.food_name,calories:Number(x.calories)||0,protein:Number(x.protein_g)||0,carbs:x.carbs_g==null?'':Number(x.carbs_g),fat:x.fat_g==null?'':Number(x.fat_g),fiber:x.fiber_g==null?'':Number(x.fiber_g)}));
+  db.meals=m.map(x=>({id:x.id,date:x.meal_date,type:x.meal_type,food:x.food_name,calories:Number(x.calories)||0,protein:Number(x.protein_g)||0,carbs:x.carbs_g==null?'':Number(x.carbs_g),fat:x.fat_g==null?'':Number(x.fat_g),fiber:x.fiber_g==null?'':Number(x.fiber_g),photo_path:x.photo_path||null}));
   db.weights=weights.map(x=>({id:x.id,date:x.weigh_date,weight:Number(x.weight_lb)}));
   db.water={};db.waterIds={};
   water.forEach(x=>{db.water[x.log_date]=x.glasses;db.waterIds[x.log_date]=x.id});

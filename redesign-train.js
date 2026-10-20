@@ -11,16 +11,31 @@ const clock=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.fl
 const btnByText=(root,re)=>[...(root||document).querySelectorAll('button')].find(b=>re.test(b.textContent));
 
 /* ---------- Starting a run or walk from anywhere ---------- */
-function startRun(kind){
+let runChecked=false;
+function startRun(kind,skipCheck){
   const type=$('liveRunType');if(!type)return;
-  if(!window.strideLiveRun?.isActive()){
+  if(!window.strideLiveRun?.isActive()&&!skipCheck&&window.strideWorkoutCheckin){
+    const walk=/walk/i.test(kind),plan={title:walk?'Walk':'Run',minutes:30,exercises:[]};
+    window.__v6RunCheck=kind;
+    window.strideWorkoutCheckin.request(plan,{focus:'run',level:'beginner'},'Run',p=>{window.__v6RunCheck=null;if(/easier/i.test(p?.title||''))setTimeout(()=>{const s=$('lrStatus');if(s)s.textContent='Keep it easy today: conversational pace, stop if you feel unwell.';},1500);startRun(kind,true);});
+    return;
+  }
+  if(!window.strideLiveRun?.isActive()){runChecked=true;
     const want=/walk/i.test(kind)?'Walk':/quality/i.test(kind)?'Quality Run':'Long Run';
     type.value=want;type.dispatchEvent(new Event('change'));
-    $('liveRunStart')?.click();
+    $('liveRunStart')?.click();runChecked=false;
   }
   openLive();
 }
 window.strideStartRun=startRun;
+document.addEventListener('click',e=>{const b=e.target.closest('#liveRunStart');if(!b||runChecked||window.strideLiveRun?.isActive())return;e.preventDefault();e.stopPropagation();startRun($('liveRunType')?.value||'run');},true);
+// "Recovery instead" in the check-in.
+function recoveryInstead(){
+  const d=$('workoutCheckin');if(!d||$('checkinRecover'))return;
+  const b=el('button',{type:'button',id:'checkinRecover',className:'secondary',textContent:'Do a recovery routine instead'});
+  b.onclick=()=>{const pain=$('checkinPain')?.value,run=!!window.__v6RunCheck;$('checkinCancel')?.click();if(d.open)d.close();show('train');setTimeout(()=>window.strideOpenStretch?.(pain==='leg'?(run?'after running':'after leg day'):pain==='back'||pain==='shoulder'?'mobility':run?'after running':'mobility'),150);};
+  $('checkinCancel')?.after(b);
+}
 
 /* ---------- Live run screen ---------- */
 let live=null,locked=false,hiddenByUser=false;
@@ -41,9 +56,9 @@ function buildLive(){
   live.querySelector('.lr-min').onclick=()=>{hiddenByUser=true;live.hidden=true;document.body.classList.remove('lr-open');};
   $('lrPause').onclick=()=>{const st=window.strideLiveRun?.state();if(!st)return;(st.running?$('liveRunPause'):$('liveRunStart'))?.click();};
   $('lrEnd').onclick=()=>{$('lrEndSheet').hidden=false;};
-  $('lrBack').onclick=()=>{$('lrEndSheet').hidden=true;};
+  $('lrBack').onclick=()=>{$('lrEndSheet').hidden=true;};$('lrDiscard').textContent='Discard (can’t be undone)';
   $('lrFinish').onclick=()=>{$('liveRunFinish')?.click();closeLive();};
-  $('lrDiscard').onclick=()=>{$('liveRunDiscard')?.click();setTimeout(()=>{if(!window.strideLiveRun?.isActive())closeLive();},300);};
+  $('lrDiscard').onclick=()=>{const c=window.confirm;window.confirm=()=>true;try{$('liveRunDiscard')?.click();}finally{window.confirm=c;}setTimeout(()=>{if(!window.strideLiveRun?.isActive())closeLive();},300);};
   $('lrLock').onclick=()=>{locked=true;$('lrLockLayer').hidden=false;};
   let t=null;const u=$('lrUnlock');const down=()=>{u.textContent='Keep holding…';t=setTimeout(()=>{locked=false;$('lrLockLayer').hidden=true;u.textContent='Hold to unlock';},900);};const up=()=>{clearTimeout(t);if(locked)u.textContent='Hold to unlock';};
   u.addEventListener('pointerdown',down);u.addEventListener('pointerup',up);u.addEventListener('pointerleave',up);
@@ -211,7 +226,8 @@ function buildPlan(){
   window.addEventListener('stride-plan-workout',()=>openPlan('plannerFold'));
 }
 /* ---------- Train · Recovery: pick a type, then a routine ---------- */
-const REC={warm:{t:'Warm-ups',s:'Before you train',i:'walk',m:n=>/^warm-up|before running/i.test(n)},cool:{t:'Cool-downs',s:'After strength & core',i:'leaf',m:n=>/^after (a strength|upper|leg|core)/i.test(n)},mob:{t:'Mobility',s:'Rest-day movement',i:'core',m:n=>/mobility|quick upper/i.test(n)},run:{t:'Post-run stretch',s:'Calves, hips & hamstrings',i:'run',m:n=>/after running/i.test(n)}};
+const REC={warm:{t:'Warm-ups',s:'Before you train',i:'walk',m:n=>/^warm-up|before running/i.test(n)},cool:{t:'Cool-downs',s:'After strength & core',i:'leaf',m:n=>/^after (a strength|upper|leg|core)/i.test(n)},mob:{t:'Mobility',s:'Rest-day movement',i:'core',m:n=>/mobility|quick upper/i.test(n)},run:{t:'Post-run stretch',s:'Calves, hips & hamstrings',i:'run',m:n=>/after running/i.test(n)},breath:{t:'Breathing',s:'Slow things down',i:'leaf',m:()=>false}};
+const BREATH=[['Calm down · 4-7-8',[['Breathe in',4],['Hold',7],['Breathe out',8]],4,'Settles your body after a hard session or before sleep.'],['Box breathing · 4-4-4-4',[['Breathe in',4],['Hold',4],['Breathe out',4],['Hold',4]],6,'Steadies you before a run or a heavy set.'],['Recovery breaths · 5 min',[['Breathe in',4],['Breathe out',6]],30,'Long, easy exhales bring your heart rate down after training.']];
 function buildRecovery(){
   const v=$('trainingView-recovery');if(!v||$('recHead6'))return;
   const sel=$('stretchRoutine'),card=sel?.closest('.card');if(!sel||!card)return;
@@ -222,12 +238,19 @@ function buildRecovery(){
   const lab=card.querySelector('label[for=stretchRoutine]');
   sel.classList.add('v6-hidden-select');if(lab)lab.hidden=true;sel.after(chips);
   const pick=name=>{sel.value=name;sel.dispatchEvent(new Event('change',{bubbles:true}));chips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===name));};
-  const open=(key,want)=>{const r=REC[key];const names=[...sel.options].map(o=>o.value).filter(n=>n&&r.m(n));chips.replaceChildren();
+  const bp=el('div',{id:'breathPanel',className:'card v6-card',hidden:true});let btimer=null;
+  const stopB=()=>{clearTimeout(btimer);btimer=null;bp.querySelector('.br-go')&&(bp.querySelector('.br-go').textContent='Start');bp.classList.remove('br-run');const c=bp.querySelector('.br-circle');if(c){c.style.transform='scale(.6)';c.querySelector('b').textContent='Ready';c.querySelector('small').textContent='';}};
+  const drawB=i=>{stopB();const [name,steps,rounds,why]=BREATH[i];bp.replaceChildren(el('h2',{textContent:'Breathing'}));const ch=el('div',{className:'v6-chips'});BREATH.forEach((x,k)=>{const b=el('button',{type:'button',textContent:x[0],className:k===i?'on':''});b.onclick=()=>drawB(k);ch.append(b);});
+    const circle=el('div',{className:'br-circle'},[el('b',{textContent:'Ready'}),el('small')]);const go=el('button',{type:'button',className:'v6-start br-go',textContent:'Start'});
+    go.onclick=()=>{if(btimer){stopB();return;}go.textContent='Stop';bp.classList.add('br-run');let r=0,s=0;const step=()=>{const [label,sec]=steps[s];circle.querySelector('b').textContent=label;circle.querySelector('small').textContent=sec+' sec · round '+(r+1)+' of '+rounds;circle.style.transitionDuration=sec+'s';circle.style.transform=/in/i.test(label)?'scale(1)':/out/i.test(label)?'scale(.6)':circle.style.transform;btimer=setTimeout(()=>{s++;if(s>=steps.length){s=0;r++;}if(r>=rounds){stopB();circle.querySelector('b').textContent='Well done';return;}step();},sec*1000);};step();};
+    bp.append(ch,el('p',{className:'v6-sub',textContent:why}),circle,go,el('p',{className:'v6-legend',textContent:'Breathe through your nose if you can. Stop if you feel dizzy.'}));};
+  card.after(bp);
+  const open=(key,want)=>{if(key==='breath'){g.hidden=true;head.querySelector('h3').hidden=true;back.hidden=false;card.hidden=true;bp.hidden=false;drawB(0);window.scrollTo({top:0,behavior:'smooth'});return;}bp.hidden=true;stopB();const r=REC[key];const names=[...sel.options].map(o=>o.value).filter(n=>n&&r.m(n));chips.replaceChildren();
     names.forEach(n=>{const b=el('button',{type:'button',textContent:n.replace(/ · \d+ minutes?$/,'').replace(/^Warm-up · /,'')});b.dataset.v=n;b.onclick=()=>pick(n);chips.append(b);});
     const h2=card.querySelector('h2,h3');if(h2)h2.textContent=r.t;
     g.hidden=true;head.querySelector('h3').hidden=true;back.hidden=false;card.hidden=false;
     pick(names.find(n=>want&&n.toLowerCase().includes(want))||names[0]);window.scrollTo({top:0,behavior:'smooth'});};
-  const close=()=>{g.hidden=false;head.querySelector('h3').hidden=false;back.hidden=true;card.hidden=true;};
+  const close=()=>{g.hidden=false;head.querySelector('h3').hidden=false;back.hidden=true;card.hidden=true;bp.hidden=true;stopB();};
   Object.entries(REC).forEach(([k,r])=>{const b=el('button',{type:'button',className:'t6-tile'},[icon(r.i,24),el('b',{textContent:r.t}),el('small',{textContent:r.s})]);b.onclick=()=>open(k);g.append(b);});
   back.onclick=close;head.append(g);v.prepend(back,head);close();
   // Other buttons in the app ("Warm up first", cool-down after a workout) open the right routine.
@@ -272,6 +295,8 @@ const css=el('style');css.textContent=`
 #restTimer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--card);color:var(--fg);border:1px solid var(--soft);border-radius:20px;padding:12px 18px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);min-width:240px}
 #restTimer small{color:var(--muted)}#restTimer b{display:block;font-size:36px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
 #restTimer div{display:flex;gap:8px;justify-content:center;margin-top:6px}#restTimer button{margin:0!important;padding:6px 12px!important;border-radius:999px!important;background:transparent!important;color:var(--fg)!important;border:1px solid var(--soft)!important;font-size:13px}
+.br-circle{width:200px;height:200px;margin:18px auto;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 55%,transparent),color-mix(in srgb,var(--accent) 15%,transparent));display:flex;flex-direction:column;align-items:center;justify-content:center;transform:scale(.6);transition:transform 4s ease-in-out;text-align:center}.br-circle b{font-size:20px}.br-circle small{font-size:12px;color:var(--fg);opacity:.8}
+@media (prefers-reduced-motion:reduce){.br-circle{transition:none!important}}
 .t6-back{display:block;margin:0 0 10px!important;padding:6px 0!important;background:transparent!important;border:0!important;color:var(--accent)!important;font-weight:700;font-size:15px}
 .t6-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .t6-tile{display:flex!important;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;min-height:108px;background:var(--card)!important;color:var(--fg)!important;border:1px solid var(--soft)!important;border-radius:16px!important;padding:14px!important;margin:0!important}
@@ -296,7 +321,7 @@ body.lr-open{overflow:hidden}
 `;
 document.head.append(css);
 
-function init(){buildToday();buildPlan();buildRecovery();drawToday();const r0=render;render=function(){r0();drawToday();};window.addEventListener('stride-session-update',drawToday);window.addEventListener('stride-session-start',drawToday);window.addEventListener('stride-session-end',drawToday);
+function init(){recoveryInstead();buildToday();buildPlan();buildRecovery();drawToday();const r0=render;render=function(){r0();drawToday();};window.addEventListener('stride-session-update',drawToday);window.addEventListener('stride-session-start',drawToday);window.addEventListener('stride-session-end',drawToday);
   // Home's Start run uses the live screen too.
   const lr=$('liveRunStart');if(lr)lr.addEventListener('click',()=>setTimeout(()=>{if(window.strideLiveRun?.state()?.running)openLive();},300));
 }
