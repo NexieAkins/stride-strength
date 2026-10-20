@@ -81,6 +81,28 @@ function drawMealRing(){
   tiles.classList.add('v6-tiles');
 }
 
+/* ---------- MEAL PHOTOS: keep a small private photo with each meal ---------- */
+const BUCKET='stride-meal-photos',urls={};
+const uid=()=>{const o=window.cloudRecordOwner?.();return o&&o!=='browser'?o:null;};
+function shrinkData(src,dim){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const r=Math.min(1,dim/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*r);c.height=Math.round(im.height*r);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c);};im.onerror=rej;im.src=src;});}
+function hookMealPhotos(){
+  if(window.__v6MealPhotoHook)return;window.__v6MealPhotoHook=1;
+  document.addEventListener('click',e=>{if(!e.target.closest('#aiAddDiary'))return;const pic=window.strideMealPhotos?.list()?.[0];if(!pic)return;const before=db.meals.length;
+    setTimeout(async()=>{if(db.meals.length<=before)return;const m=db.meals.at(-1);try{
+      const id=uid(),cl=window.strideCloudClient;
+      if(id&&cl?.storage){const c=await shrinkData(pic,480);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.72));const path=id+'/'+crypto.randomUUID()+'.jpg';const {error}=await cl.storage.from(BUCKET).upload(path,blob,{contentType:'image/jpeg',upsert:false});if(error)throw error;m.photo_path=path;}
+      else{const c=await shrinkData(pic,160);m.photo_thumb=c.toDataURL('image/jpeg',.6);}
+      save();render();}catch(e){console.warn('Meal photo not saved',e);}},120);},true);
+}
+async function photoUrl(path){if(urls[path])return urls[path];const cl=window.strideCloudClient;if(!cl?.storage)return null;urls[path]=cl.storage.from(BUCKET).createSignedUrl(path,3600).then(r=>r.data?.signedUrl||null).catch(()=>null);return urls[path];}
+function drawMealPhotos(){
+  document.querySelectorAll('#yourMeals .meal-diary-entry').forEach(card=>{const food=card.querySelector('h3')?.textContent,kind=card.querySelector('.workout-history-kind')?.textContent;const m=db.meals.find(x=>x.date===card.dataset.date&&x.food===food&&(!kind||x.type===kind));if(!m)return;
+    let img=card.querySelector('.v6-mealpic');const src=m.photo_thumb||null;
+    if(!src&&!m.photo_path){img?.remove();return;}
+    if(!img){img=el('img',{className:'v6-mealpic',alt:'Photo of '+food,loading:'lazy'});card.prepend(img);card.classList.add('v6-haspic');}
+    if(src){if(img.src!==src)img.src=src;}else if(!img.dataset.p||img.dataset.p!==m.photo_path){img.dataset.p=m.photo_path;photoUrl(m.photo_path).then(u=>{if(u)img.src=u;else img.remove();});}
+  });
+}
 /* ---------- KITCHEN: ingredient chips ---------- */
 function buildKitchen(){
   const ta=$('kitchenIngredients');if(!ta||$('ingChips'))return;
@@ -151,6 +173,7 @@ const css=el('style');css.textContent=`
 #log.v6-log label[for=energy],#log.v6-log #energy,#log.v6-log #energy+div,#log.v6-log label[for=soreness],#log.v6-log #soreness{display:none!important}
 .v6-ingadd{display:flex;gap:8px;align-items:center}.v6-ingadd input{flex:1}.v6-ingchips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}.v6-ing{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:999px;padding:6px 6px 6px 12px;font-size:14px;font-weight:600}.v6-ing.unsure{border-style:dashed;border-color:var(--accent)}.v6-ing button{width:22px;height:22px;border-radius:50%!important;padding:0!important;margin:0!important;background:var(--soft)!important;color:var(--fg)!important;border:0!important;font-size:11px}
 .v6-logmeal{float:right;margin:0 0 0 8px!important;padding:3px 10px!important;border-radius:10px!important;background:transparent!important;color:var(--accent)!important;border:1px solid var(--accent)!important;font-size:12px;font-weight:700}.stride-week li{overflow:hidden;padding:4px 0}
+.v6-mealpic{float:left;width:64px;height:64px;object-fit:cover;border-radius:14px;margin:0 12px 6px 0;border:1px solid var(--soft)}
 .v6-pace{margin:6px 0 4px;font-weight:700;color:var(--accent)}
 .v6-sechead{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px}.v6-sechead h3{margin:0;font-size:18px}
 .v6-linkbtn{background:transparent!important;color:var(--accent)!important;border:0!important;padding:4px!important;margin:0!important;font-weight:600}
@@ -176,6 +199,6 @@ const css=el('style');css.textContent=`
 document.head.append(css);
 
 function titles(){[['meals','Fuel your day.'],['train','Make today count.']].forEach(([id,sub])=>{const sec=$(id),h=sec?.querySelector(':scope>h2');if(!h||h.classList.contains('v6-pagetitle'))return;h.classList.add('v6-pagetitle');const p=h.nextElementSibling;if(p&&p.tagName==='P')p.textContent=sub;});}
-function init(){titles();buildKitchen();buildLog();buildMeals();buildProgress();const r0=render;render=function(){r0();drawRecent();drawMealRing();drawProgress();menuLogButtons();};setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
+function init(){titles();hookMealPhotos();buildKitchen();buildLog();buildMeals();buildProgress();const r0=render;render=function(){r0();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();};setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
 if(document.readyState==='complete')setTimeout(init,120);else window.addEventListener('load',()=>setTimeout(init,160));
 })();
