@@ -12,12 +12,22 @@ const btnByText=(root,re)=>[...(root||document).querySelectorAll('button')].find
 
 /* ---------- Starting a run or walk from anywhere ---------- */
 let runChecked=false;
-function startRun(kind,skipCheck){
+function chooseWhere(kind,go){
+  const walk=/walk/i.test(kind),mode=$('liveRunMode');let last='gps';try{last=localStorage.getItem('stride-run-where')||'gps';}catch(e){}
+  let d=$('whereSheet');if(d)d.remove();d=el('dialog',{id:'whereSheet',className:'v6-sheet'});
+  const pick=v=>{try{localStorage.setItem('stride-run-where',v);}catch(e){}if(mode){mode.value=v;mode.dispatchEvent(new Event('change',{bubbles:true}));}d.close();d.remove();go();};
+  const opt=(v,ic,t1,t2)=>{const b=el('button',{type:'button',className:'t6-mk v6-where'+(v===last?' on':'')},[icon(ic,24),el('span',{},[el('b',{textContent:t1}),el('small',{textContent:t2})])]);b.onclick=()=>pick(v);return b;};
+  const x=el('button',{type:'button',className:'v6-sheetx','aria-label':'Cancel',textContent:'✕'});x.onclick=()=>{d.close();d.remove();};
+  d.append(el('div',{className:'v6-sheethead'},[el('h2',{textContent:'Where are you '+(walk?'walking':'running')+'?'}),x]),opt('gps',walk?'walk':'run','Outside','GPS tracks your route, distance and pace'),opt('treadmill','dumb','Treadmill / indoors','Timer only · enter the distance when you finish'));
+  document.body.append(d);d.showModal();
+}
+function startRun(kind,skipCheck,whereDone){
   const type=$('liveRunType');if(!type)return;
+  if(!window.strideLiveRun?.isActive()&&!skipCheck&&!whereDone){chooseWhere(kind,()=>startRun(kind,false,true));return;}
   if(!window.strideLiveRun?.isActive()&&!skipCheck&&window.strideWorkoutCheckin){
     const walk=/walk/i.test(kind),plan={title:walk?'Walk':'Run',minutes:30,exercises:[]};
     window.__v6RunCheck=kind;
-    window.strideWorkoutCheckin.request(plan,{focus:'run',level:'beginner'},'Run',p=>{window.__v6RunCheck=null;if(/easier/i.test(p?.title||''))setTimeout(()=>{const s=$('lrStatus');if(s)s.textContent='Keep it easy today: conversational pace, stop if you feel unwell.';},1500);startRun(kind,true);});
+    window.strideWorkoutCheckin.request(plan,{focus:'run',level:'beginner'},'Run',p=>{window.__v6RunCheck=null;if(/easier/i.test(p?.title||''))setTimeout(()=>{const s=$('lrStatus');if(s)s.textContent='Keep it easy today: conversational pace, stop if you feel unwell.';},1500);startRun(kind,true,true);});
     return;
   }
   if(!window.strideLiveRun?.isActive()){runChecked=true;
@@ -49,6 +59,7 @@ function buildLive(){
   <div class="lr-tri"><div><span>Heart rate</span><b id="lrHr">—</b></div><div><span>Calories</span><b id="lrCal">—</b></div><div><span>Splits</span><b id="lrSplitN">0</b></div></div>
   <div class="lr-splits" id="lrSplits"></div>
   <p class="lr-status" id="lrStatus" role="status"></p>
+  <div class="lr-ask" id="lrStopAsk" hidden role="alert"><b>Looks like you’ve stopped.</b><span>Pause so your pace stays accurate?</span><div><button type="button" id="lrAskPause">Pause</button><button type="button" id="lrAskNo" class="v6-ghost">Keep going</button></div></div>
   <div class="lr-ctrl"><button type="button" id="lrLock" class="lr-sq" aria-label="Lock screen">🔒</button><button type="button" id="lrPause" class="lr-pz" aria-label="Pause">❚❚</button><button type="button" id="lrEnd" class="lr-sq">End</button></div>
   <div class="lr-end" id="lrEndSheet" hidden><button type="button" id="lrFinish" class="v6-start">Finish &amp; review</button><button type="button" id="lrDiscard" class="v6-ghost">Discard</button><button type="button" id="lrBack" class="v6-ghost">Keep going</button></div>
   <div class="lr-lock" id="lrLockLayer" hidden><button type="button" id="lrUnlock">Hold to unlock</button></div>`;
@@ -56,6 +67,7 @@ function buildLive(){
   live.querySelector('.lr-min').onclick=()=>{hiddenByUser=true;live.hidden=true;document.body.classList.remove('lr-open');};
   $('lrPause').onclick=()=>{const st=window.strideLiveRun?.state();if(!st)return;(st.running?$('liveRunPause'):$('liveRunStart'))?.click();};
   $('lrEnd').onclick=()=>{$('lrEndSheet').hidden=false;};
+  $('lrAskPause').onclick=()=>{$('liveRunPause')?.click();$('lrStopAsk').hidden=true;hist=[];};$('lrAskNo').onclick=()=>{$('lrStopAsk').hidden=true;snoozeUntil=Date.now()+180000;hist=[];};
   $('lrBack').onclick=()=>{$('lrEndSheet').hidden=true;};$('lrDiscard').textContent='Discard (can’t be undone)';
   $('lrFinish').onclick=()=>{$('liveRunFinish')?.click();closeLive();};
   $('lrDiscard').onclick=()=>{const c=window.confirm;window.confirm=()=>true;try{$('liveRunDiscard')?.click();}finally{window.confirm=c;}setTimeout(()=>{if(!window.strideLiveRun?.isActive())closeLive();},300);};
@@ -69,17 +81,18 @@ function closeLive(){if(!live)return;live.hidden=true;$('lrEndSheet').hidden=tru
 function drawRoute(route){
   const svg=$('lrMap');if(!svg)return;
   let g='<defs><pattern id="lrg" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="var(--soft)" stroke-width="1"/></pattern></defs><rect width="300" height="150" fill="url(#lrg)"/>';
+  if(route.length>2){const sm=route.map((r,i)=>{if(i===0||i===route.length-1)return r;const w=route.slice(Math.max(0,i-2),i+3);return [w.reduce((n,x)=>n+x[0],0)/w.length,w.reduce((n,x)=>n+x[1],0)/w.length];});route=sm;}
   if(route.length>1){
     const lats=route.map(r=>r[0]),lons=route.map(r=>r[1]),mlat=(Math.max(...lats)+Math.min(...lats))/2,k=Math.cos(mlat*Math.PI/180);
     const xs=lons.map(l=>l*k),minx=Math.min(...xs),maxx=Math.max(...xs),miny=Math.min(...lats),maxy=Math.max(...lats);
-    const sc=Math.min(260/Math.max(maxx-minx,1e-9),110/Math.max(maxy-miny,1e-9)),ox=150-(minx+maxx)/2*sc,oy=75+(miny+maxy)/2*sc;
+    const MIN=0.0035,sc=Math.min(260/Math.max(maxx-minx,MIN),110/Math.max(maxy-miny,MIN/2)),ox=150-(minx+maxx)/2*sc,oy=75+(miny+maxy)/2*sc;
     const pts=route.map((r,i)=>[(xs[i]*sc+ox).toFixed(1),(oy-r[0]*sc).toFixed(1)]);
     g+='<polyline points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
     g+='<circle cx="'+pts[0][0]+'" cy="'+pts[0][1]+'" r="6" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="'+pts.at(-1)[0]+'" cy="'+pts.at(-1)[1]+'" r="8" fill="var(--accent)"/>';
   }else g+='<text x="150" y="80" text-anchor="middle" fill="var(--muted)" font-size="13">Your route will draw here</text>';
   svg.innerHTML=g;
 }
-let lastRouteLen=-1;
+let lastRouteLen=-1,hist=[],snoozeUntil=0;
 function drawLive(){
   const st=window.strideLiveRun?.state();
   let pill=$('lrPill');if(!pill){pill=el('button',{type:'button',id:'lrPill',hidden:true});pill.onclick=openLive;document.body.append(pill);}
@@ -103,6 +116,11 @@ function drawLive(){
   const sp=$('lrSplits');sp.replaceChildren();let prev=0;const durs=st.splits.map(s=>{const d=s-prev;prev=s;return d;});const fast=Math.min(...durs),slow=Math.max(...durs);
   durs.slice(-5).forEach((d,i,a)=>{const n=st.splits.length-a.length+i+1;const w=slow===fast?80:40+60*(slow-d)/(slow-fast);sp.append(el('div',{className:'lr-split'},[el('span',{textContent:'Mile '+n}),el('i',{style:'width:'+w+'%'}),el('b',{textContent:pace(d)})]));});
   $('lrStatus').textContent=$('liveRunStatus')?.textContent||'';
+  // Stopped? Offer to pause (never pauses on its own).
+  hist.push([Date.now(),st.metres]);hist=hist.filter(h=>Date.now()-h[0]<=40000);
+  const ask=$('lrStopAsk');const first=hist[0];
+  const stopped=st.mode==='gps'&&st.running&&st.seconds>60&&first&&Date.now()-first[0]>=30000&&(st.metres-first[1])<12;
+  if(stopped&&!snoozeUntil||stopped&&Date.now()>snoozeUntil){ask.hidden=false;}else if(!stopped)ask.hidden=true;
   if(st.route.length!==lastRouteLen){lastRouteLen=st.route.length;drawRoute(st.route);}
 }
 setInterval(drawLive,1000);
@@ -363,6 +381,7 @@ const css=el('style');css.textContent=`
 .br-circle{width:200px;height:200px;margin:18px auto;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 55%,transparent),color-mix(in srgb,var(--accent) 15%,transparent));display:flex;flex-direction:column;align-items:center;justify-content:center;transform:scale(.6);transition:transform 4s ease-in-out;text-align:center}.br-circle b{font-size:20px}.br-circle small{font-size:12px;color:var(--fg);opacity:.8}
 @media (prefers-reduced-motion:reduce){.br-circle{transition:none!important}}
 .v6-gone{display:none!important}
+.v6-where{margin:10px 0 0!important;padding:16px!important}.v6-where.on{border-color:var(--accent)!important}
 .v6-planrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;position:sticky;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--card);padding:8px 0}.v6-planrow button{margin:0!important;padding:13px 8px!important;border-radius:14px!important;font-size:15px;font-weight:700;width:100%}.v6-planrow button.hidden{display:none}#planRow6 #planClear6{margin:0!important}
 #builder6 input,#builder6 textarea{width:100%}
 .v6-lbl{display:block;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:12px 0 2px}
@@ -385,6 +404,7 @@ body.lr-open{overflow:hidden}
 .lr-tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.lr-tri div{background:var(--card);border:1px solid var(--soft);border-radius:14px;padding:10px 6px;text-align:center}.lr-tri span{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.lr-tri b{font-size:21px;font-variant-numeric:tabular-nums}.lr-tri small{font-size:11px;color:var(--muted)}
 .lr-splits{margin-top:10px}.lr-split{display:grid;grid-template-columns:56px 1fr 48px;align-items:center;gap:8px;font-size:13px;margin-top:7px}.lr-split i{height:8px;border-radius:4px;background:var(--accent);display:block}.lr-split b{text-align:right;font-variant-numeric:tabular-nums}
 .lr-status{font-size:12.5px;color:var(--muted);text-align:center;min-height:1em}
+.lr-ask{background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:12px 14px;margin:8px 0;text-align:center}.lr-ask b{display:block}.lr-ask span{color:var(--muted);font-size:13px}.lr-ask div{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.lr-ask button{margin:0!important}
 .lr-ctrl{display:flex;justify-content:center;align-items:center;gap:24px;margin-top:10px}
 .lr-pz{width:84px;height:84px;border-radius:50%!important;font-size:26px!important;padding:0!important;margin:0!important}
 .lr-sq{width:58px;height:58px;border-radius:50%!important;padding:0!important;margin:0!important;background:var(--card)!important;color:var(--fg)!important;border:1px solid var(--soft)!important;font-weight:800}
