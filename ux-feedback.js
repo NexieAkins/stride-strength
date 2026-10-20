@@ -29,10 +29,12 @@ function setup(){
     acctPanel.replaceChildren();
     if(signedIn()){
       acctPanel.append(el('p',{className:'acct-email',textContent:email()||'Signed in'}),
+        el('button',{type:'button',textContent:'Fitness preferences',onclick:()=>{close();window.strideOpenPrefs?.();}}),
         el('button',{type:'button',textContent:'Account & sync',onclick:()=>{close();document.querySelector('[data-go=accountpage]')?.click()||window.show?.('accountpage');}}),
         el('button',{type:'button',className:'acct-logout',textContent:'Log out',onclick:()=>{close();$('signout')?.click();}}));
     }else{
       acctPanel.append(el('p',{className:'acct-email',textContent:'Not syncing · saved on this device'}),
+        el('button',{type:'button',textContent:'Fitness preferences',onclick:()=>{close();window.strideOpenPrefs?.();}}),
         el('button',{type:'button',textContent:'Sign in or create account',onclick:()=>{close();if(window.strideShowWelcome)window.strideShowWelcome();else window.show?.('accountpage');}}));
     }
   }

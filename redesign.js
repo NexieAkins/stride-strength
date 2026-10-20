@@ -70,11 +70,22 @@ function weekDays(){const d=new Date(),mon=new Date(d);mon.setDate(d.getDate()-(
 function buildHome(){
   const home=$('home');if(!home||$('homeV6'))return;
   const wrap=el('div',{id:'homeV6'});home.prepend(wrap);home.classList.add('v6');
-  // Move preferences, schedule and profile button into one tidy fold at the bottom.
-  const more=el('details',{id:'homeMore',className:'card'},[el('summary',{textContent:'Your week & preferences'})]);
+  // Preferences live in a sheet opened from Account (and from Home when nothing is set yet).
+  const sheet=el('dialog',{id:'prefsSheet',className:'v6-sheet'});
+  const close=el('button',{type:'button',className:'v6-sheetx','aria-label':'Close',textContent:'✕'});close.onclick=()=>sheet.close();
   const prefs=$('homePreferences'),sched=home.querySelector('.calm-fold'),prof=$('setName');
-  if(prof)more.append(prof);if(prefs){prefs.open=false;more.append(prefs);}if(sched)more.append(sched);
-  home.append(more);
+  sheet.append(el('div',{className:'v6-sheethead'},[el('h2',{textContent:'Fitness preferences'}),close]),el('p',{className:'v6-sub',textContent:'Your weekly schedule, meal style and diet rules. Change them any time.'}));
+  if(prof){prof.textContent='Edit fitness profile (age, weight, goals)';prof.classList.add('v6-ghost');sheet.append(prof);}
+  if(prefs){prefs.open=true;const sm=prefs.querySelector(':scope>summary');if(sm)sm.hidden=true;prefs.classList.add('v6-flatprefs');sheet.append(prefs);prefs.querySelectorAll('button').forEach(b=>{if(/^done$/i.test(b.textContent.trim()))b.addEventListener('click',()=>setTimeout(()=>sheet.close(),50));});}
+  // The weekly schedule list stays in the page (hidden on Home) because other screens update it.
+  const done=el('button',{type:'button',className:'v6-start',textContent:'Save & close'});done.onclick=()=>sheet.close();sheet.append(done);
+  document.body.append(sheet);
+  sheet.addEventListener('close',()=>render());
+  window.strideOpenPrefs=()=>{if(!sheet.open)sheet.showModal();const p=$('homePreferences');if(p)p.open=true;};
+  // First time: ask once for preferences (after sign-in / welcome and any profile dialog).
+  const owner=()=>window.cloudRecordOwner?.()||'browser';
+  const firstAsk=()=>{try{const k='stride-prefs-asked-'+owner();if(localStorage.getItem(k))return;if(document.body.classList.contains('welcome')||document.querySelector('dialog[open]'))return setTimeout(firstAsk,3000);const noSched=typeof plan!=='undefined'&&plan.every(x=>/choose your schedule/i.test(x[1]));if(!noSched||$('mealStyle')?.value){localStorage.setItem(k,'1');return;}localStorage.setItem(k,'1');window.strideOpenPrefs();}catch(e){}};
+  setTimeout(firstAsk,3500);window.addEventListener('stride-account-change',()=>setTimeout(firstAsk,3500));
 }
 window.strideWeekStrip=(t)=>{const today=day(),logged=new Set([...db.workouts,...db.meals].map(x=>x.date));const strip=el('div',{className:'v6-week',role:'group','aria-label':'Choose a day'});
   weekDays().forEach(d=>{const k=day(d);const b=el('button',{type:'button',className:(k===t?'t ':'')+(k===today?'today ':'')+(logged.has(k)?'dot':'')},[el('span',{textContent:'MTWTFSS'[(d.getDay()+6)%7]}),el('b',{textContent:String(d.getDate())})]);b.setAttribute('aria-pressed',String(k===t));b.setAttribute('aria-label',d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}));b.onclick=()=>{window.strideSelDay=k===today?null:k;render();};strip.append(b);});return strip;};
@@ -107,7 +118,7 @@ function drawHome(){
   }else if(noPlan){
     wc.append(el('h3',{className:'v6-h3',textContent:'Pick today’s workout'}),el('p',{className:'v6-sub',textContent:'Plan one in a minute, or set your weekly schedule once.'}));
     const b=el('button',{type:'button',className:'v6-start'},[icon('spark',16),document.createTextNode(' Plan my workout')]);b.onclick=()=>{show('train');window.dispatchEvent(new CustomEvent('stride-plan-workout'));};
-    const s=el('button',{type:'button',className:'v6-ghost',textContent:'Set my weekly schedule'});s.onclick=()=>{const m=$('homeMore');m.open=true;const p=$('homePreferences');if(p)p.open=true;m.scrollIntoView({behavior:'smooth'});};
+    const s=el('button',{type:'button',className:'v6-ghost',textContent:'Set my weekly schedule'});s.onclick=()=>window.strideOpenPrefs();
     wc.append(b,s);
   }else{
     const items=(plan0[2]||[]).slice(0,3).join(' · ');
@@ -148,7 +159,7 @@ nav button.active{color:var(--accent)!important}
 nav button.v6-log{overflow:visible}
 .v6-fab{width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin-top:-26px;border:4px solid var(--bg);box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 45%,transparent)}
 nav button.v6-log.active .v6-fab{outline:2px solid var(--fg);outline-offset:2px}
-#home.v6>*:not(#homeV6):not(#homeMore){display:none!important}
+#home.v6>*:not(#homeV6){display:none!important}
 #homeV6 .card{margin:0 0 10px}
 .v6-hello{color:var(--muted);margin:8px 0 0;font-size:15px}
 .v6-title{font-size:28px;font-weight:800;margin:2px 0 14px;letter-spacing:-.01em}
@@ -178,7 +189,12 @@ nav button.v6-log.active .v6-fab{outline:2px solid var(--fg);outline-offset:2px}
 .v6-mil{display:flex;gap:10px;align-items:center;margin:8px 0 2px}.v6-mil b{font-size:14px}.v6-mil p{margin:0;font-size:12px;color:var(--muted)}
 .v6-badge{width:40px;height:44px;flex:none;color:var(--fg)}
 header h1 small{display:none}.v6-plus[hidden]{display:none!important}.v6-back{display:block;margin:-8px 0 10px!important;background:transparent!important;border:0!important;color:var(--accent)!important;padding:4px 0!important;font-weight:600}.v6-amp{color:var(--accent)}
-#homeMore>summary{font-weight:700;cursor:pointer}
+.v6-sheet{width:min(560px,calc(100vw - 24px));max-height:88vh;overflow:auto;border:1px solid var(--soft);border-radius:22px;background:var(--bg);color:var(--fg);padding:18px}
+.v6-sheet::backdrop{background:rgba(0,0,0,.55)}
+.v6-sheethead{display:flex;justify-content:space-between;align-items:center}.v6-sheethead h2{margin:0;font-size:22px}
+.v6-sheetx{width:36px;height:36px;border-radius:50%!important;padding:0!important;margin:0!important;background:var(--card)!important;color:var(--fg)!important;border:1px solid var(--soft)!important}
+.v6-flatprefs{border:0!important;padding:0!important;background:transparent!important;box-shadow:none!important}.v6-flatprefs .card{background:transparent!important;border:0!important;padding:0!important}
+#prefsSheet #setName{display:block;width:100%;margin:12px 0!important}
 `;
 document.head.append(css);
 
