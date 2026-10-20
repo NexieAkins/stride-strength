@@ -104,6 +104,16 @@ function restUI(){
 function tickRest(){const b=restUI(),left=(restEnd-Date.now())/1000;if(left<=0){b.hidden=true;if(restEnd&&left>-1){try{navigator.vibrate?.(200);}catch(e){}}restEnd=0;return;}b.hidden=false;$('restLeft').textContent=clock(left);}
 setInterval(()=>{if(restEnd)tickRest();},250);
 document.addEventListener('change',e=>{const c=e.target;if(c.type!=='checkbox'||!c.checked||!c.closest('#sessionTracker'))return;if(!/completed .* set/i.test(c.getAttribute('aria-label')||''))return;restEnd=Date.now()+restBase*1000;tickRest();});
+function focusExercise(){
+  const tr=$('sessionTracker');if(!tr||!window.strideSessionTracker?.isActive?.())return;
+  const cards=[...tr.querySelectorAll('details.exercise')];if(!cards.length)return;
+  const done=c=>{const b=[...c.querySelectorAll('input[type=checkbox][aria-label^="Completed"]')];return b.length&&b.every(x=>x.checked);};
+  let cur=cards.find(c=>!done(c))||cards.at(-1);
+  if(tr.dataset.cur!==cur.dataset.exerciseIndex){tr.dataset.cur=cur.dataset.exerciseIndex;cur.open=true;cards.forEach(c=>{if(c!==cur)c.open=false;});}
+  cards.forEach((c,i)=>{c.classList.toggle('v6-cur',c===cur);c.classList.toggle('v6-done',done(c)&&c!==cur);c.classList.toggle('v6-nextup',!done(c)&&c!==cur);let tag=c.querySelector('.v6-extag');if(c===cur){if(!tag){tag=el('p',{className:'v6-extag'});c.prepend(tag);}tag.textContent='EXERCISE '+(i+1)+' OF '+cards.length;}else tag?.remove();});
+  const first=cards.find(c=>c.classList.contains('v6-nextup'));cards.forEach(c=>c.classList.toggle('v6-nexthead',c===first));
+}
+setInterval(focusExercise,600);
 function sessionProgress(){
   const tr=$('sessionTracker');if(!tr)return;let bar=$('sessionProgress');
   const boxes=[...tr.querySelectorAll('input[type=checkbox][aria-label^="Completed"]')];
@@ -203,6 +213,12 @@ const css=el('style');css.textContent=`
 .t6-mk>svg:first-child{color:var(--accent);flex:none}.t6-mk>span{flex:1;min-width:0}.t6-mk b{display:block;font-size:14px}.t6-mk small{display:block;color:var(--muted);font-size:11.5px;font-weight:500}.t6-mk>svg:last-child{color:var(--muted);flex:none}
 .t6-next{margin-top:12px!important}.t6-next small{letter-spacing:.08em;font-weight:700!important}.t6-next em{font-style:normal;color:var(--muted);font-size:12.5px;white-space:nowrap}
 #sessionTracker.v6-idle{display:none}
+#sessionTracker details.exercise.v6-cur{border:2px solid var(--accent)!important;border-radius:18px;padding:14px!important;margin:8px 0 14px!important}
+.v6-extag{margin:0 0 4px;font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+#sessionTracker details.exercise.v6-cur>summary{font-size:20px;font-weight:800}
+#sessionTracker details.exercise.v6-nextup,#sessionTracker details.exercise.v6-done{border:1px solid var(--soft)!important;border-radius:14px;padding:10px 12px!important;margin:6px 0!important;opacity:.85}
+#sessionTracker details.exercise.v6-done>summary::after{content:'  ✓ done';color:var(--accent);font-weight:700;font-size:13px}
+#sessionTracker details.exercise.v6-nexthead{margin-top:16px!important;position:relative}#sessionTracker details.exercise.v6-nexthead::before{content:'NEXT UP';position:absolute;top:-18px;left:2px;font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
 #sessionProgress{height:6px;border-radius:4px;background:var(--soft);overflow:hidden;margin:0 0 12px}#sessionProgress i{display:block;height:100%;background:var(--accent);transition:width .3s}
 #sessionTracker input[type=checkbox]{width:26px!important;height:26px!important;accent-color:var(--accent)}
 #restTimer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--card);color:var(--fg);border:1px solid var(--soft);border-radius:20px;padding:12px 18px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);min-width:240px}

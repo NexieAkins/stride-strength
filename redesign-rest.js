@@ -31,6 +31,17 @@ function buildLog(){
     const upd=()=>{const mi=Number(dist.value),min=Number(dur.value);const show=mi>0&&min>0&&getComputedStyle(dist).display!=='none';p.hidden=!show;if(show)p.textContent='Pace '+paceTxt(min*60/mi)+' /mi';};
     ($('notes')?.previousElementSibling||dur).before(p);setInterval(upd,600);
   }
+  // Energy + soreness as tap chips (the slider and text box stay underneath for saving).
+  const chipRow=(label,opts,get,set,id)=>{const row=el('div',{className:'v6-feel',id},[el('span',{textContent:label})]);opts.forEach(([t,v])=>{const b=el('button',{type:'button',textContent:t});b.onclick=()=>{set(get()===v?'':v);mark();};b.dataset.v=v;row.append(b);});const mark=()=>row.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(get())));setInterval(mark,600);return row;};
+  const en=$('energy'),so=$('soreness');
+  if(en&&so&&!$('feelEnergy')){
+    const band=v=>{const n=Number(v);return !n?'':n<=3?'3':n<=6?'6':'9';};
+    const r1=chipRow('Energy',[['Low','3'],['Steady','6'],['High','9']],()=>band(en.value),v=>{en.value=v;en.dispatchEvent(new Event('input',{bubbles:true}));en.dispatchEvent(new Event('change',{bubbles:true}));},'feelEnergy');
+    const r2=chipRow('Soreness',[['None','None'],['Mild','Mild'],['Sore','Sore']],()=>so.value,v=>{so.value=v;so.dispatchEvent(new Event('input',{bubbles:true}));},'feelSore');
+    const lab=sec.querySelector('label[for=energy]');(lab||en).before(r1,r2);
+    sec.classList.add('v6-log');
+  }
+  const wf=$('weightForm')?.closest('details');if(wf&&!wf.classList.contains('v6-import')){const s2=wf.querySelector('summary');if(s2)s2.replaceChildren(icon('bars',20),el('span',{},[el('b',{textContent:'Weekly weigh-in'}),el('small',{textContent:'Add or update your weight · lb or kg'})]));wf.classList.add('v6-import','card');}
   if(!$('recentActivity')){
     const box=el('div',{id:'recentActivity'});const formCard=$('workoutForm')?.closest('.card');(formCard||sec).after(box);
   }
@@ -70,6 +81,26 @@ function drawMealRing(){
   tiles.classList.add('v6-tiles');
 }
 
+/* ---------- KITCHEN: ingredient chips ---------- */
+function buildKitchen(){
+  const ta=$('kitchenIngredients');if(!ta||$('ingChips'))return;
+  const row=el('div',{className:'v6-ingadd'});const inp=el('input',{id:'ingAdd',placeholder:'Add an ingredient…','aria-label':'Add an ingredient'});const add=el('button',{type:'button','aria-label':'Add ingredient',className:'v6-plus'},[icon('plus',16)]);row.append(inp,add);
+  const chips=el('div',{id:'ingChips',className:'v6-ingchips'});
+  const items=()=>ta.value.split(/[,\n]+/).map(x=>x.trim()).filter(Boolean);
+  const write=list=>{ta.value=list.join(', ');ta.dispatchEvent(new Event('input',{bubbles:true}));draw();};
+  function draw(){chips.replaceChildren();items().forEach((it,i)=>{const c=el('span',{className:'v6-ing'+(/\(\?\)/.test(it)?' unsure':'')},[document.createTextNode(it.replace(/\s*\(\?\)/,'')+(/\(\?\)/.test(it)?' ?':''))]);const x=el('button',{type:'button','aria-label':'Remove '+it,textContent:'✕'});x.onclick=()=>{const l=items();l.splice(i,1);write(l);};c.append(x);chips.append(c);});if(!items().length)chips.append(el('small',{className:'v6-sub',textContent:'Type what you have, or scan your fridge above.'}));}
+  const push=()=>{const v=inp.value.trim();if(!v)return;write([...items(),...v.split(',').map(x=>x.trim()).filter(Boolean)]);inp.value='';inp.focus();};
+  add.onclick=push;inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();push();}});
+  ta.addEventListener('input',()=>{if(document.activeElement!==ta)draw();});
+  ta.before(row,chips);ta.classList.add('v6-hidden-select');
+  const lab=ta.form?.querySelector('label[for=kitchenIngredients]');if(lab)lab.textContent='What’s in your kitchen?';
+  draw();setInterval(()=>{const n=items().length;if(n!==Number(chips.dataset.n)){chips.dataset.n=n;draw();}},700);
+}
+/* ---------- MENUS: + Log on each planned meal ---------- */
+function menuLogButtons(){
+  document.querySelectorAll('#mealPlan .stride-week li').forEach(li=>{if(li.querySelector('.v6-logmeal'))return;const slot=li.querySelector('b')?.textContent.replace(':','').trim(),food=li.textContent.replace(/^[^:]*:\s*/,'').trim();
+    const b=el('button',{type:'button',className:'v6-logmeal',textContent:'＋ Log'});b.onclick=()=>{$('mealTab-today')?.click();const d=$('aiMealDescription');if(d){d.value='1 serving '+food;}const t=$('aiMealType');if(t&&slot)t.value=slot;$('aiAnalyzeMeal')?.click();$('aiMealPanel')?.scrollIntoView({behavior:'smooth',block:'start'});};li.append(b);});
+}
 /* ---------- PROGRESS ---------- */
 function buildProgress(){
   const sec=$('progress');if(!sec||$('progressV6'))return;
@@ -116,6 +147,10 @@ const css=el('style');css.textContent=`
 .v6-chips button{display:inline-flex!important;align-items:center;gap:6px;margin:0!important;padding:9px 13px!important;border-radius:12px!important;background:transparent!important;color:var(--fg)!important;border:1px solid var(--soft)!important;font-size:14px;font-weight:600}
 .v6-chips button svg{color:var(--accent)}.v6-chips button.on{background:var(--accent)!important;color:var(--on-accent)!important;border-color:transparent!important}.v6-chips button.on svg{color:inherit}
 .v6-hidden-select{position:absolute!important;opacity:0!important;pointer-events:none!important;height:1px!important;width:1px!important;overflow:hidden}
+.v6-feel{display:grid;grid-template-columns:78px repeat(3,1fr);gap:6px;align-items:center;margin:8px 0}.v6-feel span{font-weight:700;font-size:14px}.v6-feel button{margin:0!important;padding:10px 4px!important;border-radius:12px!important;background:transparent!important;color:var(--fg)!important;border:1px solid var(--soft)!important;font-weight:600}.v6-feel button.on{background:var(--accent)!important;color:var(--on-accent)!important;border-color:transparent!important}
+#log.v6-log label[for=energy],#log.v6-log #energy,#log.v6-log #energy+div,#log.v6-log label[for=soreness],#log.v6-log #soreness{display:none!important}
+.v6-ingadd{display:flex;gap:8px;align-items:center}.v6-ingadd input{flex:1}.v6-ingchips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}.v6-ing{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:999px;padding:6px 6px 6px 12px;font-size:14px;font-weight:600}.v6-ing.unsure{border-style:dashed;border-color:var(--accent)}.v6-ing button{width:22px;height:22px;border-radius:50%!important;padding:0!important;margin:0!important;background:var(--soft)!important;color:var(--fg)!important;border:0!important;font-size:11px}
+.v6-logmeal{float:right;margin:0 0 0 8px!important;padding:3px 10px!important;border-radius:10px!important;background:transparent!important;color:var(--accent)!important;border:1px solid var(--accent)!important;font-size:12px;font-weight:700}.stride-week li{overflow:hidden;padding:4px 0}
 .v6-pace{margin:6px 0 4px;font-weight:700;color:var(--accent)}
 .v6-sechead{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px}.v6-sechead h3{margin:0;font-size:18px}
 .v6-linkbtn{background:transparent!important;color:var(--accent)!important;border:0!important;padding:4px!important;margin:0!important;font-weight:600}
@@ -141,6 +176,6 @@ const css=el('style');css.textContent=`
 document.head.append(css);
 
 function titles(){[['meals','Fuel your day.'],['train','Make today count.']].forEach(([id,sub])=>{const sec=$(id),h=sec?.querySelector(':scope>h2');if(!h||h.classList.contains('v6-pagetitle'))return;h.classList.add('v6-pagetitle');const p=h.nextElementSibling;if(p&&p.tagName==='P')p.textContent=sub;});}
-function init(){titles();buildLog();buildMeals();buildProgress();const r0=render;render=function(){r0();drawRecent();drawMealRing();drawProgress();};drawRecent();drawMealRing();drawProgress();}
+function init(){titles();buildKitchen();buildLog();buildMeals();buildProgress();const r0=render;render=function(){r0();drawRecent();drawMealRing();drawProgress();menuLogButtons();};setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
 if(document.readyState==='complete')setTimeout(init,120);else window.addEventListener('load',()=>setTimeout(init,160));
 })();
