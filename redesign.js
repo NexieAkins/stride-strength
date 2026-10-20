@@ -77,7 +77,8 @@ function buildHome(){
   sheet.append(el('div',{className:'v6-sheethead'},[el('h2',{textContent:'Fitness preferences'}),close]),el('p',{className:'v6-sub',textContent:'Your weekly schedule, meal style and diet rules. Change them any time.'}));
   if(prof){prof.textContent='Edit fitness profile (age, weight, goals)';prof.classList.add('v6-ghost');sheet.append(prof);}
   if(prefs){prefs.open=true;const sm=prefs.querySelector(':scope>summary');if(sm)sm.hidden=true;prefs.classList.add('v6-flatprefs');sheet.append(prefs);prefs.querySelectorAll('button').forEach(b=>{if(/^done$/i.test(b.textContent.trim()))b.addEventListener('click',()=>setTimeout(()=>sheet.close(),50));});}
-  if(sched)sched.remove();
+  // The weekly schedule list stays in the page (hidden on Home) because other screens update it.
+  const done=el('button',{type:'button',className:'v6-start',textContent:'Save & close'});done.onclick=()=>sheet.close();sheet.append(done);
   document.body.append(sheet);
   sheet.addEventListener('close',()=>render());
   window.strideOpenPrefs=()=>{if(!sheet.open)sheet.showModal();const p=$('homePreferences');if(p)p.open=true;};
