@@ -64,11 +64,16 @@ function buildMeals(){
   const tot=$('macroTiles')?.closest('.card'),tv=$('mealView-today');if(tot&&tv)tv.prepend(tot);const sub=$('meals')?.querySelector(':scope>p');
   const q=el('div',{id:'mealQuick',className:'v6-quick4'});
   const go=(i,l,f)=>{const b=el('button',{type:'button'},[icon(i,20),el('span',{textContent:l})]);b.onclick=f;q.append(b);};
-  go('cam','Camera',()=>$('mealCamera')?.click());
+  go('cam','Photo',()=>$('aiMealPhoto')?.click());
   go('fork','Type it',()=>{const d=$('aiMealDescription');d?.focus();d?.scrollIntoView({behavior:'smooth',block:'center'});});
   go('redo','Recent',()=>{const y=$('yourMeals');const p=$('pastDays');if(p)p.open=true;y?.scrollIntoView({behavior:'smooth',block:'start'});});
   go('plus','Enter it',()=>{const m=$('manualMeal');if(m){m.open=true;m.scrollIntoView({behavior:'smooth',block:'center'});}});
   const h=panel.querySelector('h3');(h||panel.firstChild).after(q);
+  ['aiMealPhoto','mealCamera'].forEach(id=>{const f=$(id);if(!f)return;f.classList.add('v6-hidden-select');const l=panel.querySelector('label[for='+id+']');if(l)l.hidden=true;});
+  const dl=panel.querySelector('label[for=aiMealDescription]');if(dl)dl.hidden=true;
+  const est=$('aiAnalyzeMeal'),d=$('aiMealDescription');if(est&&d){est.classList.add('v6-start');const upd=()=>{est.hidden=!(d.value.trim()||(window.strideMealPhotos?.list()||[]).length);};d.addEventListener('input',upd);setInterval(upd,700);upd();}
+  // Water: cups row instead of text + big button
+  const w=$('water'),wb=$('addWater');if(w&&wb&&!$('waterRow')){const row=el('div',{id:'waterRow',className:'v6-water'});w.before(row);w.hidden=true;wb.hidden=true;window.__v6drawWater=()=>{const t=day(),n=Number(db.water?.[t])||0;row.replaceChildren(icon('drop',20),el('b',{textContent:'Water'}),el('span',{className:'v6-sub',textContent:n+' / 8'}));const cups=el('span',{className:'v6-cups'});for(let i=0;i<8;i++)cups.append(el('i',{className:i<n?'f':''}));const plus=el('button',{type:'button',className:'v6-plus','aria-label':'Add a glass of water'},[icon('plus',14)]);plus.onclick=()=>wb.click();row.append(cups,plus);};window.__v6drawWater();}
 }
 function drawMealRing(){
   const tiles=$('macroTiles');if(!tiles||typeof db==='undefined')return;
@@ -168,6 +173,14 @@ function restyleIdeas(res){
     c.replaceChildren(el('div',{className:'v6-ideatop'},[el('div',{className:'v6-ideapic',textContent:foodEmoji(name)}),body,btn||el('span')]),recipe);
   });
 }
+/* ---------- MENUS: tidy an active custom menu ---------- */
+function tidyMenus(){
+  const plan=$('mealPlan');if(!plan)return;const outer=plan.closest('details');if(outer){if(!outer.dataset.v6open){outer.dataset.v6open='1';outer.querySelector(':scope>summary')?.addEventListener('click',()=>{outer.dataset.userSet='1';});}if(!outer.dataset.userSet)outer.open=true;}
+  plan.querySelectorAll(':scope>details.card:not(.stride-week)').forEach(d=>{const sm=d.querySelector(':scope>summary');if(outer&&sm&&/my meal plan/i.test(sm.textContent)){sm.hidden=true;d.open=true;d.classList.add('v6-flat');}});
+  if(plan.querySelector('details.card:not(.stride-week)')&&!$('menuBack')){const b=el('button',{type:'button',id:'menuBack',className:'v6-linkbtn',textContent:'‹ Back to my 7-day plan'});b.onclick=()=>{const r=[...document.querySelectorAll('#mealView-tools button')].find(x=>/restore default meal plan/i.test(x.textContent));r?.click();b.remove();setTimeout(()=>render(),50);};plan.before(b);}
+  if(!plan.querySelector('details.card:not(.stride-week)'))$('menuBack')?.remove();
+  const rd=[...document.querySelectorAll('#mealView-tools button')].find(x=>/restore default meal plan/i.test(x.textContent));if(rd)rd.hidden=true;
+}
 /* ---------- MENUS: + Log on each planned meal ---------- */
 function menuLogButtons(){
   document.querySelectorAll('#mealPlan .stride-week li').forEach(li=>{if(li.querySelector('.v6-logmeal'))return;const slot=li.querySelector('b')?.textContent.replace(':','').trim(),food=li.textContent.replace(/^[^:]*:\s*/,'').trim();
@@ -176,6 +189,10 @@ function menuLogButtons(){
 /* ---------- PROGRESS ---------- */
 function buildProgress(){
   const sec=$('progress');if(!sec||$('progressV6'))return;
+  const aw=[...sec.querySelectorAll(':scope>p button, :scope>button')].find(b=>/view awards/i.test(b.textContent));
+  if(aw){const row=el('button',{type:'button',className:'t6-mk v6-awards'},[icon('trophy',22),el('span',{},[el('b',{textContent:'Achievements'}),el('small',{textContent:'Your awards and next goals'})]),icon('chev',16)]);row.onclick=()=>aw.click();(aw.closest('p')||aw).replaceWith(row);}
+  const tr=$('myTransformation');if(tr)tr.classList.add('v6-trans');
+  [...sec.querySelectorAll(':scope>.card')].forEach(c=>{const t=c.querySelector('h2,h3')?.textContent||'';if(/training milestones/i.test(t))c.dataset.v6move='history';if(/weight progress graph/i.test(t)){c.classList.add('v6-trans','v6-wgraph');c.querySelector('h2,h3').textContent='Weight trend';}});
   const h=sec.querySelector('h2');if(h)h.classList.add('v6-pagetitle');
   const box=el('div',{id:'progressV6'});(h||sec.firstChild).after(el('p',{className:'v6-pagesub',textContent:'See how far you’ve come.'}),box);
   $('progressStats')&&($('progressStats').hidden=true);
@@ -183,10 +200,11 @@ function buildProgress(){
   const fold=el('details',{id:'historyFold',className:'card'},[el('summary',{},[icon('cal',18),document.createTextNode(' History, reports & backup')])]);
   const kids=[...sec.children];const start=kids.findIndex(k=>k.tagName==='H2'&&/weight history/i.test(k.textContent));
   if(start>=0){kids.slice(start).forEach(k=>{if(k.id!=='progressV6')fold.append(k);});sec.append(fold);}
+  sec.querySelectorAll('[data-v6move=history]').forEach(c=>fold.prepend(c));
   fold.querySelectorAll('details').forEach(d=>d.open=false);
 }
 let range='month';
-function drawProgress(){
+function drawProgress(){document.querySelectorAll('.v6-wgraph').forEach(c=>c.hidden=(db.weights||[]).length<2);
   const box=$('progressV6');if(!box||typeof db==='undefined')return;
   const now=new Date(),t=day(now);
   const from=range==='week'?(()=>{const d=new Date(now);d.setDate(d.getDate()-6);return day(d);})():range==='month'?(()=>{const d=new Date(now);d.setDate(d.getDate()-29);return day(d);})():'0000';
@@ -204,7 +222,7 @@ function drawProgress(){
   // Nutrition: last 7 days vs goal.
   const g=Number(db.goals.calories)||1900,dots=el('div',{className:'v6-dots7'});let on=0;
   for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const k=day(d),kc=sum(db.meals.filter(m=>m.date===k),'calories');const cls=!kc?'':kc>g*1.1?'o':kc>=g*.8?'g':'u';if(cls==='g')on++;dots.append(el('i',{className:cls,textContent:'MTWTFSS'[(d.getDay()+6)%7],title:kc?fmt(kc)+' kcal':'Nothing logged'}));}
-  box.append(el('div',{className:'card v6-card'},[el('div',{className:'v6-ch'},[icon('fork',18),el('span',{textContent:'Nutrition · last 7 days'}),el('em',{className:'v6-chr',textContent:on+' of 7 on target'})]),dots,el('p',{className:'v6-legend',textContent:'● on target  ● over  ● under  ○ not logged'})]));
+  box.append(el('div',{className:'card v6-card'},[el('div',{className:'v6-ch'},[icon('fork',18),el('span',{textContent:'Nutrition · last 7 days'}),el('em',{className:'v6-chr',textContent:on+' of 7 on target'})]),dots,el('p',{className:'v6-legend'},[el('i',{className:'lg g'}),document.createTextNode(' on target  '),el('i',{className:'lg o'}),document.createTextNode(' over  '),el('i',{className:'lg u'}),document.createTextNode(' under  '),el('i',{className:'lg'}),document.createTextNode(' not logged')])]));
   // Weight
   const w=db.weights.slice().sort((a,b)=>a.date.localeCompare(b.date)),last=w.at(-1),firstM=w.filter(x=>x.date>=from)[0];
   if(last){const ch=firstM&&firstM!==last?Number(last.weight)-Number(firstM.weight):0;const add=el('button',{type:'button',className:'v6-pill',textContent:'＋ Weigh-in'});add.onclick=()=>{show('log');const f=$('weightForm')?.closest('details');if(f)f.open=true;setTimeout(()=>$('weightValue')?.focus(),200);};
@@ -238,6 +256,18 @@ const css=el('style');css.textContent=`
 .v6-ideabody{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.v6-ideaname{font-size:15.5px}.v6-ideabody small{color:var(--muted);font-size:12.5px}.v6-ideabody .v6-ok{color:#3fc495}.v6-ideabody .v6-warn{color:#f0a050}
 .v6-idea .v6-logmeal{float:none;flex:none}
 .v6-recipe{margin-top:8px}.v6-recipe>summary{font-weight:700;color:var(--accent);cursor:pointer;font-size:13.5px}.v6-recipe b{display:block;margin:8px 0 2px;font-size:13px}
+.v6-legend .lg{display:inline-block;width:10px;height:10px;border-radius:3px;border:1px dashed var(--soft);vertical-align:-1px;margin-left:6px}.v6-legend .lg.g{background:#3fc495;border:0}.v6-legend .lg.o{background:#f0a050;border:0}.v6-legend .lg.u{background:color-mix(in srgb,var(--accent) 45%,transparent);border:0}
+.v6-flat{}
+#yourMeals .diary-day,#yourMeals>#mealHistory>div:not(.meal-diary-entry){background:transparent!important;border:0!important;padding:0!important;margin:0!important;box-shadow:none!important}
+#yourMeals .diary-day>h3{display:none}
+#yourMeals .meal-diary-entry{background:transparent!important;border:0!important;border-bottom:1px solid var(--soft)!important;border-radius:0!important;box-shadow:none!important;padding:12px 0!important;margin:0!important}
+#yourMeals .meal-diary-entry:last-child{border-bottom:0!important}
+#yourMeals .meal-diary-metrics{gap:16px!important;margin-top:6px}
+#pastMeals .meal-diary-entry{border-bottom:1px solid var(--soft)!important}
+.v6-flat{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.v6-awards{margin:0 0 10px!important}
+.v6-trans h2,.v6-trans h3{font-size:17px!important;margin:0 0 4px!important}.v6-trans{padding:16px!important}
+#waterRow{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--soft)}#waterRow>svg{color:var(--accent)}
 .v6-pace{margin:6px 0 4px;font-weight:700;color:var(--accent)}
 .v6-sechead{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px}.v6-sechead h3{margin:0;font-size:18px}
 .v6-linkbtn{background:transparent!important;color:var(--accent)!important;border:0!important;padding:4px!important;margin:0!important;font-weight:600}
@@ -263,6 +293,6 @@ const css=el('style');css.textContent=`
 document.head.append(css);
 
 function titles(){[['meals','Fuel your day.'],['train','Make today count.']].forEach(([id,sub])=>{const sec=$(id),h=sec?.querySelector(':scope>h2');if(!h||h.classList.contains('v6-pagetitle'))return;h.classList.add('v6-pagetitle');const p=h.nextElementSibling;if(p&&p.tagName==='P')p.textContent=sub;});}
-function init(){titles();hookMealPhotos();buildKitchen();kitchenLayout();buildLog();buildMeals();buildProgress();const r0=render;render=function(){r0();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();};setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
+function init(){titles();hookMealPhotos();buildKitchen();kitchenLayout();buildLog();buildMeals();buildProgress();const r0=render;render=function(){r0();window.__v6drawWater?.();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();tidyMenus();};setInterval(tidyMenus,1200);setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
 if(document.readyState==='complete')setTimeout(init,120);else window.addEventListener('load',()=>setTimeout(init,160));
 })();
