@@ -54,7 +54,7 @@ exports.handler = async (event) => {
       return reply(401, { error: 'Invalid session.' });
     }
 
-    if ((event.body || '').length > 2600000) {
+    if ((event.body || '').length > 5800000) {
       return reply(413, {
         error: 'Photo is too large. Try a smaller image.'
       });
