@@ -145,7 +145,7 @@ function drawHome(){
   // Water
   const cups=el('span',{className:'v6-cups'});for(let i=0;i<8;i++)cups.append(el('i',{className:i<water?'f':''}));
   const add=el('button',{type:'button',className:'v6-plus','aria-label':'Add a glass of water',hidden:!isToday},[icon('plus',14)]);add.onclick=()=>$('addWater')?.click();
-  wrap.append(el('div',{className:'card v6-card v6-water'},[icon('drop',20),el('b',{textContent:'Water'}),el('span',{className:'v6-sub',textContent:water+' / 8'}),cups,add]));
+  wrap.append(el('div',{className:'card v6-card v6-water'},[icon('drop',20),el('b',{textContent:'Water'}),el('span',{className:'v6-sub',textContent:water+' / 8'}),cups,(()=>{const m=el('button',{type:'button',className:'v6-plus v6-minus','aria-label':'Remove a glass of water',textContent:'−',hidden:!isToday,disabled:!water});m.onclick=()=>window.strideWaterMinus?.();return m;})(),add]));
   // This week + milestone
   const wkc=el('div',{className:'card v6-card'},[el('div',{className:'v6-ch'},[icon('bars',16),el('span',{textContent:'This week'})]),el('div',{className:'v6-stat'},[document.createTextNode(wk.length+' '),el('small',{textContent:wk.length===1?'workout':'workouts'}),el('br'),document.createTextNode(sum(wk,'miles').toFixed(1)+' '),el('small',{textContent:'mi'})])]);
   wkc.onclick=()=>show('progress');
