@@ -58,6 +58,50 @@ function drawRecent(){
     box.append(el('div',{className:'v6-row card'},[icon(/run/i.test(w.type)?'run':/walk/i.test(w.type)?'walk':/core/i.test(w.type)?'core':'dumb',22),el('span',{},[el('b',{textContent:w.type||'Workout'}),el('small',{textContent:bits||'Logged'})]),el('em',{textContent:when})]));});
 }
 
+/* ---------- LOG: mock-up layout ---------- */
+function logLayout(){
+  const f=$('workoutForm'),type=$('workoutType');if(!f||!type||$('logMain6'))return;
+  const strip=n=>{n.classList.remove('log-hidden');return n;};
+  const lab=id=>f.querySelector('label[for='+id+']');
+  // Date row
+  const date=$('workoutDate');lab('workoutDate')&&(lab('workoutDate').hidden=true);
+  const dateRow=el('label',{className:'v6-daterow',htmlFor:'workoutDate'},[icon('cal',18),el('span',{className:'v6-datetxt'}),date]);
+  const fmtDate=()=>{const v=date.value,t=day();dateRow.querySelector('.v6-datetxt').textContent=v===t?'Today, '+new Date(v+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):new Date(v+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});};
+  date.addEventListener('change',fmtDate);setInterval(fmtDate,1000);f.prepend(dateRow);fmtDate();
+  // Main chips + sub choices
+  $('typeChips')?.remove();const tl=lab('workoutType');if(tl)tl.hidden=true;
+  const MAIN=[['Run','run',[['Easy / long run','Long Run'],['Quality / speed','Quality Run']]],['Walk','walk',[['Walk','Walk']]],['Strength','dumb',[['Upper body','Upper Body'],['Lower body','Lower Body']]],['Core','core',[['Core','Core'],['Standing core','Standing Core']]],['Bike','run',[['Bike','Bike']]],['Swim','drop',[['Swim','Swim']]],['Recovery','leaf',[['Recovery','Recovery']]],['Other','plus',[['Other activity','Other activity']]]];
+  const main=el('div',{id:'logMain6',className:'v6-chips'}),sub=el('div',{id:'logSub6',className:'v6-chips v6-subchips'});
+  const setType=v=>{if(![...type.options].some(o=>o.value===v)){type.append(el('option',{value:v,textContent:v}));}type.value=v;type.dispatchEvent(new Event('change',{bubbles:true}));draw();};
+  function draw(){const cur=type.value,grp=MAIN.find(m=>m[2].some(x=>x[1]===cur));main.replaceChildren();MAIN.forEach(m=>{const b=el('button',{type:'button',className:grp===m?'on':'',textContent:m[0]});b.onclick=()=>setType((grp===m?cur:null)||m[2][0][1]);main.append(b);});
+    sub.replaceChildren();if(grp&&grp[2].length>1)grp[2].forEach(([l,v])=>{const b=el('button',{type:'button',className:v===cur?'on':'',textContent:l});b.onclick=()=>setType(v);sub.append(b);});sub.hidden=!sub.children.length;}
+  type.addEventListener('change',draw);f.addEventListener('reset',()=>setTimeout(draw,0));type.before(el('p',{className:'v6-lbl',textContent:'What did you do?'}),main,sub);draw();
+  // 2×2 metrics
+  const dist=$('distance'),durF=f.querySelector('fieldset.duration-parts'),pace=$('autoPace');
+  const kcal=el('input',{id:'logKcal',type:'number',min:'0',inputMode:'numeric',placeholder:'Optional'});
+  const cell=(t,node,unit,cls)=>el('div',{className:'v6-mcell'+(cls?' '+cls:'')},[el('small',{textContent:t}),el('div',{className:'v6-minner'},[node,...(unit?[el('i',{textContent:unit})]:[])])]);
+  lab('distance')&&(lab('distance').hidden=true);const dl=f.querySelector('label.dist-hidden,label[for=distance]');
+  const paceBox=el('b',{id:'logPace6',textContent:'—'});
+  const grid=el('div',{className:'v6-mgrid'},[cell('Distance',strip(dist),'mi','v6-distcell'),cell('Duration',strip(durF),''),cell('Avg pace',paceBox,'/mi · auto','v6-distcell'),cell('Active calories',kcal,'kcal')]);
+  [...f.querySelectorAll('label')].forEach(l=>{if(/^minutes$/i.test(l.textContent.trim()))l.hidden=true;});
+  if(pace)pace.classList.add('v6-gone');
+  setInterval(()=>{const show=getComputedStyle(dist).display!=='none'&&!dist.classList.contains('dist-hidden');grid.querySelectorAll('.v6-distcell').forEach(c=>c.hidden=!show);const mi=Number(dist.value),min=Number($('duration')?.value);paceBox.textContent=mi>0&&min>0?paceTxt(min*60/mi):'—';},500);
+  const hint=el('p',{className:'v6-legend',textContent:'Distance & pace only show for runs, walks, bikes and swims.'});
+  $('duration')&&($('duration').classList.add('v6-gone'));
+  durF?.querySelectorAll('input').forEach((x,i)=>{x.placeholder=['h','min','sec'][i]||'';});
+  (sub.nextElementSibling===type?type:sub).after(grid,hint);
+  // Feel rows after the grid, note as one line
+  const fe=$('feelEnergy'),fs=$('feelSore');if(fe)hint.after(fe);if(fs)fe?.after(fs);
+  const notes=$('notes');if(notes){lab('notes')&&(lab('notes').hidden=true);notes.rows=2;notes.placeholder='Add a note… (optional)';(fs||hint).after(notes);}
+  // Save + Clear side by side
+  const save=[...f.querySelectorAll('button')].find(b=>/save workout/i.test(b.textContent)),clr=f.querySelector('.form-clear');
+  if(save&&clr){const row=el('div',{className:'v6-confirmrow'});clr.classList.remove('secondary-btn');clr.classList.add('v6-ghost');save.classList.add('v6-start');save.textContent='✓ Save workout';notes?.after(row);row.append(strip(clr),strip(save));}
+  // Active calories go into the notes so workout calories use them
+  f.addEventListener('submit',()=>{const k=Number(kcal.value);if(k>0&&notes&&!/active kcal/i.test(notes.value))notes.value=(notes.value?notes.value+' · ':'')+Math.round(k)+' active kcal';setTimeout(()=>{if(!$('food'))kcal.value='';},300);},true);
+  f.addEventListener('reset',()=>{kcal.value='';});
+  // Weigh-in before recent activity
+  const wi=$('weightForm')?.closest('details'),ra=$('recentActivity');if(wi&&ra)ra.before(wi);
+}
 /* ---------- MEALS ---------- */
 function buildMeals(){
   const panel=$('aiMealPanel');if(!panel||$('mealQuick'))return;
@@ -269,6 +313,15 @@ const css=el('style');css.textContent=`
 .v6-trans h2,.v6-trans h3{font-size:17px!important;margin:0 0 4px!important}.v6-trans{padding:16px!important}
 #waterRow{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--soft)}#waterRow>svg{color:var(--accent)}
 #mealTabs button:focus:not([aria-selected=true]),#trainingTabs button:focus:not([aria-selected=true]){background:transparent!important;color:var(--muted)!important}
+.v6-daterow{display:flex!important;align-items:center;gap:10px;border:1px solid var(--soft);border-radius:14px;padding:12px 14px;margin:0 0 12px!important;position:relative;cursor:pointer;font-weight:700}.v6-daterow svg{color:var(--accent)}.v6-daterow input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.v6-subchips{margin-top:-4px}.v6-subchips button{padding:6px 12px!important;font-size:13px!important}
+.v6-mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 4px}
+.v6-mcell{display:flex;flex-direction:column;gap:4px;min-width:0}.v6-mcell>small{color:var(--muted);font-size:12px;font-weight:700}
+.v6-minner{display:flex;align-items:center;gap:6px;border:1px solid var(--soft);border-radius:12px;padding:8px 10px;background:var(--bg);min-height:48px}.v6-minner i{font-style:normal;color:var(--muted);font-size:12px;white-space:nowrap}
+.v6-minner input{border:0!important;background:transparent!important;padding:0!important;margin:0!important;font-size:18px!important;font-weight:700;min-width:0;width:100%}
+.v6-minner b{font-size:18px}
+.v6-minner fieldset{border:0!important;padding:0!important;margin:0!important;display:grid!important;grid-template-columns:repeat(3,1fr);gap:4px;min-width:0;width:100%}.v6-minner fieldset legend{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.v6-minner fieldset label{font-size:0!important;margin:0!important;display:block}.v6-minner fieldset label input{width:100%}.v6-minner fieldset input{font-size:16px!important;text-align:center;border:1px solid var(--soft)!important;border-radius:8px!important;padding:4px 0!important}
+#log.v6-log label[for=energy]{display:none!important}
 .v6-pace{margin:6px 0 4px;font-weight:700;color:var(--accent)}
 .v6-sechead{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px}.v6-sechead h3{margin:0;font-size:18px}
 .v6-linkbtn{background:transparent!important;color:var(--accent)!important;border:0!important;padding:4px!important;margin:0!important;font-weight:600}
@@ -294,6 +347,6 @@ const css=el('style');css.textContent=`
 document.head.append(css);
 
 function titles(){[['meals','Fuel your day.'],['train','Make today count.']].forEach(([id,sub])=>{const sec=$(id),h=sec?.querySelector(':scope>h2');if(!h||h.classList.contains('v6-pagetitle'))return;h.classList.add('v6-pagetitle');const p=h.nextElementSibling;if(p&&p.tagName==='P')p.textContent=sub;});}
-function init(){titles();hookMealPhotos();buildKitchen();kitchenLayout();buildLog();buildMeals();buildProgress();const r0=render;render=function(){r0();window.__v6drawWater?.();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();tidyMenus();};setInterval(tidyMenus,1200);setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
+function init(){titles();hookMealPhotos();buildKitchen();kitchenLayout();buildLog();logLayout();buildMeals();buildProgress();const r0=render;render=function(){r0();window.__v6drawWater?.();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();tidyMenus();};setInterval(tidyMenus,1200);setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
 if(document.readyState==='complete')setTimeout(init,120);else window.addEventListener('load',()=>setTimeout(init,160));
 })();
