@@ -83,7 +83,7 @@ exports.handler = async function (event) {
     const action =
       input.action === "substitute"
         ? "substitute"
-        : "build";
+        : input.action === "week" ? "week" : "build";
 
     const count = Math.max(
       1,
@@ -129,7 +129,7 @@ exports.handler = async function (event) {
           model:
             process.env.OPENAI_MEAL_MODEL ||
             "gpt-4.1-mini",
-          max_tokens: 950,
+          max_tokens: action === "week" ? 2600 : 950,
           messages: [
             {
               role: "system",
@@ -139,6 +139,7 @@ exports.handler = async function (event) {
                 "Respect food allergies, restrictions, and the selected meal preference. Use the foods and food culture the user supplies, never assume a nationality. " +
                 "If substituting, offer three alternatives " +
                 "with estimated calories and protein. " +
+                "If the task is week, create a 7-day menu (Monday to Sunday) with variety across days, using exactly this plain format for every day: a line with the day name, then one line per meal like 'Breakfast: <meal with portion> — <kcal> kcal, <g> g protein', then 'Total: <kcal> kcal, <g> g protein'. No markdown, no extra commentary. " +
                 "If building, create one daily menu with " +
                 "portions, estimated calories and protein " +
                 "for each meal and daily totals. " +
@@ -176,7 +177,7 @@ exports.handler = async function (event) {
     }
 
     return reply(200, {
-      menu: menu.slice(0, 6500)
+      menu: menu.slice(0, action === "week" ? 12000 : 6500)
     });
 
   } catch (error) {
