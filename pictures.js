@@ -21,7 +21,35 @@ const EQ={
 };
 const eqFor=t=>{t=String(t||'');return /kettlebell|\bkb\b|swing/i.test(t)?'kettlebell':/dumbbell|\bdb\b|goblet/i.test(t)?'dumbbell':/barbell|bench press|deadlift|\bbar\b/i.test(t)?'barbell':/band/i.test(t)?'band':/cable|machine|pulldown|leg press|row machine|smith|pec deck|curl machine/i.test(t)?'machine':/run|jog|treadmill|sprint|stride|walk/i.test(t)?'run':/bike|cycl|spin/i.test(t)?'bike':/plank|crunch|dead bug|bird dog|sit-up|hollow|core|ab\b|abs|russian|leg raise|mountain/i.test(t)?'core':/stretch|mobility|yoga|pose|foam/i.test(t)?'stretch':'body';};
 const eqTile=t=>{const d=document.createElement('div');const k=eqFor(t);d.className='eq6';d.dataset.eq=k;d.innerHTML=EQ[k];d.title=k==='body'?'Bodyweight':k[0].toUpperCase()+k.slice(1);return d;};
+
+let mvSel=null;
+function menuView(){
+  const first=document.querySelector('details.stride-week');const plan=first?.parentElement;if(!plan)return;
+  const days=[...plan.querySelectorAll(':scope>details.stride-week')];
+  const key=days.map(d=>d.textContent).join('|')+'|'+mvSel;let mv=$('mv6');
+  if(mv&&mv.dataset.k===key)return;
+  if(!mv){mv=document.createElement('div');mv.id='mv6';plan.prepend(mv);const outer=plan.closest('details');if(outer){outer.open=true;const sm=outer.querySelector(':scope>summary');if(sm)sm.style.display='none';outer.classList.add('mv6-outer');}}
+  mv.dataset.k=key;days.forEach(d=>d.classList.add('mv6-hide'));
+  const head=plan.querySelector(':scope>p.muted');if(head)head.classList.add('mv6-hide');
+  const sub=(head?.textContent||'').replace(/\.?\s*Change this.*$/,'').replace(/ week/,'').replace(/ · /g,' · ');
+  const todayIdx=Math.max(0,days.findIndex(d=>/today/i.test(d.querySelector('summary')?.textContent||'')));
+  if(mvSel===null)mvSel=todayIdx;
+  const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  const dt=i=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;};
+  const f=d=>d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const build=[...document.querySelectorAll('details')].find(d=>/build or substitute/i.test(d.querySelector(':scope>summary')?.textContent||''));
+  const openBuild=fill=>{if(!build)return;build.open=true;if(fill){const r=$('menuReplace');if(r)r.value=fill;}build.scrollIntoView({behavior:'smooth',block:'start'});};
+  const day=days[mvSel],dn=(day?.querySelector('summary')?.textContent||'').replace(/\s*·.*$/,'');
+  const lis=day?[...day.querySelectorAll('li')]:[];
+  mv.innerHTML='<div class="mv6-top"><div><b>Your weekly menu</b><small>'+(sub||'Balanced')+'</small></div></div><button type="button" class="mv6-create">Create a meal plan</button><div class="mv6-range">'+f(dt(0))+' – '+f(dt(6))+'</div><div class="mv6-strip">'+days.map((d,i)=>'<button type="button" data-i="'+i+'" class="'+(i===mvSel?'on ':'')+(i===todayIdx?'tod':'')+'"><i>'+['M','T','W','T','F','S','S'][i]+'</i><b>'+dt(i).getDate()+'</b></button>').join('')+'</div><div class="mv6-day"><b class="mv6-dn">'+dn+'</b></div><button type="button" class="mv6-swap">↻ Swap a meal or regenerate this day <span>›</span></button>';
+  const card=mv.querySelector('.mv6-day');
+  lis.forEach(li=>{const slot=(li.querySelector('b')?.textContent||'').replace(/[:\s]+$/,'');const name=[...li.childNodes].filter(n=>n.nodeType===3||(n.tagName&&!/^(B|BUTTON|DIV)$/.test(n.tagName))).map(n=>n.textContent).join('').trim();const row=document.createElement('div');row.className='mv6-row';row.append(tile(name,'pic6-md'));const t=document.createElement('div');t.innerHTML='<small>'+slot.toUpperCase()+'</small><b></b>';t.querySelector('b').textContent=name;row.append(t);const ob=li.querySelector('button');if(ob){const b=document.createElement('button');b.type='button';b.className='mv6-log';b.textContent='＋ Log';b.onclick=()=>{ob.click();b.textContent='✓ Logged';};row.append(b);}card.append(row);});
+  mv.querySelector('.mv6-create').onclick=()=>openBuild('');
+  mv.querySelector('.mv6-swap').onclick=()=>openBuild(dn?dn+': ':'');
+  mv.querySelector('.mv6-strip').onclick=e=>{const b=e.target.closest('button');if(!b)return;mvSel=Number(b.dataset.i);menuView();};
+}
 function decorate(){
+  menuView();
   document.querySelectorAll('.meal-diary-entry:not([data-p6])').forEach(c=>{c.dataset.p6=1;if(c.querySelector('.v6-mealpic'))return;c.prepend(tile(c.querySelector('h3')?.textContent,'pic6-float'));c.classList.add('v6-haspic');});
   document.querySelectorAll('.meal-diary-entry:not([data-s6])').forEach(c=>{const st=[...c.querySelectorAll('.meal-diary-metrics .workout-history-stat')].map(x=>x.querySelector('strong')?.textContent+' '+(x.querySelector('span')?.textContent||'').toLowerCase().replace('protein','g protein').replace(/^(\S+) g g/,'$1 g'));if(!st.length)return;c.dataset.s6=1;const sub=document.createElement('p');sub.className='ml6-sub';sub.textContent=st.join(' · ').replace(/ g g protein/,' g protein');c.querySelector('.workout-history-title')?.append(sub);c.classList.add('ml6');});
   document.querySelectorAll('.menu-meal:not([data-p6])').forEach(c=>{c.dataset.p6=1;const t=c.querySelector('li')?.textContent;c.querySelector('.menu-meal-head')?.prepend(tile(t,'pic6-sm'));});
@@ -44,6 +72,16 @@ function calendar(){
   box.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.n){calMonth=new Date(y,m+Number(b.dataset.n),1);box.dataset.k='';calendar();return;}window.strideMealSetDay?.(b.dataset.d);$('mealDay6')?.scrollIntoView({behavior:'smooth',block:'start'});};
 }
 const css=document.createElement('style');css.textContent=`
+.mv6-hide{display:none!important}.mv6-outer{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
+.mv6-top b{display:block;font-size:19px}.mv6-top small{color:var(--muted);font-size:13px}
+.mv6-create{display:block;width:100%;margin:12px 0!important;background:var(--accent)!important;color:var(--on-accent)!important;border:0!important;border-radius:14px!important;padding:13px!important;font-weight:700;font-size:15px}
+.mv6-range{font-weight:700;margin:4px 0 8px}
+.mv6-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}.mv6-strip button{background:none!important;border:0!important;color:var(--fg)!important;padding:4px 0!important;margin:0!important;display:flex;flex-direction:column;align-items:center;gap:4px;width:auto!important;min-height:0!important}.mv6-strip i{font-style:normal;font-size:12px;color:var(--muted)}.mv6-strip b{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;font-size:14px}.mv6-strip .tod i{color:var(--accent);font-weight:700}.mv6-strip .on b{background:var(--accent);color:var(--on-accent)}
+.mv6-day{background:var(--card);border:1px solid var(--soft);border-radius:18px;padding:14px;margin-bottom:10px}.mv6-dn{font-size:17px}
+.mv6-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--soft)}.mv6-row:last-child{border:0;padding-bottom:0}.mv6-row>div:nth-child(2){flex:1;min-width:0}.mv6-row small{display:block;font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--muted)}.mv6-row b{font-size:14.5px}
+.pic6-md{width:52px;height:52px;font-size:28px}.pic6-md svg{width:44px;height:44px}
+.mv6-log{flex:none;width:auto!important;margin:0!important;padding:6px 10px!important;font-size:12.5px!important;font-weight:700;border:1px solid var(--accent)!important;color:var(--accent)!important;background:none!important;border-radius:10px!important;min-height:0!important}
+.mv6-swap{display:flex;width:100%;justify-content:space-between;align-items:center;background:var(--card)!important;border:1px solid var(--soft)!important;color:var(--fg)!important;border-radius:14px!important;padding:13px 14px!important;font-weight:700;margin:0 0 10px!important;text-align:left}.mv6-swap span{color:var(--muted)}
 .meal-diary-entry.ml6{padding:10px 12px!important;display:flow-root}.meal-diary-entry.ml6 .meal-diary-metrics{display:none!important}.meal-diary-entry.ml6 .workout-history-head{border:0!important;padding:0!important;margin:0!important}.meal-diary-entry.ml6 h3{font-size:15px!important;margin:0!important}.ml6-sub{margin:2px 0 0;font-size:12.5px;color:var(--muted)}.meal-diary-entry.ml6 .repeat-meal{float:right;margin:-26px 0 0!important;padding:5px 10px!important;font-size:12px!important;min-height:0!important;border:1px solid var(--accent)!important;color:var(--accent)!important;background:none!important;border-radius:10px!important}
 .meal-diary-entry.ml6 .pic6-float{width:52px;height:52px;margin:0 12px 0 0}
 .pic6{display:grid;place-items:center;border-radius:14px;flex:none;background:color-mix(in srgb,var(--accent) 15%,var(--card));overflow:hidden}
