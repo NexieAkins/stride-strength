@@ -46,6 +46,7 @@ const pick=t=>/strength|upper|lower|lift|dumbbell|weights/i.test(t)?'lift':/core
 const T=[[/^run/i,'run'],[/^walk/i,'shoes'],[/^strength/i,'lift'],[/^core/i,'core'],[/running plans/i,'track'],[/core routines/i,'core'],[/bodyweight/i,'home'],[/starting weights/i,'lift'],[/equipment photo/i,'gear'],[/devices/i,'shoes'],[/build my workout/i,'home'],[/repeat workout/i,'track'],[/custom session/i,'gear'],[/warm-?ups?/i,'shoes'],[/cool-?downs?/i,'yoga'],[/breathing/i,'calm'],[/rest day/i,'yoga'],[/mobility/i,'yoga'],[/post-run|after run/i,'track'],[/my transformation/i,'yoga'],[/achievements/i,'track'],[/up next/i,'track']];
 const head=c=>(c.querySelector('b,h3,h2,.v6-h3,span')?.textContent||c.textContent||'').trim();
 function apply(){
+  const lf=$('loginForm');const onAuth=!!(lf&&lf.offsetParent);document.body.classList.toggle('auth6',onAuth);if(onAuth)document.body.style.setProperty('--sc6auth',SC.run);
   const hv=$('homeV6');if(hv){[...hv.querySelectorAll('.card,.v6-card')].forEach(c=>{const t=txt(c).slice(0,60);if(/today.s workout/i.test(t))put(c,pick(txt(c)));else if(/today.s nutrition/i.test(t))put(c,'food','sc6-r sc6-soft');else if(/this week/i.test(t))put(c,'shoes','sc6-r sc6-soft');else if(/milestone/i.test(t))put(c,'track','sc6-r sc6-soft');else if(/water/i.test(t))put(c,'veg','sc6-r sc6-soft');});}
   const hero=[...document.querySelectorAll('#train .t6-tag')].find(t=>/^TODAY/.test(t.textContent))?.closest('.card');if(hero)put(hero,pick(txt(hero)));
   document.querySelectorAll('#train .t6-next').forEach(c=>put(c,pick(txt(c)),'sc6-r sc6-soft'));
@@ -72,7 +73,10 @@ const css=document.createElement('style');css.textContent=`
 .sc6-tile::before{background-image:linear-gradient(color-mix(in srgb,var(--card) 55%,transparent),color-mix(in srgb,var(--card) 88%,transparent)),var(--sc6)}
 .sc6-tile{border-color:color-mix(in srgb,var(--accent) 35%,var(--soft))!important}
 .sc6-top-s{padding-top:96px!important}.sc6-top-s::before{height:104px}
-.sc6 > *{position:relative}`;
+.sc6 > *{position:relative}
+body.auth6{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 55%,transparent),var(--bg) 78%),var(--sc6auth) center top/cover no-repeat fixed,var(--bg)!important}
+body.auth6 #loginForm{}
+body.auth6 .card:has(#loginForm){background:color-mix(in srgb,var(--card) 82%,transparent)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}`;
 document.head.append(css);
 let q=0;const run6=()=>{q=0;try{apply();}catch(e){}};
 new MutationObserver(()=>{if(!q){q=1;requestAnimationFrame(run6);}}).observe(document.body,{childList:true,subtree:true});
