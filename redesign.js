@@ -80,12 +80,12 @@ function buildHome(){
   const prefs=$('homePreferences'),sched=home.querySelector('.calm-fold'),prof=$('setName');
   sheet.append(el('div',{className:'v6-sheethead'},[el('h2',{textContent:'Fitness preferences'}),close]),el('p',{className:'v6-sub',textContent:'Your weekly schedule, meal style and diet rules. Change them any time.'}));
   if(prof){prof.textContent='Edit fitness profile (age, weight, goals)';prof.classList.add('v6-ghost');sheet.append(prof);}
-  if(prefs){prefs.open=true;const sm=prefs.querySelector(':scope>summary');if(sm)sm.hidden=true;prefs.classList.add('v6-flatprefs');sheet.append(prefs);prefs.querySelectorAll('button').forEach(b=>{if(/^done$/i.test(b.textContent.trim()))b.addEventListener('click',()=>setTimeout(()=>sheet.close(),50));});}
+  if(prefs){prefs.open=true;const sm=prefs.querySelector(':scope>summary');if(sm)sm.hidden=true;prefs.classList.add('v6-flatprefs');prefs.addEventListener('toggle',()=>{if(!prefs.open&&prefs.closest('#prefsSheet'))prefs.open=true;});sheet.append(prefs);prefs.querySelectorAll('button').forEach(b=>{if(/^done$/i.test(b.textContent.trim()))b.addEventListener('click',()=>setTimeout(()=>sheet.close(),50));});}
   // The weekly schedule list stays in the page (hidden on Home) because other screens update it.
   const done=el('button',{type:'button',className:'v6-start',textContent:'Save & close'});done.onclick=()=>sheet.close();sheet.append(done);
   document.body.append(sheet);
   sheet.addEventListener('close',()=>render());
-  window.strideOpenPrefs=()=>{if(!sheet.open)sheet.showModal();const p=$('homePreferences');if(p)p.open=true;};
+  window.strideOpenPrefs=()=>{const pf=$('homePreferences');if(pf){if(pf.parentElement!==sheet)done.before(pf);pf.hidden=false;pf.classList.remove('hidden');pf.open=true;}if(!sheet.open)sheet.showModal();const p=$('homePreferences');if(p)p.open=true;};
   // First time: ask once for preferences (after sign-in / welcome and any profile dialog).
   const owner=()=>window.cloudRecordOwner?.()||'browser';
   const firstAsk=()=>{try{const k='stride-prefs-asked-'+owner();if(localStorage.getItem(k))return;if(document.body.classList.contains('welcome')||document.querySelector('dialog[open]'))return setTimeout(firstAsk,3000);const noSched=typeof plan!=='undefined'&&plan.every(x=>/choose your schedule/i.test(x[1]));if(!noSched||$('mealStyle')?.value){localStorage.setItem(k,'1');return;}localStorage.setItem(k,'1');window.strideOpenPrefs();}catch(e){}};
