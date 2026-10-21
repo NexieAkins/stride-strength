@@ -192,6 +192,7 @@ nav button.v6-log.active .v6-fab{outline:2px solid var(--fg);outline-offset:2px}
 .v6-badge{width:40px;height:44px;flex:none;color:var(--fg)}
 header h1 small{display:none}.v6-plus[hidden]{display:none!important}.v6-back{display:block;margin:-8px 0 10px!important;background:transparent!important;border:0!important;color:var(--accent)!important;padding:4px 0!important;font-weight:600}.v6-amp{color:var(--accent)}
 .v6-sheet{width:min(560px,calc(100vw - 24px));max-height:88vh;overflow:auto;border:1px solid var(--soft);border-radius:22px;background:var(--bg);color:var(--fg);padding:18px}
+.v6-confirm{width:min(420px,calc(100vw - 32px))}.v6-confirm h2{font-size:19px;margin:0 0 6px;line-height:1.3}.v6-confirmrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.v6-confirmrow button{margin:0!important;width:100%}.v6-confirmrow:has(> :only-child){grid-template-columns:1fr}.v6-danger{background:#e5484d!important;color:#fff!important}
 .v6-sheet::backdrop{background:rgba(0,0,0,.55)}
 .v6-sheethead{display:flex;justify-content:space-between;align-items:center}.v6-sheethead h2{margin:0;font-size:22px}
 .v6-sheetx{width:36px;height:36px;border-radius:50%!important;padding:0!important;margin:0!important;background:var(--card)!important;color:var(--fg)!important;border:1px solid var(--soft)!important}
@@ -201,6 +202,21 @@ header h1 small{display:none}.v6-plus[hidden]{display:none!important}.v6-back{di
 document.head.append(css);
 
 function header(){const h=document.querySelector('header h1');if(h)h.innerHTML='Stride <span class="v6-amp">&amp;</span> Strength';const p=document.querySelector('header p');if(p)p.hidden=true;}
-function init(){header();tabbar();performanceSkin();buildHome();drawHome();const r0=render;render=function(){r0();drawHome();};}
+/* ---------- Pretty confirm/alert ---------- */
+function prettyDialogs(){
+  if(window.__v6confirm)return;window.__v6confirm=1;
+  let last=null,bypass=false;const nativeConfirm=window.confirm.bind(window);
+  document.addEventListener('click',e=>{if(!bypass)last=e.target.closest('button,a,[role=button]')||e.target;},true);
+  const sheet=(msg,okLabel,danger,onOk)=>{const d=el('dialog',{className:'v6-sheet v6-confirm'});const parts=String(msg).split(/(?<=[?.!])\s+/);
+    const no=el('button',{type:'button',className:'v6-ghost',textContent:'Cancel'}),ok=el('button',{type:'button',className:'v6-start'+(danger?' v6-danger':''),textContent:okLabel});
+    no.onclick=()=>{d.close();d.remove();};ok.onclick=()=>{d.close();d.remove();onOk&&onOk();};
+    d.append(el('h2',{textContent:parts[0]}),...(parts.length>1?[el('p',{className:'v6-sub',textContent:parts.slice(1).join(' ')})]:[]),el('div',{className:'v6-confirmrow'},onOk?[no,ok]:[ok]));
+    document.body.append(d);d.showModal();ok.focus();};
+  window.confirm=msg=>{if(bypass)return true;const target=last;if(!target||!document.contains(target))return nativeConfirm(msg);
+    const m=String(msg),danger=/discard|delete|remove|clear|restore default|erase/i.test(m),label=(m.match(/\b(Discard|Delete|Remove|Clear|Restore|Replace|Import|Sign out|Log out)\b/i)||[])[1]||'OK';
+    sheet(m,label.charAt(0).toUpperCase()+label.slice(1),danger,()=>{bypass=true;try{target.click();}finally{bypass=false;}});return false;};
+  window.alert=msg=>sheet(msg,'OK',false,null);
+}
+function init(){header();prettyDialogs();tabbar();performanceSkin();buildHome();drawHome();const r0=render;render=function(){r0();drawHome();};}
 if(document.readyState==='complete')setTimeout(init,0);else window.addEventListener('load',()=>setTimeout(init,50));
 })();
