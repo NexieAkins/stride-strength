@@ -39,26 +39,39 @@ const kitchen=svg(`<rect x="230" y="40" width="130" height="150" rx="16" fill="#
 <ellipse cx="270" cy="150" rx="22" ry="16" fill="#f4efe6"/><rect x="300" y="128" width="40" height="40" rx="8" fill="${A}" opacity=".7"/>
 <path d="M180 200 q20 -40 50 -30" stroke="${B}" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="178" cy="196" r="10" fill="${B}"/>`);
 const U=id=>'url("https://images.unsplash.com/photo-'+id+'?w=900&q=60&auto=format&fit=crop")';
-const SC={run:U('1590333748338-d629e4564ad9'),lift:U('1589579234096-25cb6b83e021'),calm:U('1548966268-b978ed7b2e83'),food:U('1674316037121-5210009059f5'),kitchen:U('1674316037121-5210009059f5')};
+const SC={run:U('1590333748338-d629e4564ad9'),lift:U('1589579234096-25cb6b83e021'),calm:U('1548966268-b978ed7b2e83'),food:U('1674316037121-5210009059f5'),kitchen:U('1591189863430-ab87e120f312'),track:U('1760114852702-9c65fe257a52'),veg:U('1591189863430-ab87e120f312'),plate:U('1665088127661-83aeff6104c4'),core:U('1714646442330-9068099f5521'),home:U('1571019613454-1cb2f99b2d8b'),gear:U('1584735935682-2f2b69dff9d2'),shoes:U('1591311630200-ffa9120a540f'),yoga:U('1635367216109-aa3353c0c22e')};
 function put(node,key,cls){if(!node||node.dataset.sc6===key)return;node.dataset.sc6=key;node.classList.add('sc6',cls||'sc6-r');node.style.setProperty('--sc6',SC[key]);}
 const txt=(n)=>n?.textContent||'';
+const pick=t=>/strength|upper|lower|lift|dumbbell|weights/i.test(t)?'lift':/core|plank/i.test(t)?'core':/walk/i.test(t)?'shoes':/recover|stretch|mobil|rest/i.test(t)?'calm':'run';
+const T=[[/^run/i,'run'],[/^walk/i,'shoes'],[/^strength/i,'lift'],[/^core/i,'core'],[/running plans/i,'track'],[/core routines/i,'core'],[/bodyweight/i,'home'],[/starting weights/i,'lift'],[/equipment photo/i,'gear'],[/devices/i,'shoes'],[/build my workout/i,'home'],[/repeat workout/i,'track'],[/custom session/i,'gear'],[/warm-?ups?/i,'shoes'],[/cool-?downs?/i,'yoga'],[/breathing/i,'calm'],[/rest day/i,'yoga'],[/mobility/i,'yoga'],[/post-run|after run/i,'track'],[/my transformation/i,'yoga'],[/achievements/i,'track'],[/up next/i,'track']];
+const head=c=>(c.querySelector('b,h3,h2,.v6-h3,span')?.textContent||c.textContent||'').trim();
 function apply(){
-  // Home: today's workout + nutrition
-  const hv=$('homeV6');if(hv){const cards=[...hv.querySelectorAll('.card,.v6-card')];const w=cards.find(c=>/today.s workout/i.test(txt(c).slice(0,40)));if(w)put(w,/strength|upper|lower|core|lift/i.test(txt(w))?'lift':'run');const n=cards.find(c=>/today.s nutrition/i.test(txt(c).slice(0,40)));if(n)put(n,'food','sc6-r sc6-soft');}
-  // Train hero
-  const hero=[...document.querySelectorAll('#train .t6-tag')].find(t=>/^TODAY/.test(t.textContent))?.closest('.card');if(hero)put(hero,/strength|upper|lower|core|lift/i.test(txt(hero))?'lift':'run');
-  // Recovery pick
+  const hv=$('homeV6');if(hv){[...hv.querySelectorAll('.card,.v6-card')].forEach(c=>{const t=txt(c).slice(0,60);if(/today.s workout/i.test(t))put(c,pick(txt(c)));else if(/today.s nutrition/i.test(t))put(c,'food','sc6-r sc6-soft');else if(/this week/i.test(t))put(c,'shoes','sc6-r sc6-soft');else if(/milestone/i.test(t))put(c,'track','sc6-r sc6-soft');else if(/water/i.test(t))put(c,'veg','sc6-r sc6-soft');});}
+  const hero=[...document.querySelectorAll('#train .t6-tag')].find(t=>/^TODAY/.test(t.textContent))?.closest('.card');if(hero)put(hero,pick(txt(hero)));
+  document.querySelectorAll('#train .t6-next').forEach(c=>put(c,pick(txt(c)),'sc6-r sc6-soft'));
+  document.querySelectorAll('#train .t6-qs button, #train .t6-tile, #train .t6-mk, #progress .t6-mk').forEach(c=>{const h=head(c);const m=T.find(([r])=>r.test(h));if(m)put(c,m[1],c.matches('.t6-qs button')||c.matches('.t6-tile')?'sc6-tile':'sc6-r sc6-soft');});
   const rp=document.querySelector('#train .v6-pick');if(rp)put(rp,'calm');
-  else{const c=[...document.querySelectorAll('#train .card')].find(c=>/picked for today/i.test(txt(c).slice(0,60)));if(c)put(c,'calm');}
-  // Menus day card + Kitchen
+  const b6=$('builder6');if(b6)put(b6,'home','sc6-r sc6-soft');const s6=$('schedule6');if(s6)put(s6,'track','sc6-r sc6-soft');
+  const lg=document.querySelector('#log .v6-log')||$('workoutForm')?.closest('.card');if(lg)put(lg,'shoes','sc6-top sc6-top-s');
+  const ring=$('macroTiles')?.closest('.card');if(ring)put(ring,'food','sc6-r sc6-soft');
+  const lm=$('aiMealPanel');if(lm)put(lm,'plate','sc6-r sc6-soft');const ym=$('yourMeals');if(ym)put(ym,'veg','sc6-r sc6-faint');
   const md=document.querySelector('.mv6-day');if(md)put(md,'food','sc6-top');
-  const mk=$('myKitchen');if(mk)put(mk,'kitchen','sc6-r sc6-soft');
+  const mk=$('myKitchen');if(mk)put(mk,'kitchen','sc6-top');
+  document.querySelectorAll('#kitchenResult .v6-idea').forEach(c=>put(c,'plate','sc6-r sc6-faint'));
+  const pv=$('progressV6');if(pv){[...pv.querySelectorAll('.v6-card,.card')].forEach(c=>{const t=txt(c).slice(0,40);if(/running/i.test(t))put(c,'track','sc6-r sc6-soft');else if(/nutrition/i.test(t))put(c,'veg','sc6-r sc6-faint');else if(/weight/i.test(t))put(c,'shoes','sc6-r sc6-soft');});}
+  document.querySelectorAll('#progX6 .px6').forEach(c=>{if(/strength/i.test(txt(c).slice(0,20)))put(c,'lift','sc6-r sc6-soft');});
+  document.querySelectorAll('#two6 > *').forEach(c=>{const m=T.find(([r])=>r.test(txt(c)));if(m)put(c,m[1],'sc6-tile');});
+  const ach=$('achievements');if(ach)put(ach.querySelector('.card')||ach,'track','sc6-top');
 }
 const css=document.createElement('style');css.textContent=`
 .sc6{position:relative;overflow:hidden;isolation:isolate}
 .sc6::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(90deg,var(--card) 18%,color-mix(in srgb,var(--card) 70%,transparent) 55%,color-mix(in srgb,var(--card) 25%,transparent)),var(--sc6);background-size:cover;background-position:center;pointer-events:none}
 .sc6-soft::before{background-image:linear-gradient(90deg,var(--card) 35%,color-mix(in srgb,var(--card) 80%,transparent) 70%,color-mix(in srgb,var(--card) 50%,transparent)),var(--sc6)}
 .sc6-top{padding-top:118px!important}.sc6-top::before{background-image:linear-gradient(transparent 40%,var(--card) 118px),var(--sc6);background-size:100% 100%,cover;background-position:center 35%;background-repeat:no-repeat;height:130px;inset:0 0 auto 0}
+.sc6-faint::before{background-image:linear-gradient(90deg,var(--card) 45%,color-mix(in srgb,var(--card) 88%,transparent) 75%,color-mix(in srgb,var(--card) 65%,transparent)),var(--sc6)}
+.sc6-tile::before{background-image:linear-gradient(color-mix(in srgb,var(--card) 55%,transparent),color-mix(in srgb,var(--card) 88%,transparent)),var(--sc6)}
+.sc6-tile{border-color:color-mix(in srgb,var(--accent) 35%,var(--soft))!important}
+.sc6-top-s{padding-top:96px!important}.sc6-top-s::before{height:104px}
 .sc6 > *{position:relative}`;
 document.head.append(css);
 let q=0;const run6=()=>{q=0;try{apply();}catch(e){}};
