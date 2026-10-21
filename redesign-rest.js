@@ -183,6 +183,7 @@ function kitchenLayout(){
   if(snap){snap.classList.add('v6-snapmini');[...snap.querySelectorAll('label')].forEach(l=>l.hidden=true);const lib=$('kitchenLibrary');if(lib){const lk=el('button',{type:'button',className:'v6-linkbtn',textContent:'or choose photos'});lk.onclick=()=>lib.click();snap.prepend(lk);}row?.after(snap);}
   [...mk.querySelectorAll('p,small')].forEach(x=>{if(/^Type what you have|saved for your account/i.test(x.textContent.trim()))x.hidden=true;});
   const scl=row?.querySelector('.v6-scan span');if(scl)scl.innerHTML='Scan<br>fridge';
+  {const ki=$('kitchenIngredients');if(ki){ki.required=false;kf.addEventListener('submit',e=>{if(ki.value.trim())return;e.preventDefault();e.stopImmediatePropagation();const inp=kf.querySelector('.v6-ingadd input');let m=$('kitchenNeed6');if(!m){m=el('p',{id:'kitchenNeed6',className:'v6-warn',textContent:'Add at least one ingredient first (or scan your fridge).'});(row||kf).after(m);}m.hidden=false;inp?.focus();setTimeout(()=>m.hidden=true,4000);},true);}}
   // 2×2 settings
   const grid=el('div',{className:'v6-kgrid'});
   const cell=(title,id)=>{const f=$(id);if(!f)return;const l=kf.querySelector('label[for='+id+']');if(l)l.hidden=true;const c=el('label',{className:'v6-kcell',htmlFor:id},[el('small',{textContent:title}),f]);grid.append(c);};
@@ -380,3 +381,5 @@ if(document.readyState==='complete')setTimeout(init,120);else window.addEventLis
 (function(){const st=document.createElement('style');st.textContent='#aiMealPanel:not([data-mode=type]):not(.v6-hasphoto) #aiMealDescription,#aiMealPanel:not([data-mode=type]):not(.v6-hasphoto) #aiAnalyzeMeal{display:none!important}#aiMealPanel:not([data-mode=manual]) #manualMeal{display:none!important}#manualMeal>summary{display:none!important}#manualMeal{border:0!important;padding:0!important;margin-top:10px}#mealQuick button.on{background:var(--accent)!important;color:var(--on-accent)!important}#mealQuick button.on svg{color:inherit!important}#yourMeals h3{display:flex;align-items:center}.v6-addlink{margin-left:auto!important;background:none!important;border:0!important;color:var(--accent)!important;font-weight:700;font-size:15px;padding:4px!important;width:auto!important}';document.head.append(st);})();
 
 (function(){const st=document.createElement('style');st.textContent='#ingChips:empty{display:none!important}#myKitchen .v6-linkbtn{margin:-4px 0 4px!important;padding:2px 4px!important;font-size:13px}';document.head.append(st);})();
+
+(function(){const st=document.createElement('style');st.textContent='#kitchenNeed6{color:var(--accent);font-weight:700;font-size:13.5px;margin:6px 2px}';document.head.append(st);})();
