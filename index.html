@@ -176,8 +176,8 @@ async function writeCloud(){
   if(error)throw error;
   if(db.profile?.user_id===user.id){const {error:profileError}=await client.from('profiles').upsert(db.profile,{onConflict:'user_id'});if(profileError)throw profileError;}
   localStorage.setItem(KEY,JSON.stringify(db));
-  if(!queued)db.syncDirty=null;localStorage.setItem(KEY,JSON.stringify(db));message('✓ Synced to Supabase');return true;
- }catch(e){message('Sync failed: '+e.message);return false;}
+  if(!queued)db.syncDirty=null;localStorage.setItem(KEY,JSON.stringify(db));message('');return true;
+ }catch(e){message('Couldn’t save online right now — your entries are kept on this device. '+e.message);return false;}
  finally{writing=false;if(queued){queued=false;writeCloud()}}
 }
 let pending;
@@ -186,7 +186,7 @@ window.cloudQueue=function(){if(!user||loading)return;db.syncDirty=user.id;local
 async function loadCloud(){
  if(!user||writing)return;
  if(pending||db.syncDirty===user.id){clearTimeout(pending);pending=null;if(!await writeCloud())return;}
- loading=true;const loadingOwner=user.id;let loaded=false;document.querySelector('main').inert=true;message('Loading your cloud records…');
+ loading=true;const loadingOwner=user.id;let loaded=false;document.querySelector('main').inert=true;message('');
  try{
   const tables=['workouts','meals','weigh_ins','water_logs','goals','profiles'];
   const results=await Promise.all(tables.map(t=>client.from(t).select('*').eq('user_id',user.id).limit(5000)));
@@ -206,7 +206,7 @@ async function loadCloud(){
   db.goals=goals.length?{calories:goals[0].daily_calorie_goal,protein:goals[0].daily_protein_goal}:{calories:1900,protein:110};db.profile=profiles[0]||null;window.strideProfileReadyOwner=user.id;
   $('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
   localStorage.setItem(KEY,JSON.stringify(db));render();
-  loaded=true;message('✓ Cloud records loaded');
+  loaded=true;message('');
  }catch(e){message('Could not load cloud records: '+e.message)}
  finally{loading=false;document.querySelector('main').inert=!loaded}
 }
