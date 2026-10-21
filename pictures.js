@@ -60,8 +60,8 @@ function decorate(){
 }
 let calMonth=null;
 function calendar(){
-  const past=$('pastDays');if(!past||typeof db==='undefined')return;
-  let box=$('pastCal6');if(!box){const w=document.createElement('div');w.id='pastWrap6';w.innerHTML='<h3 class="cal6-t">Past days</h3>';box=document.createElement('div');box.id='pastCal6';w.append(box);past.before(w);const sm=past.querySelector('summary');if(sm)sm.textContent='List of past meals';}
+  if(typeof db==='undefined')return;
+  const row=$('mealDay6');if(!row)return;let box=$('pastCal6');if(!box){box=document.createElement('div');box.id='pastCal6';box.hidden=true;row.after(box);const cal=row.querySelector('.v6-dcal');if(cal){const b=document.createElement('button');b.type='button';b.className='v6-dnav';b.setAttribute('aria-label','Choose a day');b.innerHTML=cal.querySelector('svg')?.outerHTML||'📅';b.onclick=()=>{box.hidden=!box.hidden;};cal.replaceWith(b);}}
   const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const now=new Date();if(!calMonth)calMonth=new Date(now.getFullYear(),now.getMonth(),1);
   const has=new Set((db.meals||[]).map(m=>m.date)),sel=window.strideMealDay?.()||iso(now);
@@ -70,7 +70,7 @@ function calendar(){
   let h='<div class="cal6-h"><button type="button" data-n="-1" aria-label="Previous month">‹</button><b>'+calMonth.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</b><button type="button" data-n="1" aria-label="Next month"'+(y===now.getFullYear()&&m===now.getMonth()?' disabled':'')+'>›</button></div><div class="cal6-g">'+['M','T','W','T','F','S','S'].map(d=>'<i>'+d+'</i>').join('')+'<span></span>'.repeat(first);
   for(let d=1;d<=n;d++){const k=iso(new Date(y,m,d)),fut=k>iso(now);h+='<button type="button" data-d="'+k+'" class="'+(has.has(k)?'has ':'')+(k===sel?'sel ':'')+(k===iso(now)?'tod':'')+'"'+(fut?' disabled':'')+'>'+d+'</button>';}
   box.innerHTML=h+'</div><p class="cal6-k"><i></i> meals logged · tap a day to see it</p>';
-  box.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.n){calMonth=new Date(y,m+Number(b.dataset.n),1);box.dataset.k='';calendar();return;}window.strideMealSetDay?.(b.dataset.d);$('mealDay6')?.scrollIntoView({behavior:'smooth',block:'start'});};
+  box.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.n){calMonth=new Date(y,m+Number(b.dataset.n),1);box.dataset.k='';calendar();return;}window.strideMealSetDay?.(b.dataset.d);box.hidden=true;};
 }
 const css=document.createElement('style');css.textContent=`
 .mv6-hide{display:none!important}.mv6-build:not([open]){display:none!important}.mv6-build>summary{display:none!important}.mv6-close{float:right;width:auto!important;background:none!important;border:0!important;color:var(--muted)!important;font-weight:700;padding:4px!important;margin:0!important}.mv6-outer{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
@@ -92,7 +92,7 @@ const css=document.createElement('style');css.textContent=`
 li.li6{display:flex;align-items:center;list-style:none;margin:6px 0}
 .eq6{width:44px;height:44px;flex:none;border-radius:12px;padding:7px;color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,var(--card));display:inline-grid;vertical-align:middle;margin-right:10px}
 .eqrow6{display:flex!important;align-items:center}
-#pastWrap6{border-top:1px solid var(--soft);margin-top:12px;padding-top:10px}.cal6-t{margin:0 0 6px;font-size:16px}#pastCal6{margin:4px 0 10px}.cal6-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.cal6-h button{background:none!important;border:0!important;color:var(--fg)!important;font-size:22px;width:auto!important;padding:2px 10px!important;margin:0!important}.cal6-h button:disabled{opacity:.3}
+#pastWrap6{border-top:1px solid var(--soft);margin-top:12px;padding-top:10px}.cal6-t{margin:0 0 6px;font-size:16px}#pastCal6{margin:0 0 12px;padding:10px;border:1px solid var(--soft);border-radius:14px;background:var(--bg)}.cal6-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.cal6-h button{background:none!important;border:0!important;color:var(--fg)!important;font-size:22px;width:auto!important;padding:2px 10px!important;margin:0!important}.cal6-h button:disabled{opacity:.3}
 .cal6-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.cal6-g i{font-style:normal;font-size:12px;color:var(--muted)}
 .cal6-g button{height:34px;width:34px!important;justify-self:center;margin:0!important;padding:0!important;border-radius:50%!important;background:transparent!important;border:0!important;color:var(--fg)!important;font-weight:600;font-size:14px;position:relative;min-height:0!important}
 .cal6-g button.has::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
