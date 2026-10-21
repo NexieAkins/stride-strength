@@ -51,7 +51,7 @@ function apply(){
   document.querySelectorAll('#train .t6-next').forEach(c=>put(c,pick(txt(c)),'sc6-r sc6-soft'));
   document.querySelectorAll('#train .t6-qs button, #train .t6-tile, #train .t6-mk, #progress .t6-mk').forEach(c=>{const h=head(c);const m=T.find(([r])=>r.test(h));if(m)put(c,m[1],c.matches('.t6-qs button')||c.matches('.t6-tile')?'sc6-tile':'sc6-r sc6-soft');});
   const rp=document.querySelector('#train .v6-pick');if(rp)put(rp,'calm');
-  const b6=$('builder6');if(b6)put(b6,'home','sc6-r sc6-soft');const s6=$('schedule6');if(s6)put(s6,'track','sc6-r sc6-soft');
+  const b6=$('builder6');if(b6)put(b6,'home','sc6-r sc6-faint');const s6=$('schedule6');if(s6)put(s6,'track','sc6-r sc6-soft');
   const lg=document.querySelector('#log .v6-log')||$('workoutForm')?.closest('.card');if(lg)put(lg,'shoes','sc6-top sc6-top-s');
   const ring=$('macroTiles')?.closest('.card');if(ring)put(ring,'food','sc6-r sc6-soft');
   const lm=$('aiMealPanel');if(lm)put(lm,'plate','sc6-r sc6-soft');const ym=$('yourMeals');if(ym)put(ym,'veg','sc6-r sc6-faint');
