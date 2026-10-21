@@ -164,7 +164,7 @@ function buildKitchen(){
   const chips=el('div',{id:'ingChips',className:'v6-ingchips'});
   const items=()=>ta.value.split(/[,\n]+/).map(x=>x.trim()).filter(Boolean);
   const write=list=>{ta.value=list.join(', ');ta.dispatchEvent(new Event('input',{bubbles:true}));draw();};
-  function draw(){chips.replaceChildren();items().forEach((it,i)=>{const c=el('span',{className:'v6-ing'+(/\(\?\)/.test(it)?' unsure':'')},[document.createTextNode(it.replace(/\s*\(\?\)/,'')+(/\(\?\)/.test(it)?' ?':''))]);const x=el('button',{type:'button','aria-label':'Remove '+it,textContent:'✕'});x.onclick=()=>{const l=items();l.splice(i,1);write(l);};c.append(x);chips.append(c);});if(!items().length)chips.append(el('small',{className:'v6-sub',textContent:'Type what you have, or scan your fridge above.'}));}
+  function draw(){chips.replaceChildren();items().forEach((it,i)=>{const c=el('span',{className:'v6-ing'+(/\(\?\)/.test(it)?' unsure':'')},[document.createTextNode(it.replace(/\s*\(\?\)/,'')+(/\(\?\)/.test(it)?' ?':''))]);const x=el('button',{type:'button','aria-label':'Remove '+it,textContent:'✕'});x.onclick=()=>{const l=items();l.splice(i,1);write(l);};c.append(x);chips.append(c);});}
   const push=()=>{const v=inp.value.trim();if(!v)return;write([...items(),...v.split(',').map(x=>x.trim()).filter(Boolean)]);inp.value='';inp.focus();};
   add.onclick=push;inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();push();}});
   ta.addEventListener('input',()=>{if(document.activeElement!==ta)draw();});
@@ -181,6 +181,8 @@ function kitchenLayout(){
   const row=kf.querySelector('.v6-ingadd'),snap=$('kitchenSnap'),cam=$('kitchenCamera');
   if(row&&cam){const scan=el('button',{type:'button',className:'v6-scan','aria-label':'Scan ingredients with your camera'},[icon('cam',22),el('span',{textContent:'Scan'})]);scan.onclick=()=>cam.click();row.append(scan);}
   if(snap){snap.classList.add('v6-snapmini');[...snap.querySelectorAll('label')].forEach(l=>l.hidden=true);const lib=$('kitchenLibrary');if(lib){const lk=el('button',{type:'button',className:'v6-linkbtn',textContent:'or choose photos'});lk.onclick=()=>lib.click();snap.prepend(lk);}row?.after(snap);}
+  [...mk.querySelectorAll('p,small')].forEach(x=>{if(/^Type what you have|saved for your account/i.test(x.textContent.trim()))x.hidden=true;});
+  const scl=row?.querySelector('.v6-scan span');if(scl)scl.innerHTML='Scan<br>fridge';
   // 2×2 settings
   const grid=el('div',{className:'v6-kgrid'});
   const cell=(title,id)=>{const f=$(id);if(!f)return;const l=kf.querySelector('label[for='+id+']');if(l)l.hidden=true;const c=el('label',{className:'v6-kcell',htmlFor:id},[el('small',{textContent:title}),f]);grid.append(c);};
@@ -361,3 +363,5 @@ if(document.readyState==='complete')setTimeout(init,120);else window.addEventLis
 (function(){const st=document.createElement('style');st.textContent='#logMain6.v6-pills{column-gap:7px;row-gap:0}#logMain6 .v6-br{flex-basis:100%;height:8px}#logMain6.v6-pills button{border-radius:999px!important;padding:8px 13px!important;font-size:15px;font-weight:700;border:1.5px solid color-mix(in srgb,var(--fg) 22%,transparent)!important}#logMain6.v6-pills button.on{border-color:transparent!important}';document.head.append(st);})();
 
 (function(){const st=document.createElement('style');st.textContent='#aiMealPanel:not([data-mode=type]):not(.v6-hasphoto) #aiMealDescription,#aiMealPanel:not([data-mode=type]):not(.v6-hasphoto) #aiAnalyzeMeal{display:none!important}#aiMealPanel:not([data-mode=manual]) #manualMeal{display:none!important}#manualMeal>summary{display:none!important}#manualMeal{border:0!important;padding:0!important;margin-top:10px}#mealQuick button.on{background:var(--accent)!important;color:var(--on-accent)!important}#mealQuick button.on svg{color:inherit!important}#yourMeals h3{display:flex;align-items:center}.v6-addlink{margin-left:auto!important;background:none!important;border:0!important;color:var(--accent)!important;font-weight:700;font-size:15px;padding:4px!important;width:auto!important}';document.head.append(st);})();
+
+(function(){const st=document.createElement('style');st.textContent='#ingChips:empty{display:none!important}#myKitchen .v6-linkbtn{margin:-4px 0 4px!important;padding:2px 4px!important;font-size:13px}';document.head.append(st);})();
