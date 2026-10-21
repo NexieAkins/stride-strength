@@ -70,7 +70,7 @@ function logLayout(){
   date.addEventListener('change',fmtDate);setInterval(fmtDate,1000);f.prepend(dateRow);fmtDate();
   // Main chips + sub choices
   $('typeChips')?.remove();const tl=lab('workoutType');if(tl)tl.hidden=true;
-  const MAIN=[['Run','run',[['Easy / long run','Long Run'],['Quality / speed','Quality Run']]],['Walk','walk',[['Walk','Walk']]],['Strength','dumb',[['Upper body','Upper Body'],['Lower body','Lower Body']]],['Core','core',[['Core','Core'],['Standing core','Standing Core']]],['Bike','run',[['Bike','Bike']]],['Swim','drop',[['Swim','Swim']]],['Recovery','leaf',[['Recovery','Recovery']]],['Other','plus',[['Other activity','Other activity']]]];
+  const MAIN=[['Run','run',[['Easy / long run','Long Run'],['Quality / speed','Quality Run']]],['Walk','walk',[['Walk','Walk']]],['Strength','dumb',[['Upper body','Upper Body'],['Lower body','Lower Body']]],['Core','core',[['Core','Core']]],['Bike','run',[['Bike','Bike']]],['Swim','drop',[['Swim','Swim']]],['Recovery','leaf',[['Recovery','Recovery']]],['Other','plus',[['Other activity','Other activity']]]];
   const main=el('div',{id:'logMain6',className:'v6-chips'}),sub=el('div',{id:'logSub6',className:'v6-chips v6-subchips'});
   const setType=v=>{if(![...type.options].some(o=>o.value===v)){type.append(el('option',{value:v,textContent:v}));}type.value=v;type.dispatchEvent(new Event('change',{bubbles:true}));draw();};
   function draw(){const cur=type.value,grp=MAIN.find(m=>m[2].some(x=>x[1]===cur));main.replaceChildren();MAIN.forEach(m=>{const b=el('button',{type:'button',className:grp===m?'on':'',textContent:m[0]});b.onclick=()=>setType((grp===m?cur:null)||m[2][0][1]);main.append(b);});
