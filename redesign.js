@@ -18,6 +18,8 @@ const ICONS={
  dumb:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12"/></g>',
  core:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="8" r="2"/><path d="M4 16c4 1 9 1 16-4M8 10l3 5"/></g>',
  spark:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></g>',
+ moon:'<path d="M19 15A8 8 0 1 1 10 4a6 6 0 0 0 9 11z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+ wind:'<path d="M3 9h11a3 3 0 1 0-3-3M3 15h15a3 3 0 1 1-3 3M3 12h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
  cam:'<g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></g>',
  flame:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 3 2 3-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
  cal:'<g fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></g>',
