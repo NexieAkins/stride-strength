@@ -76,7 +76,7 @@ function quickMeal(){
     const food=$('aiEstimateName').value.trim(),cal=Number($('aiEstimateCalories').value),pro=Number($('aiEstimateProtein').value);
     const st=$('aiMealStatus');
     if(!food||!Number.isFinite(cal)||!Number.isFinite(pro)){if(st)st.textContent='Check the food, calories and protein first.';return;}
-    const d=new Date(),day=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const d=new Date(),day=window.strideMealDay?.()||(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
     db.meals.push({date:day,type:type.value,food,calories:cal,protein:pro,carbs:num('aiEstimateCarbs'),fat:num('aiEstimateFat'),fiber:num('aiEstimateFiber')});
     if(save()){res.classList.add('hidden');$('aiMealDescription').value='';window.strideMealPhotos?.clear();['aiMealPhoto','mealCamera'].forEach(i=>{if($(i))$(i).value='';});$('mealPreview')?.classList.add('hidden');$('clearMealPhoto')?.classList.add('hidden');if(st)st.textContent='✓ Added to today’s diary.';render();}
     else{db.meals.pop();if(st)st.textContent='Could not save. Try again.';}
@@ -111,7 +111,7 @@ function compressMeals(panel,today,use){
     const empty=el('p',{id:'noMealsToday',className:'muted',textContent:'Nothing logged today yet.'});
     pastList=el('div',{id:'pastMeals'});past=el('details',{id:'pastDays'},[el('summary',{textContent:'Past days'}),pastList]);
     card.append(empty,hist,past);if(box!==hist)box.remove();panel.after(card);}
-  const day=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  const day=()=>{if(window.strideMealDay)return window.strideMealDay();const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
   function repeatButtons(){const t=day();document.querySelectorAll('#yourMeals .meal-diary-entry').forEach(c=>{if(c.querySelector('.repeat-meal'))return;const food=c.querySelector('h3')?.textContent,kind=c.querySelector('.workout-history-kind')?.textContent;const m=db.meals.find(x=>x.date===c.dataset.date&&x.food===food&&(!kind||x.type===kind));if(!m)return;const b=el('button',{type:'button',className:'secondary-btn repeat-meal',textContent:c.dataset.date===t?'＋ Log again':'＋ Log again today',onclick:()=>{const copy={...m,date:t};delete copy.id;db.meals.push(copy);if(save()){render();const st=$('aiMealStatus');if(st)st.textContent='✓ '+m.food+' added to today.';$('yourMeals')?.scrollIntoView({behavior:'smooth',block:'start'});}else db.meals.pop();}});c.append(b);});}
   function splitDays(){if(!hist||!pastList)return;pastList.replaceChildren();const t=day();let n=0,last=null;
     [...hist.querySelectorAll(':scope .meal-diary-entry')].forEach(c=>{if(c.dataset.date===t){n++;return;}if(c.dataset.date!==last){last=c.dataset.date;pastList.append(el('p',{className:'past-day',textContent:new Date(last+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}));}pastList.append(c);});

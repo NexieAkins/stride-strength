@@ -110,9 +110,9 @@ function buildMeals(){
   const go=(i,l,f)=>{const b=el('button',{type:'button'},[icon(i,20),el('span',{textContent:l})]);b.onclick=f;q.append(b);};
   go('cam','Photo',()=>$('aiMealPhoto')?.click());
   const mode=m=>{const was=panel.dataset.mode===m;panel.dataset.mode=was?'':m;const mm=$('manualMeal');if(mm)mm.open=!was&&m==='manual';q.querySelectorAll('button').forEach(b=>b.classList.toggle('on',!was&&b.dataset.m===m));if(!was){const t=m==='type'?$('aiMealDescription'):mm;setTimeout(()=>{t?.scrollIntoView({behavior:'smooth',block:'center'});if(m==='type')t?.focus();},50);}};window.__v6mealMode=mode;
-  go('fork','Type it',()=>mode('type'));
-  go('redo','Recent',()=>{const y=$('yourMeals');const p=$('pastDays');if(p)p.open=true;y?.scrollIntoView({behavior:'smooth',block:'start'});});
-  go('plus','Enter it',()=>mode('manual'));q.children[1].dataset.m='type';q.children[3].dataset.m='manual';
+  go('pen','Type it',()=>mode('type'));
+  const goRecent=()=>{const y=$('yourMeals');const p=$('pastDays');if(p)p.open=true;y?.scrollIntoView({behavior:'smooth',block:'start'});};
+  go('list','Enter it',()=>mode('manual'));go('redo','Recent',goRecent);q.children[1].dataset.m='type';q.children[2].dataset.m='manual';
   const h3=panel.querySelector('h3');if(h3)h3.textContent='Log a meal';const pd=panel.querySelector(':scope>p:not([id])');if(pd)pd.hidden=true;
   const ym=$('yourMeals'),yh=ym?.querySelector('h3');if(yh&&!$('v6AddMeal')){const a=el('button',{type:'button',id:'v6AddMeal',className:'v6-addlink',textContent:'＋ Add'});a.onclick=()=>{if(panel.dataset.mode!=='type')mode('type');else $('aiMealDescription')?.focus();};yh.append(a);}
   setInterval(()=>{const n=$('noMealsToday'),mh=$('mealHistory');if(n&&mh)mh.hidden=!n.hidden&&/no entries/i.test(mh.textContent);const ph=(window.strideMealPhotos?.list()||[]).length;panel.classList.toggle('v6-hasphoto',ph>0);},700);
@@ -126,7 +126,7 @@ function buildMeals(){
 }
 function drawMealRing(){
   const tiles=$('macroTiles');if(!tiles||typeof db==='undefined')return;
-  const t=day(),m=db.meals.filter(x=>x.date===t),goal=window.strideCalorieGoal?window.strideCalorieGoal():(Number(db.goals.calories)||1900),burn=window.strideBurnedToday?.()||0,base=goal-burn,eaten=sum(m,'calories'),left=goal-eaten,pg=Number(db.goals.protein)||110,fg=Math.round(base*.3/9),cg=Math.max(50,Math.round((base-pg*4-fg*9)/4));
+  const t=window.strideMealDay?.()||day(),m=db.meals.filter(x=>x.date===t),goal=window.strideCalorieGoal?window.strideCalorieGoal():(Number(db.goals.calories)||1900),burn=window.strideBurnedToday?.()||0,base=goal-burn,eaten=sum(m,'calories'),left=goal-eaten,pg=Number(db.goals.protein)||110,fg=Math.round(base*.3/9),cg=Math.max(50,Math.round((base-pg*4-fg*9)/4));
   const pct=Math.max(0,Math.min(1,eaten/goal)),C=194.8;
   const ring=document.createElementNS(NS,'svg');ring.setAttribute('viewBox','0 0 76 76');ring.setAttribute('class','v6-ring');ring.setAttribute('role','img');ring.setAttribute('aria-label',fmt(eaten)+' of '+fmt(goal)+' kcal');
   ring.innerHTML='<circle cx="38" cy="38" r="31" fill="none" stroke="var(--soft)" stroke-width="8"/><circle cx="38" cy="38" r="31" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'" transform="rotate(-90 38 38)"/><text x="38" y="38" text-anchor="middle" font-size="15" font-weight="800" fill="currentColor">'+fmt(eaten)+'</text><text x="38" y="50" text-anchor="middle" font-size="7" fill="var(--muted)">of '+fmt(goal)+'</text>';
@@ -354,7 +354,22 @@ const css=el('style');css.textContent=`
 document.head.append(css);
 
 function titles(){[['meals','Fuel your day.'],['train','Make today count.']].forEach(([id,sub])=>{const sec=$(id),h=sec?.querySelector(':scope>h2');if(!h||h.classList.contains('v6-pagetitle'))return;h.classList.add('v6-pagetitle');const p=h.nextElementSibling;if(p&&p.tagName==='P')p.textContent=sub;});}
-function init(){titles();hookMealPhotos();buildKitchen();kitchenLayout();buildLog();logLayout();buildMeals();buildProgress();const r0=render;render=function(){r0();window.__v6drawWater?.();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();tidyMenus();};setInterval(tidyMenus,1200);setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
+
+function mealDateRow(){
+  const tiles=$('macroTiles'),card=tiles?.closest('.card');if(!card||$('mealDay6'))return;
+  const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const today=()=>iso(new Date());let sel=null;window.strideMealDay=()=>sel||today();
+  const lbl=el('b'),pick=el('input',{type:'date',className:'v6-hidden-select','aria-label':'Pick a day'});
+  const set=v=>{sel=v&&v<today()?v:null;draw();try{render();}catch(e){}const md=$('mealDate');if(md)md.value=window.strideMealDay();const em=$('noMealsToday');if(em)em.textContent=sel?'Nothing logged this day.':'Nothing logged today yet.';};
+  const shift=n=>{const d=new Date(window.strideMealDay()+'T12:00');d.setDate(d.getDate()+n);set(iso(d));};
+  const prev=el('button',{type:'button',className:'v6-dnav','aria-label':'Previous day',textContent:'‹'});prev.onclick=()=>shift(-1);
+  const next=el('button',{type:'button',className:'v6-dnav','aria-label':'Next day',textContent:'›'});next.onclick=()=>shift(1);
+  const cal=el('button',{type:'button',className:'v6-dnav','aria-label':'Choose a day'},[icon('cal',18)]);cal.onclick=()=>{pick.max=today();pick.value=window.strideMealDay();pick.showPicker?pick.showPicker():pick.click();};pick.onchange=()=>set(pick.value);
+  function draw(){const d=new Date(window.strideMealDay()+'T12:00'),y=new Date();y.setDate(y.getDate()-1);const s=d.toLocaleDateString(undefined,{month:'short',day:'numeric'});lbl.textContent=(sel?(iso(d)===iso(y)?'Yesterday, ':d.toLocaleDateString(undefined,{weekday:'short'})+', '):'Today, ')+s;next.disabled=!sel;}
+  const row=el('div',{id:'mealDay6',className:'v6-dayrow'},[prev,lbl,next,el('span',{style:'flex:1'}),cal,pick]);card.prepend(row);draw();
+  const st=document.createElement('style');st.textContent='.v6-dayrow{display:flex;align-items:center;gap:6px;margin:-4px 0 10px}.v6-dayrow b{font-size:16px}.v6-dnav{background:none!important;border:0!important;color:var(--fg)!important;font-size:22px;line-height:1;padding:4px 8px!important;width:auto!important;margin:0!important;box-shadow:none!important}.v6-dnav:disabled{opacity:.3}.v6-dnav svg{color:var(--accent)}';document.head.append(st);
+}
+function init(){titles();hookMealPhotos();buildKitchen();kitchenLayout();buildLog();logLayout();buildMeals();mealDateRow();buildProgress();const r0=render;render=function(){r0();window.__v6drawWater?.();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();tidyMenus();};setInterval(tidyMenus,1200);setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
 if(document.readyState==='complete')setTimeout(init,120);else window.addEventListener('load',()=>setTimeout(init,160));
 })();
 
