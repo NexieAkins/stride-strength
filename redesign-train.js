@@ -300,7 +300,7 @@ let schedAll=false;
 function drawSchedule(){
   const sch=$('schedule6');if(!sch||typeof plan==='undefined')return;const idx=(new Date().getDay()+6)%7;
   const days=['MON','TUE','WED','THU','FRI','SAT','SUN'];
-  const edit=el('button',{type:'button',className:'v6-linkbtn',textContent:'Edit'});edit.onclick=()=>window.strideOpenPrefs?.();
+  const edit=el('button',{type:'button',className:'v6-linkbtn',textContent:'Edit'});edit.onclick=()=>window.strideOpenPrefs?.('schedule');
   sch.replaceChildren(el('div',{className:'v6-sechead'},[el('h3',{textContent:'Your weekly schedule'}),edit]));
   if(plan.every(x=>/choose your schedule/i.test(x[1]))){const b=el('button',{type:'button',className:'v6-ghost',textContent:'Set my weekly schedule'});b.onclick=()=>window.strideOpenPrefs?.();sch.append(b);return;}
   const order=[...Array(7)].map((_,o)=>(idx+o)%7).slice(0,schedAll?7:2);
