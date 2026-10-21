@@ -358,7 +358,7 @@ function titles(){[['meals','Fuel your day.'],['train','Make today count.']].for
 function mealDateRow(){
   const tiles=$('macroTiles'),card=tiles?.closest('.card');if(!card||$('mealDay6'))return;
   const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const today=()=>iso(new Date());let sel=null;window.strideMealDay=()=>sel||today();
+  const today=()=>iso(new Date());let sel=null;window.strideMealDay=()=>sel||today();window.strideMealSetDay=v=>set(v);
   const lbl=el('b'),pick=el('input',{type:'date',className:'v6-dpick','aria-label':'Choose a day'});
   const set=v=>{sel=v&&v<today()?v:null;draw();try{render();}catch(e){}const md=$('mealDate');if(md)md.value=window.strideMealDay();const em=$('noMealsToday');if(em)em.textContent=sel?'Nothing logged this day.':'Nothing logged today yet.';};
   const shift=n=>{const d=new Date(window.strideMealDay()+'T12:00');d.setDate(d.getDate()+n);set(iso(d));};
