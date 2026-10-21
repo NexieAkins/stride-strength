@@ -71,7 +71,7 @@ function logLayout(){
   // Main chips + sub choices
   $('typeChips')?.remove();const tl=lab('workoutType');if(tl)tl.hidden=true;
   const MAIN=[['Run','run',[['Easy / long run','Long Run'],['Quality / speed','Quality Run']]],['Walk','walk',[['Walk','Walk']]],['Strength','dumb',[['Upper body','Upper Body'],['Lower body','Lower Body']]],['Core','core',[['Core','Core']]],['Bike','run',[['Bike','Bike']]],['Swim','drop',[['Swim','Swim']]],['Recovery','leaf',[['Recovery','Recovery']]],['Other','plus',[['Other activity','Other activity']]]];
-  const main=el('div',{id:'logMain6',className:'v6-chips'}),sub=el('div',{id:'logSub6',className:'v6-chips v6-subchips'});
+  const main=el('div',{id:'logMain6',className:'v6-chips v6-pills'}),sub=el('div',{id:'logSub6',className:'v6-chips v6-subchips'});
   const setType=v=>{if(![...type.options].some(o=>o.value===v)){type.append(el('option',{value:v,textContent:v}));}type.value=v;type.dispatchEvent(new Event('change',{bubbles:true}));draw();};
   function draw(){const cur=type.value,grp=MAIN.find(m=>m[2].some(x=>x[1]===cur));main.replaceChildren();MAIN.forEach(m=>{const b=el('button',{type:'button',className:grp===m?'on':'',textContent:m[0]});b.onclick=()=>setType((grp===m?cur:null)||m[2][0][1]);main.append(b);});
     sub.replaceChildren();if(grp&&grp[2].length>1)grp[2].forEach(([l,v])=>{const b=el('button',{type:'button',className:v===cur?'on':'',textContent:l});b.onclick=()=>setType(v);sub.append(b);});sub.hidden=!sub.children.length;}
@@ -352,3 +352,5 @@ if(document.readyState==='complete')setTimeout(init,120);else window.addEventLis
 })();
 
 (function(){const st=document.createElement('style');st.textContent='.v6-feel{grid-template-columns:repeat(3,1fr)!important}.v6-feel .v6-feel-q{grid-column:1/-1;font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#8a8f98);margin:6px 0 2px;background:none!important;border:0!important;padding:0!important}';document.head.append(st);})();
+
+(function(){const st=document.createElement('style');st.textContent='#logMain6.v6-pills{gap:7px}#logMain6.v6-pills button{border-radius:999px!important;padding:8px 13px!important;font-size:15px;font-weight:700;border:1.5px solid color-mix(in srgb,var(--fg) 22%,transparent)!important}#logMain6.v6-pills button.on{border-color:transparent!important}';document.head.append(st);})();
