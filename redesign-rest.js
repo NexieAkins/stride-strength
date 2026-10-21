@@ -32,7 +32,7 @@ function buildLog(){
     ($('notes')?.previousElementSibling||dur).before(p);setInterval(upd,600);
   }
   // Energy + soreness as tap chips (the slider and text box stay underneath for saving).
-  const chipRow=(label,opts,get,set,id)=>{const row=el('div',{className:'v6-feel',id},[el('span',{textContent:label})]);opts.forEach(([t,v])=>{const b=el('button',{type:'button',textContent:t});b.onclick=()=>{set(get()===v?'':v);mark();};b.dataset.v=v;row.append(b);});const mark=()=>row.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(get())));setInterval(mark,600);return row;};
+  const chipRow=(label,opts,get,set,id)=>{const row=el('div',{className:'v6-feel',id},[el('span',{className:'v6-feel-q',textContent:label+':'})]);opts.forEach(([t,v])=>{const b=el('button',{type:'button',textContent:t});b.onclick=()=>{set(get()===v?'':v);mark();};b.dataset.v=v;row.append(b);});const mark=()=>row.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(get())));setInterval(mark,600);return row;};
   const en=$('energy'),so=$('soreness');
   if(en&&so&&!$('feelEnergy')){
     const band=v=>{const n=Number(v);return !n?'':n<=3?'3':n<=6?'6':'9';};
@@ -85,7 +85,7 @@ function logLayout(){
   const grid=el('div',{className:'v6-mgrid'},[cell('Distance',strip(dist),'mi','v6-distcell'),cell('Duration',strip(durF),''),cell('Avg pace',paceBox,'/mi · auto','v6-distcell'),cell('Active calories',kcal,'kcal')]);
   [...f.querySelectorAll('label')].forEach(l=>{if(/^minutes$/i.test(l.textContent.trim()))l.hidden=true;});
   if(pace)pace.classList.add('v6-gone');
-  setInterval(()=>{const show=getComputedStyle(dist).display!=='none'&&!dist.classList.contains('dist-hidden');grid.querySelectorAll('.v6-distcell').forEach(c=>c.hidden=!show);const mi=Number(dist.value),min=Number($('duration')?.value);paceBox.textContent=mi>0&&min>0?paceTxt(min*60/mi):'—';},500);
+  setInterval(()=>{const wt=($('workoutType')?.value||'');const show=/run|walk|bike|swim|cycl|jog|hike/i.test(wt);if(show){dist.classList.remove('dist-hidden');dist.style.display='';const dl=dist.closest('label,.field');if(dl)dl.style.display='';}grid.querySelectorAll('.v6-distcell').forEach(c=>c.hidden=!show);const mi=Number(dist.value),min=Number($('duration')?.value);paceBox.textContent=mi>0&&min>0?paceTxt(min*60/mi):'—';},500);
   const hint=el('p',{className:'v6-legend',textContent:'Distance & pace only show for runs, walks, bikes and swims.'});
   $('duration')&&($('duration').classList.add('v6-gone'));
   durF?.querySelectorAll('input').forEach((x,i)=>{x.placeholder=['h','min','sec'][i]||'';});
@@ -350,3 +350,5 @@ function titles(){[['meals','Fuel your day.'],['train','Make today count.']].for
 function init(){titles();hookMealPhotos();buildKitchen();kitchenLayout();buildLog();logLayout();buildMeals();buildProgress();const r0=render;render=function(){r0();window.__v6drawWater?.();drawRecent();drawMealRing();drawProgress();menuLogButtons();drawMealPhotos();tidyMenus();};setInterval(tidyMenus,1200);setInterval(drawMealPhotos,1500);setInterval(menuLogButtons,1000);drawRecent();drawMealRing();drawProgress();}
 if(document.readyState==='complete')setTimeout(init,120);else window.addEventListener('load',()=>setTimeout(init,160));
 })();
+
+(function(){const st=document.createElement('style');st.textContent='.v6-feel{grid-template-columns:repeat(3,1fr)!important}.v6-feel .v6-feel-q{grid-column:1/-1;font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#8a8f98);margin:6px 0 2px;background:none!important;border:0!important;padding:0!important}';document.head.append(st);})();
