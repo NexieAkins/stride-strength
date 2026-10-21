@@ -183,6 +183,7 @@ async function writeCloud(){
 let pending;
 window.cloudRecordOwner=()=>user?.id||null;window.strideProfileReadyOwner=null;
 window.cloudQueue=function(){if(!user||loading)return;db.syncDirty=user.id;localStorage.setItem(KEY,JSON.stringify(db));clearTimeout(pending);pending=setTimeout(()=>{pending=null;writeCloud()},500)};
+window.__strideReload=()=>loadCloud();let __lastHide=0;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')__lastHide=Date.now();else if(__lastHide&&Date.now()-__lastHide>60000&&!(window.strideSessionTracker?.isActive?.()||window.strideLiveRun?.isActive?.()))loadCloud();});
 async function loadCloud(){
  if(!user||writing)return;
  if(pending||db.syncDirty===user.id){clearTimeout(pending);pending=null;if(!await writeCloud())return;}
