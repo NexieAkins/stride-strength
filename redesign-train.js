@@ -137,6 +137,24 @@ function restUI(){
 function tickRest(){const b=restUI(),left=(restEnd-Date.now())/1000;if(left<=0){b.hidden=true;if(restEnd&&left>-1){try{navigator.vibrate?.(200);}catch(e){}}restEnd=0;return;}b.hidden=false;$('restLeft').textContent=clock(left);}
 setInterval(()=>{if(restEnd)tickRest();},250);
 document.addEventListener('change',e=>{const c=e.target;if(c.type!=='checkbox'||!c.checked||!c.closest('#sessionTracker'))return;if(!/completed .* set/i.test(c.getAttribute('aria-label')||''))return;restEnd=Date.now()+restBase*1000;tickRest();});
+
+function repeatSheet(){
+  let d=$('repeat6');if(!d){d=el('dialog',{id:'repeat6',className:'v6-sheet'});document.body.append(d);}
+  const ws=(db.workouts||[]).filter(w=>w&&w.date).slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,25);
+  const close=el('button',{type:'button',className:'v6-sheetx','aria-label':'Close',textContent:'✕'});close.onclick=()=>d.close();
+  d.replaceChildren(el('div',{className:'v6-sheethead'},[el('h2',{textContent:'Repeat a workout'}),close]));
+  if(!ws.length){d.append(el('p',{className:'v6-sub',textContent:'No workouts yet. Once you log or finish one, it shows up here to repeat.'}));}
+  const ic=t=>/run/i.test(t)?'run':/walk/i.test(t)?'walk':/core/i.test(t)?'core':/recover|stretch|mobil/i.test(t)?'leaf':/bike|swim/i.test(t)?'run':'dumb';
+  ws.forEach(w=>{const t=w.session?.title||w.type||'Workout';const bits=[new Date(w.date+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})];if(w.miles)bits.push(w.miles+' mi');if(w.minutes)bits.push(Math.round(w.minutes)+' min');if(w.session?.exercises?.length)bits.push(w.session.exercises.length+' exercises');
+    let act,lab;
+    if(w.session?.exercises?.length){lab='Repeat';act=()=>{d.close();const tr=$('sessionTracker');btnByText(tr,/repeat workout/i)?.click();setTimeout(()=>{const sel=$('repeatWorkoutSelect');if(sel){sel.value=w.id;btnByText(tr,/start repeat/i)?.click();}},80);};}
+    else if(/run|walk/i.test(w.type)){lab='Start';act=()=>{d.close();startRun(/walk/i.test(w.type)?'walk':'run');};}
+    else{lab='Log again';act=()=>{const c={...w,date:(()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');})()};delete c.id;delete c.session;db.workouts.push(c);if(typeof save==='function'&&save()){render();b.textContent='✓ Logged';b.disabled=true;}else db.workouts.pop();};}
+    const b=el('button',{type:'button',className:'rp6-go',textContent:lab});b.onclick=act;
+    d.append(el('div',{className:'rp6-row'},[el('span',{className:'rp6-ic'},[icon(ic(w.type||t),20)]),el('span',{className:'rp6-t'},[el('b',{textContent:t}),el('small',{textContent:bits.join(' · ')})]),b]));});
+  if(!$('rp6css')){const st=el('style',{id:'rp6css'});st.textContent='#repeat6 .rp6-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--soft)}#repeat6 .rp6-row:last-child{border:0}.rp6-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,var(--card));flex:none}.rp6-t{flex:1;min-width:0}.rp6-t b{display:block;font-size:14.5px}.rp6-t small{color:var(--muted);font-size:12.5px}.rp6-go{width:auto!important;margin:0!important;padding:7px 12px!important;font-size:13px!important;font-weight:700;border:1px solid var(--accent)!important;color:var(--accent)!important;background:none!important;border-radius:10px!important;min-height:0!important}';document.head.append(st);}
+  d.showModal();
+}
 function focusExercise(){
   const tr=$('sessionTracker');if(!tr||!window.strideSessionTracker?.isActive?.())return;
   const cards=[...tr.querySelectorAll('details.exercise')];if(!cards.length)return;
@@ -219,7 +237,7 @@ function drawToday(){
   box.append(qs);
   box.append(el('h3',{className:'t6-sec',textContent:'Make it yours'}));
   const mk=(i,t,s,re)=>{const b=el('button',{type:'button',className:'t6-mk'},[icon(i,22),el('span',{},[el('b',{textContent:t}),el('small',{textContent:s})]),icon('chev',16)]);b.onclick=()=>btnByText($('sessionTracker'),re)?.click();return b;};
-  box.append(el('div',{className:'t6-two'},[mk('spark','Build my workout','Built around your goals',/plan my workout/i),mk('redo','Repeat workout','From your history',/repeat workout/i)]),mk('plus','Custom session','Build it set by set',/custom session/i));
+  box.append(el('div',{className:'t6-two'},[mk('spark','Build my workout','Built around your goals',/plan my workout/i),(()=>{const b=mk('redo','Repeat workout','From your history',/repeat workout/i);b.onclick=repeatSheet;return b;})()]),mk('plus','Custom session','Build it set by set',/custom session/i));
   if(next&&next.p){const names=['','Tomorrow'];const dn=next.o===1?'Tomorrow':next.p[0];const u=el('button',{type:'button',className:'t6-mk t6-next'},[icon(/run|walk/i.test(next.p[1])?'run':/core/i.test(next.p[1])?'core':/rest|recover|mobil|stretch/i.test(next.p[1])?'leaf':'dumb',22),el('span',{},[el('small',{textContent:'UP NEXT'}),el('b',{textContent:next.p[1]})]),el('em',{textContent:dn+' ›'})]);u.onclick=()=>{const w=$('trainingWeek');if(w){w.open=true;w.scrollIntoView({behavior:'smooth'});}};box.append(u);}
 }
 
