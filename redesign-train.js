@@ -357,7 +357,7 @@ function buildRecovery(){
       return {name:n,why:'PICKED FOR TODAY · AFTER '+when.toUpperCase()+'’S '+lbl.toUpperCase(),group:/run|walk/i.test(ty)?'run':'cool'};}
     const idx=(new Date().getDay()+6)%7,pl=(typeof plan!=='undefined'&&plan[idx]?.[1])||'';
     if(/run|walk/i.test(pl))return {name:find(/before running/i),why:'PICKED FOR TODAY · BEFORE YOUR '+pl.toUpperCase(),group:'warm'};
-    if(/upper|lower|strength|full/i.test(pl))return {name:find(/^warm-up · before (leg|upper|a strength)/i),why:'PICKED FOR TODAY · BEFORE YOUR WORKOUT',group:'warm'};
+    if(/upper|lower|leg|strength|full|core/i.test(pl))return {name:(/lower|leg/i.test(pl)?find(/before leg day/i):/upper/i.test(pl)?find(/before upper body/i):null)||find(/before a strength workout/i),why:'PICKED FOR TODAY · BEFORE YOUR '+pl.toUpperCase(),group:'warm'};
     return {name:find(/rest-day mobility/i),why:'PICKED FOR TODAY · REST-DAY MOVEMENT',group:'mob'};
   }
   function steps(name){const keep=sel.value;sel.value=name;sel.dispatchEvent(new Event('change',{bubbles:true}));const items=[...card.querySelectorAll('#stretchItems label, #stretchItems li')].map(x=>{const cb=x.querySelector('input[type=checkbox]');const txt=(x.textContent||'').split(/·|—/)[0].trim();return {txt,done:!!cb?.checked};}).filter(x=>x.txt);if(keep!==name){sel.value=keep;sel.dispatchEvent(new Event('change',{bubbles:true}));}return items;}
