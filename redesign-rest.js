@@ -109,9 +109,14 @@ function buildMeals(){
   const q=el('div',{id:'mealQuick',className:'v6-quick4'});
   const go=(i,l,f)=>{const b=el('button',{type:'button'},[icon(i,20),el('span',{textContent:l})]);b.onclick=f;q.append(b);};
   go('cam','Photo',()=>$('aiMealPhoto')?.click());
-  go('fork','Type it',()=>{const d=$('aiMealDescription');d?.focus();d?.scrollIntoView({behavior:'smooth',block:'center'});});
+  const mode=m=>{const was=panel.dataset.mode===m;panel.dataset.mode=was?'':m;const mm=$('manualMeal');if(mm)mm.open=!was&&m==='manual';q.querySelectorAll('button').forEach(b=>b.classList.toggle('on',!was&&b.dataset.m===m));if(!was){const t=m==='type'?$('aiMealDescription'):mm;setTimeout(()=>{t?.scrollIntoView({behavior:'smooth',block:'center'});if(m==='type')t?.focus();},50);}};window.__v6mealMode=mode;
+  go('fork','Type it',()=>mode('type'));
   go('redo','Recent',()=>{const y=$('yourMeals');const p=$('pastDays');if(p)p.open=true;y?.scrollIntoView({behavior:'smooth',block:'start'});});
-  go('plus','Enter it',()=>{const m=$('manualMeal');if(m){m.open=true;m.scrollIntoView({behavior:'smooth',block:'center'});}});
+  go('plus','Enter it',()=>mode('manual'));q.children[1].dataset.m='type';q.children[3].dataset.m='manual';
+  const h3=panel.querySelector('h3');if(h3)h3.textContent='Log a meal';const pd=panel.querySelector(':scope>p:not([id])');if(pd)pd.hidden=true;
+  const ym=$('yourMeals'),yh=ym?.querySelector('h3');if(yh&&!$('v6AddMeal')){const a=el('button',{type:'button',id:'v6AddMeal',className:'v6-addlink',textContent:'＋ Add'});a.onclick=()=>{if(panel.dataset.mode!=='type')mode('type');else $('aiMealDescription')?.focus();};yh.append(a);}
+  setInterval(()=>{const n=$('noMealsToday'),mh=$('mealHistory');if(n&&mh)mh.hidden=!n.hidden&&/no entries/i.test(mh.textContent);const ph=(window.strideMealPhotos?.list()||[]).length;panel.classList.toggle('v6-hasphoto',ph>0);},700);
+  const gf=[...document.querySelectorAll('#mealView-today>details')].find(d=>/goals/i.test(d.textContent));const gs=gf?.querySelector('summary');if(gs&&!gs.dataset.v6){gs.dataset.v6=1;gs.replaceChildren(icon('trophy',20),el('span',{},[el('b',{textContent:'Goals & achievements'}),el('small',{textContent:'Targets · workout calories: add half'})]));gf.classList.add('v6-import');}
   const h=panel.querySelector('h3');(h||panel.firstChild).after(q);
   ['aiMealPhoto','mealCamera'].forEach(id=>{const f=$(id);if(!f)return;f.classList.add('v6-hidden-select');const l=panel.querySelector('label[for='+id+']');if(l)l.hidden=true;});
   const dl=panel.querySelector('label[for=aiMealDescription]');if(dl)dl.hidden=true;
@@ -354,3 +359,5 @@ if(document.readyState==='complete')setTimeout(init,120);else window.addEventLis
 (function(){const st=document.createElement('style');st.textContent='.v6-feel{grid-template-columns:repeat(3,1fr)!important}.v6-feel .v6-feel-q{grid-column:1/-1;font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#8a8f98);margin:6px 0 2px;background:none!important;border:0!important;padding:0!important}';document.head.append(st);})();
 
 (function(){const st=document.createElement('style');st.textContent='#logMain6.v6-pills{gap:7px}#logMain6.v6-pills button{border-radius:999px!important;padding:8px 13px!important;font-size:15px;font-weight:700;border:1.5px solid color-mix(in srgb,var(--fg) 22%,transparent)!important}#logMain6.v6-pills button.on{border-color:transparent!important}';document.head.append(st);})();
+
+(function(){const st=document.createElement('style');st.textContent='#aiMealPanel:not([data-mode=type]):not(.v6-hasphoto) #aiMealDescription,#aiMealPanel:not([data-mode=type]):not(.v6-hasphoto) #aiAnalyzeMeal{display:none!important}#aiMealPanel:not([data-mode=manual]) #manualMeal{display:none!important}#manualMeal>summary{display:none!important}#manualMeal{border:0!important;padding:0!important;margin-top:10px}#mealQuick button.on{background:var(--accent)!important;color:var(--on-accent)!important}#mealQuick button.on svg{color:inherit!important}#yourMeals h3{display:flex;align-items:center}.v6-addlink{margin-left:auto!important;background:none!important;border:0!important;color:var(--accent)!important;font-weight:700;font-size:15px;padding:4px!important;width:auto!important}';document.head.append(st);})();
