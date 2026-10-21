@@ -38,6 +38,7 @@ function menuView(){
   const dt=i=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;};
   const f=d=>d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
   const build=[...document.querySelectorAll('details')].find(d=>/build or substitute/i.test(d.querySelector(':scope>summary')?.textContent||''));
+  if(build&&!build.dataset.mv6){build.dataset.mv6=1;build.classList.add('mv6-build');build.open=false;const c=document.createElement('button');c.type='button';c.className='mv6-close';c.textContent='✕ Close';c.onclick=()=>{build.open=false;$('mv6')?.scrollIntoView({behavior:'smooth',block:'start'});};build.querySelector(':scope>summary')?.after(c);}
   const openBuild=fill=>{if(!build)return;build.open=true;if(fill){const r=$('menuReplace');if(r)r.value=fill;}build.scrollIntoView({behavior:'smooth',block:'start'});};
   const day=days[mvSel],dn=(day?.querySelector('summary')?.textContent||'').replace(/\s*·.*$/,'');
   const lis=day?[...day.querySelectorAll('li')]:[];
@@ -72,7 +73,7 @@ function calendar(){
   box.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.n){calMonth=new Date(y,m+Number(b.dataset.n),1);box.dataset.k='';calendar();return;}window.strideMealSetDay?.(b.dataset.d);$('mealDay6')?.scrollIntoView({behavior:'smooth',block:'start'});};
 }
 const css=document.createElement('style');css.textContent=`
-.mv6-hide{display:none!important}.mv6-outer{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
+.mv6-hide{display:none!important}.mv6-build:not([open]){display:none!important}.mv6-build>summary{display:none!important}.mv6-close{float:right;width:auto!important;background:none!important;border:0!important;color:var(--muted)!important;font-weight:700;padding:4px!important;margin:0!important}.mv6-outer{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
 .mv6-top b{display:block;font-size:19px}.mv6-top small{color:var(--muted);font-size:13px}
 .mv6-create{display:block;width:100%;margin:12px 0!important;background:var(--accent)!important;color:var(--on-accent)!important;border:0!important;border-radius:14px!important;padding:13px!important;font-weight:700;font-size:15px}
 .mv6-range{font-weight:700;margin:4px 0 8px;display:flex;align-items:center;justify-content:space-between}.mv6-range button{background:none!important;border:0!important;color:var(--fg)!important;font-size:24px;line-height:1;padding:2px 12px!important;margin:0!important;width:auto!important;min-height:0!important}
