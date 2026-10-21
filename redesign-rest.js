@@ -220,7 +220,7 @@ function restyleIdeas(res){
     const lis=ul?[...ul.children]:[],extra=lis.filter(li=>/shopping list/i.test(li.textContent)).length,have=lis.length-extra;
     const kcal=(mac.match(/(\d+) kcal/)||[])[1],pro=(mac.match(/([\d.]+) g protein/)||[])[1],carb=(mac.match(/([\d.]+) g carbs/)||[])[1],fat=(mac.match(/([\d.]+) g fat/)||[])[1],mins=(meta.match(/(\d+) min/)||[])[1];
     const recipe=el('details',{className:'v6-recipe'},[el('summary',{textContent:'View recipe'})]);if(ul)recipe.append(el('b',{textContent:'Ingredients'}),ul);if(ol)recipe.append(el('b',{textContent:'Steps'}),ol);
-    if(btn){btn.textContent='＋ Log';btn.classList.add('v6-logmeal');}
+    if(btn){btn.textContent='＋ Log';btn.classList.add('v6-logmeal');btn.addEventListener('click',()=>{setTimeout(()=>{const f=$('mealForm');const md=$('mealDate');if(md&&window.strideMealDay)md.value=window.strideMealDay();if(f){const n=db.meals.length;f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true}));setTimeout(()=>{if(db.meals.length>n){btn.textContent='✓ Logged';btn.disabled=true;const st=$('kitchenStatus');if(st)st.textContent='✓ '+name+' added to your meals.';}else{const st=$('kitchenStatus');if(st)st.textContent='Couldn’t log that meal. Check the details in Meals → Today → Enter it.';window.__v6mealMode?.('manual');}},300);}},0);});}
     const body=el('div',{className:'v6-ideabody'},[el('b',{className:'v6-ideaname',textContent:name}),el('small',{textContent:[mins&&mins+' min',kcal&&kcal+' kcal'].filter(Boolean).join(' · ')}),el('small',{textContent:[pro&&pro+' g protein',carb&&carb+' g carbs',fat&&fat+' g fat'].filter(Boolean).join(' · ')}),el('small',{className:extra?'v6-warn':'v6-ok',textContent:extra?'! Needs '+extra+' extra ingredient'+(extra>1?'s':''):'✓ Uses '+have+' of your ingredients'})]);
     c.replaceChildren(el('div',{className:'v6-ideatop'},[el('div',{className:'v6-ideapic',textContent:foodEmoji(name)}),body,btn||el('span')]),recipe);
   });
@@ -236,7 +236,7 @@ function tidyMenus(){
 /* ---------- MENUS: + Log on each planned meal ---------- */
 function menuLogButtons(){
   document.querySelectorAll('#mealPlan .stride-week li').forEach(li=>{if(li.querySelector('.v6-logmeal'))return;const slot=li.querySelector('b')?.textContent.replace(':','').trim(),food=li.textContent.replace(/^[^:]*:\s*/,'').trim();
-    const b=el('button',{type:'button',className:'v6-logmeal',textContent:'＋ Log'});b.onclick=()=>{$('mealTab-today')?.click();const d=$('aiMealDescription');if(d){d.value='1 serving '+food;}const t=$('aiMealType');if(t&&slot)t.value=slot;$('aiAnalyzeMeal')?.click();$('aiMealPanel')?.scrollIntoView({behavior:'smooth',block:'start'});};li.append(b);});
+    const b=el('button',{type:'button',className:'v6-logmeal',textContent:'＋ Log'});b.onclick=()=>{const d=$('aiMealDescription');if(d){d.value='1 serving '+food;}const t=$('aiMealType');if(t&&slot)t.value=slot;$('aiAnalyzeMeal')?.click();};li.append(b);});
 }
 /* ---------- PROGRESS ---------- */
 function buildProgress(){
