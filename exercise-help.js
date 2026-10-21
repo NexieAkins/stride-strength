@@ -51,7 +51,7 @@ function startRow(row,chain){
 /* ---------- decorate ---------- */
 function rows(){
   document.querySelectorAll('label.stretch-item, label.core-row, #train label').forEach(row=>{
-    if(row.dataset.h6||!row.querySelector('input[type=checkbox]'))return;const st=row.querySelector('strong,b');if(!st)return;
+    if(row.dataset.h6||!row.querySelector('input[type=checkbox]')||row.closest('.exercise'))return;const st=row.querySelector('strong,b');if(!st)return;
     const [nm,...rest]=st.textContent.split(' · ');if(!rest.length&&!row.matches('.core-row'))return;row.dataset.h6=1;row.dataset.name=nm.replace(/^\d+\.\s*/,'').trim();row.dataset.dose=rest.join(' · ');
     const tools=document.createElement('span');tools.className='tools6';
     const dose=parseDose(row.dataset.dose);if(dose){const t=document.createElement('button');t.type='button';t.className='tmr6';t.dataset.lbl='⏱ '+fmt(dose.sec)+(dose.sides>1?' ×2':'')+(dose.sets>1?' · '+dose.sets+' sets':'');t.textContent=t.dataset.lbl;t.onclick=e=>{e.preventDefault();e.stopPropagation();if(running&&running.row===row){stopAll();return;}startRow(row,true);};tools.append(t);}
@@ -69,10 +69,10 @@ function bw(){const w=(window.db?.weights||(typeof db!=='undefined'?db.weights:[
 function bodyweight(){
   document.querySelectorAll('#trainPlanResult label, #builder6Result label').forEach(l=>{
     const sel=[...l.querySelectorAll('select')].find(s=>[...s.options].some(o=>o.value==='bodyweight'));const inp=l.querySelector('input[type=number]');if(!sel||!inp)return;
-    if(!l.dataset.bw6){l.dataset.bw6=1;l.classList.add('load6');sel.addEventListener('change',()=>bodyweight());}
+    if(!l.dataset.bw6){l.dataset.bw6=1;l.classList.add('load6');[...l.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim()).forEach(n=>{const sp=document.createElement('span');sp.className='load6-t';sp.textContent=n.textContent.trim();n.replaceWith(sp);});let prev=sel.value;sel.addEventListener('change',()=>{if(prev==='bodyweight'&&sel.value!=='bodyweight'&&inp.dataset.bwv&&inp.value===inp.dataset.bwv){inp.value='';inp.dispatchEvent(new Event('change',{bubbles:true}));}prev=sel.value;bodyweight();});}
     let note=l.querySelector('.bw6');if(!note){note=document.createElement('span');note.className='bw6';l.append(note);}
     const isBW=sel.value==='bodyweight';inp.hidden=isBW;inp.style.display=isBW?'none':'';note.hidden=!isBW;
-    if(isBW){const w=bw();if(w){note.innerHTML='Uses your body weight · <b>'+w+' lb</b>';if(String(inp.value)!==String(w)){inp.value=w;inp.dispatchEvent(new Event('change',{bubbles:true}));}}
+    if(isBW){const w=bw();if(w){note.innerHTML='Uses your body weight · <b>'+w+' lb</b>';inp.dataset.bwv=String(w);if(String(inp.value)!==String(w)){inp.value=w;inp.dispatchEvent(new Event('change',{bubbles:true}));}}
       else{note.innerHTML='';const a=document.createElement('button');a.type='button';a.className='bw6-add';a.textContent='＋ Add your body weight';a.onclick=()=>{const wf=$('weightForm');[...document.querySelectorAll('nav button,nav a')].find(x=>/log|＋/i.test((x.getAttribute('aria-label')||'')+x.textContent))?.click();setTimeout(()=>{const dd=wf?.closest('details');if(dd)dd.open=true;wf?.scrollIntoView({behavior:'smooth',block:'center'});},300);};note.append('No body weight saved yet. ',a);}}
   });
 }
@@ -93,7 +93,7 @@ const css=document.createElement('style');css.textContent=`
 .demo6-img{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#fff}.demo6-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .35s}.demo6-img img+img{opacity:0}
 .demo6-tag{position:absolute;left:10px;top:10px;background:var(--accent);color:var(--on-accent);font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px}
 .demo6-ins{margin:12px 0 6px;padding-left:20px;line-height:1.5;font-size:14px}.demo6-ins li{margin:4px 0}.demo6-src{font-size:11.5px;color:var(--muted);margin:6px 0 0}
-.load6{display:grid!important;grid-template-columns:1fr auto;gap:8px;align-items:center}.load6>select{width:auto!important;min-width:0;padding:8px 30px 8px 12px!important;font-size:14px!important;height:auto!important;min-height:0!important;margin:0!important}.load6>input{margin:0!important}
+.load6{display:grid!important;grid-template-columns:1fr auto;gap:8px;align-items:center}.load6>.load6-t{grid-column:1/-1;font-weight:700}.load6>input[hidden]+select,.load6>input[style*='none']+select{grid-column:1/-1;justify-self:start}.load6>select{width:auto!important;min-width:120px!important;padding:8px 30px 8px 12px!important;font-size:14px!important;height:auto!important;min-height:0!important;margin:0!important}.load6>input{margin:0!important}
 .bw6{grid-column:1/-1;font-size:13px;color:var(--muted)}.bw6 b{color:var(--fg)}.bw6-add{width:auto!important;margin:0 0 0 4px!important;padding:4px 10px!important;font-size:12.5px!important;font-weight:700;border:1px solid var(--accent)!important;color:var(--accent)!important;background:none!important;border-radius:10px!important;min-height:0!important}`;
 document.head.append(css);
 const zc=document.createElement('style');zc.textContent=[['text-large',1.15],['text-xl',1.3]].map(([c,z])=>`body.${c} dialog{width:calc(94vw / ${z})!important;max-width:calc(100vw / ${z} - 12px)!important;max-height:calc(90vh / ${z})!important;box-sizing:border-box}body.${c} dialog .v6-sheethead,body.${c} .demo6-h,body.${c} .scan6-h{position:sticky;top:-14px;z-index:2;background:inherit;padding-top:4px}`).join('')+'dialog .v6-sheethead{position:sticky;top:-14px;z-index:2;background:inherit}';document.head.append(zc);
