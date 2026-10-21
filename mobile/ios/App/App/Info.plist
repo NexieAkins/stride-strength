@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Take equipment and running-plan photos when you choose to.</string>
+	<string>Scan food barcodes and take meal, equipment and running-plan photos when you choose to.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Measure outdoor running distance and pace while you track a run.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
