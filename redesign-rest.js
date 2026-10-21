@@ -386,3 +386,10 @@ if(document.readyState==='complete')setTimeout(init,120);else window.addEventLis
 
 window.strideWaterMinus=()=>{const d0=new Date(),t=d0.getFullYear()+'-'+String(d0.getMonth()+1).padStart(2,'0')+'-'+String(d0.getDate()).padStart(2,'0');const n=Number(db.water?.[t])||0;if(!n)return;db.water[t]=n-1;if(typeof save==='function')save();render();};
 (function(){const st=document.createElement('style');st.textContent='header{display:flex!important;align-items:center;justify-content:space-between;gap:12px}header h1{margin:0!important;line-height:1.1;white-space:nowrap;flex:1;min-width:0}#topTools{position:static!important;margin-right:-6px;flex:none;align-items:center}.v6-minus{font-size:20px!important;font-weight:700;line-height:1;background:var(--card)!important;color:var(--fg)!important;border:1px solid var(--soft)!important}.v6-minus:disabled{opacity:.35}';document.head.append(st);})();
+// Meal type follows the time of day (unless the person picked one this session).
+(function(){const slot=()=>{const h=new Date().getHours();return h<11?'Breakfast':h<16?'Lunch':h<22?'Dinner':'Snack';};
+const touched=new Set();const ids=['aiMealType','mealType'];
+const apply=()=>ids.forEach(id=>{const s=document.getElementById(id);if(!s)return;if(!s.dataset.mt6){s.dataset.mt6=1;s.addEventListener('change',e=>{if(e.isTrusted)touched.add(id);});}if(touched.has(id))return;const v=slot();if([...s.options].some(o=>o.value===v||o.textContent===v)&&s.value!==v){s.value=v;}});
+document.addEventListener('click',e=>{if(e.target.closest('#mealQuick,#mealScanBtn,.repeat-meal'))setTimeout(apply,0);},true);
+document.addEventListener('submit',e=>{if(e.target.id==='mealForm')setTimeout(()=>{touched.delete('mealType');apply();},400);},true);
+const t=()=>{apply();setTimeout(t,30000);};setTimeout(t,800);})();

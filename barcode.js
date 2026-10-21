@@ -60,7 +60,7 @@ async function lookup(code){
   const base={kcal:hasServ?per('energy-kcal'):p100('energy-kcal')||(p100('energy')?p100('energy')/4.184:0),pro:hasServ?per('proteins'):p100('proteins'),carb:hasServ?per('carbohydrates'):p100('carbohydrates'),fat:hasServ?per('fat'):p100('fat'),fib:hasServ?per('fiber'):p100('fiber')};
   const unitLbl=hasServ?('serving'+(p.serving_size?' ('+p.serving_size+')':'')):'100 g';
   const name=[p.brands?.split(',')[0],p.product_name].filter(Boolean).join(' ').trim()||('Barcode '+code);
-  const slot=(()=>{const h=new Date().getHours();return h<11?'Breakfast':h<15?'Lunch':h<21?'Dinner':'Snack';})();
+  const slot=(()=>{const h=new Date().getHours();return h<11?'Breakfast':h<16?'Lunch':h<22?'Dinner':'Snack';})();
   msg('<div class="scan6-prod">'+(p.image_front_small_url?'<img src="'+esc(p.image_front_small_url)+'" alt="">':'<div class="scan6-ph">'+ICON+'</div>')+'<div><b>'+esc(name)+'</b><small>Per '+esc(unitLbl)+': '+Math.round(base.kcal||0)+' kcal · '+(+(base.pro||0)).toFixed(1)+' g protein</small></div></div>'+
    '<div class="scan6-grid"><label>How many '+(hasServ?'servings':'× 100 g')+'<input type="number" class="scan6-q" min="0.25" step="0.25" value="'+(hasServ?1:(sq?Math.round(sq)/100:1))+'"></label><label>Meal<select class="scan6-t">'+['Breakfast','Lunch','Dinner','Snack'].map(t=>'<option'+(t===slot?' selected':'')+'>'+t+'</option>').join('')+'</select></label></div>'+
    '<p class="scan6-tot"></p><div class="scan6-row"><button type="button" class="scan6-again">Scan another</button><button type="button" class="scan6-add">＋ Add to diary</button></div><p class="scan6-src">Nutrition from Open Food Facts · check the label if it looks off.</p>',true);
