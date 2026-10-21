@@ -368,7 +368,10 @@ function buildRecovery(){
     const mins=(pk.name.match(/(\d+) minutes?/)||[])[1];
     const c=el('div',{className:'card v6-card v6-pick'},[el('div',{className:'t6-tag',textContent:pk.why}),el('h3',{className:'v6-h3',textContent:pk.name.replace(/ · \d+ minutes?$/,'')}),el('p',{className:'v6-sub',textContent:(mins?mins+' min · ':'')+'Easy · No equipment'})]);
     if(st.length){const ch=el('div',{className:'v6-chips'});st.forEach(s=>ch.append(el('span',{className:'v6-kchip'+(s.done?' on':''),textContent:(s.done?'✓ ':'')+s.txt})));c.append(ch);}
-    const go=el('button',{type:'button',className:'v6-start',textContent:st.length&&st.every(s=>s.done)?'✓ Done today · open again':'Start recovery ▸'});go.onclick=()=>{open(pk.group,pk.name.toLowerCase().slice(0,14));setTimeout(()=>{sel.value=pk.name;sel.dispatchEvent(new Event('change',{bubbles:true}));card.querySelectorAll('#recChips button').forEach(b=>b.classList.toggle('on',b.dataset.v===pk.name));},50);};c.append(go);top.append(c);
+    const nDone=st.filter(s=>s.done).length,all=st.length&&nDone===st.length;
+    if(all){c.classList.add('v6-done');c.querySelector('.t6-tag').textContent='✓ RECOVERY DONE TODAY';c.querySelector('.v6-sub').textContent='Nice work. Your body will thank you tomorrow.';}
+    else if(nDone){c.querySelector('.t6-tag').textContent=pk.why+' · '+nDone+' OF '+st.length+' DONE';}
+    const go=el('button',{type:'button',className:all?'v6-ghost':'v6-start',textContent:all?'Do it again':nDone?'Continue recovery ▸':'Start recovery ▸'});go.onclick=()=>{open(pk.group,pk.name.toLowerCase().slice(0,14));setTimeout(()=>{sel.value=pk.name;sel.dispatchEvent(new Event('change',{bubbles:true}));card.querySelectorAll('#recChips button').forEach(b=>b.classList.toggle('on',b.dataset.v===pk.name));},50);};c.append(go);top.append(c);
   }
   const showTop=()=>{top.hidden=!g.hidden?false:true;};
   const o0=open;
@@ -419,6 +422,7 @@ const css=el('style');css.textContent=`
 .br-circle{width:200px;height:200px;margin:18px auto;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 55%,transparent),color-mix(in srgb,var(--accent) 15%,transparent));display:flex;flex-direction:column;align-items:center;justify-content:center;transform:scale(.6);transition:transform 4s ease-in-out;text-align:center}.br-circle b{font-size:20px}.br-circle small{font-size:12px;color:var(--fg);opacity:.8}
 @media (prefers-reduced-motion:reduce){.br-circle{transition:none!important}}
 .v6-gone{display:none!important}
+.v6-pick.v6-done{border-color:#3fc495!important}.v6-pick.v6-done .t6-tag{color:#3fc495}
 .v6-where{margin:10px 0 0!important;padding:16px!important}.v6-where.on{border-color:var(--accent)!important}
 .v6-planrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;position:sticky;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--card);padding:8px 0}.v6-planrow button{margin:0!important;padding:13px 8px!important;border-radius:14px!important;font-size:15px;font-weight:700;width:100%}.v6-planrow button.hidden{display:none}#planRow6 #planClear6{margin:0!important}
 #builder6 input,#builder6 textarea{width:100%}
