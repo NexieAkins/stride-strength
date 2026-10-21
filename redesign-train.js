@@ -309,7 +309,7 @@ function drawSchedule(){
 }
 
 /* ---------- Train · Recovery: pick a type, then a routine ---------- */
-const REC={warm:{t:'Warm-ups',s:'Before you train',i:'walk',m:n=>/^warm-up|before running/i.test(n)},cool:{t:'Cool-downs',s:'After strength & core',i:'leaf',m:n=>/^after (a strength|upper|leg|core)/i.test(n)},mob:{t:'Mobility',s:'Rest-day movement',i:'core',m:n=>/mobility|quick upper/i.test(n)},run:{t:'Post-run stretch',s:'Calves, hips & hamstrings',i:'run',m:n=>/after running/i.test(n)},breath:{t:'Breathing',s:'Slow things down',i:'leaf',m:()=>false}};
+const REC={warm:{t:'Warm-ups',s:'Before you train',i:'walk',m:n=>/^warm-up|before running/i.test(n)},cool:{t:'Cool-downs',s:'After strength & core',i:'leaf',m:n=>/^after (a strength|upper|leg|core)/i.test(n)},mob:{t:'Mobility',s:'Rest-day movement',i:'core',m:n=>/mobility|quick upper/i.test(n)},run:{t:'Post-run stretch',s:'Calves, hips & hamstrings',i:'run',m:n=>/after running/i.test(n)},breath:{t:'Breathing',s:'Slow things down',i:'wind',m:()=>false}};
 const BREATH=[['Calm down · 4-7-8',[['Breathe in',4],['Hold',7],['Breathe out',8]],4,'Settles your body after a hard session or before sleep.'],['Box breathing · 4-4-4-4',[['Breathe in',4],['Hold',4],['Breathe out',4],['Hold',4]],6,'Steadies you before a run or a heavy set.'],['Recovery breaths · 5 min',[['Breathe in',4],['Breathe out',6]],30,'Long, easy exhales bring your heart rate down after training.']];
 function buildRecovery(){
   const v=$('trainingView-recovery');if(!v||$('recHead6'))return;
@@ -341,6 +341,47 @@ function buildRecovery(){
     const group=/run/.test(k)&&/after|post/.test(k)?'run':/before running|warm.*run/.test(k)?'warm':/warm|before/.test(k)?'warm':/mobility|rest/.test(k)?'mob':/after|cool/.test(k)?'cool':'warm';
     const want=/leg/.test(k)?'leg':/upper/.test(k)?'upper':/core/.test(k)?'core':/run/.test(k)?'running':/strength/.test(k)?'strength':'';open(group,want);};
   document.querySelectorAll('#trainingTabs button').forEach(b=>b.addEventListener('click',()=>{if(!/recovery/i.test(b.textContent))close();}));
+  // "How are you feeling?" + today's pick (mock-up)
+  const own=()=>window.cloudRecordOwner?.()||'browser',fk=()=>'stride-feel-'+day()+'-'+own();
+  let feel={energy:'steady',sore:'none'};try{feel=Object.assign(feel,JSON.parse(localStorage.getItem(fk())||'{}'));}catch(e){}
+  const top=el('div',{id:'recTop6'});v.insertBefore(top,head);
+  const feelRow=(label,key,opts)=>{const r=el('div',{className:'v6-feel'},[el('span',{textContent:label})]);opts.forEach(([val,txt])=>{const b=el('button',{type:'button',textContent:txt,className:feel[key]===val?'on':''});b.onclick=()=>{feel[key]=val;try{localStorage.setItem(fk(),JSON.stringify(feel));}catch(e){}drawTop();};r.append(b);});return r;};
+  const names=[...sel.options].map(o=>o.value).filter(Boolean),find=re=>names.find(n=>re.test(n));
+  function pickRoutine(){
+    const t=day(),y=(()=>{const d=new Date();d.setDate(d.getDate()-1);return day(d);})();
+    const wt=db.workouts.filter(w=>w.date===t),wy=db.workouts.filter(w=>w.date===y);
+    const w=wt.at(-1)||wy.at(-1),when=wt.length?'today':'yesterday';
+    if(feel.sore==='moderate'||feel.energy==='low')return {name:find(/rest-day mobility/i),why:feel.sore==='moderate'?'YOU’RE SORE · GENTLE MOBILITY':'LOW ENERGY · KEEP IT GENTLE',group:'mob'};
+    if(w){const ty=w.type||'';const lbl=/run/i.test(ty)?'run':/walk/i.test(ty)?'walk':/lower|leg/i.test(ty)?'lower body':/upper/i.test(ty)?'upper body':/core/i.test(ty)?'core':'workout';
+      const n=/run|walk/i.test(ty)?find(/after running/i):/lower|leg/i.test(ty)?find(/after leg/i):/upper/i.test(ty)?find(/after upper/i):/core/i.test(ty)?find(/after core/i):find(/after a strength/i);
+      return {name:n,why:'PICKED FOR TODAY · AFTER '+when.toUpperCase()+'’S '+lbl.toUpperCase(),group:/run|walk/i.test(ty)?'run':'cool'};}
+    const idx=(new Date().getDay()+6)%7,pl=(typeof plan!=='undefined'&&plan[idx]?.[1])||'';
+    if(/run|walk/i.test(pl))return {name:find(/before running/i),why:'PICKED FOR TODAY · BEFORE YOUR '+pl.toUpperCase(),group:'warm'};
+    if(/upper|lower|leg|strength|full|core/i.test(pl))return {name:(/lower|leg/i.test(pl)?find(/before leg day/i):/upper/i.test(pl)?find(/before upper body/i):null)||find(/before a strength workout/i),why:'PICKED FOR TODAY · BEFORE YOUR '+pl.toUpperCase(),group:'warm'};
+    return {name:find(/rest-day mobility/i),why:'PICKED FOR TODAY · REST-DAY MOVEMENT',group:'mob'};
+  }
+  function steps(name){const keep=sel.value;sel.value=name;sel.dispatchEvent(new Event('change',{bubbles:true}));const items=[...card.querySelectorAll('#stretchItems label, #stretchItems li')].map(x=>{const cb=x.querySelector('input[type=checkbox]');const txt=(x.textContent||'').split(/·|—/)[0].trim();return {txt,done:!!cb?.checked};}).filter(x=>x.txt);if(keep!==name){sel.value=keep;sel.dispatchEvent(new Event('change',{bubbles:true}));}return items;}
+  function drawTop(){
+    if(!card.hidden&&!bp.hidden){}top.replaceChildren(el('h3',{className:'t6-sec',textContent:'How are you feeling?',style:'margin-top:0'}),feelRow('Energy','energy',[['low','Low'],['steady','Steady'],['high','High']]),feelRow('Soreness','sore',[['none','None'],['mild','Mild'],['moderate','Moderate']]));
+    const lim=el('button',{type:'button',className:'t6-mk'},[icon('plus',20),el('span',{},[el('b',{textContent:'Add pain or movement limits'}),el('small',{textContent:'Used when you build a workout'})]),icon('chev',16)]);lim.onclick=()=>{window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'plan'}));setTimeout(()=>{const f=document.querySelector('#builder6 .v6-feelrow');if(f){f.open=true;f.scrollIntoView({behavior:'smooth',block:'center'});f.querySelector('textarea')?.focus();}},200);};top.append(lim);
+    const pk=pickRoutine();if(!pk.name)return;const st=card.hidden?steps(pk.name):[];
+    const mins=(pk.name.match(/(\d+) minutes?/)||[])[1];
+    const c=el('div',{className:'card v6-card v6-pick'},[el('div',{className:'t6-tag',textContent:pk.why}),el('h3',{className:'v6-h3',textContent:pk.name.replace(/ · \d+ minutes?$/,'')}),el('p',{className:'v6-sub',textContent:(mins?mins+' min · ':'')+'Easy · No equipment'})]);
+    if(st.length){const ch=el('div',{className:'v6-chips'});st.forEach(s=>ch.append(el('span',{className:'v6-kchip'+(s.done?' on':''),textContent:(s.done?'✓ ':'')+s.txt})));c.append(ch);}
+    const nDone=st.filter(s=>s.done).length,all=st.length&&nDone===st.length;
+    if(all){c.classList.add('v6-done');c.querySelector('.t6-tag').textContent='✓ RECOVERY DONE TODAY';c.querySelector('.v6-sub').textContent='Nice work. Your body will thank you tomorrow.';}
+    else if(nDone){c.querySelector('.t6-tag').textContent=pk.why+' · '+nDone+' OF '+st.length+' DONE';}
+    const go=el('button',{type:'button',className:all?'v6-ghost':'v6-start',textContent:all?'Do it again':nDone?'Continue recovery ▸':'Start recovery ▸'});go.onclick=()=>{open(pk.group,pk.name.toLowerCase().slice(0,14));setTimeout(()=>{sel.value=pk.name;sel.dispatchEvent(new Event('change',{bubbles:true}));card.querySelectorAll('#recChips button').forEach(b=>b.classList.toggle('on',b.dataset.v===pk.name));},50);};c.append(go);top.append(c);
+  }
+  const showTop=()=>{top.hidden=!g.hidden?false:true;};
+  const o0=open;
+  drawTop();setInterval(()=>{top.hidden=g.hidden;},400);
+  window.addEventListener('stride-train-view',e=>{if(e.detail==='recovery')setTimeout(drawTop,50);});
+  const r0=render;render=function(){r0();if(card.hidden)drawTop();};
+  // Rest day tile
+  const rest=el('button',{type:'button',className:'t6-tile'},[icon('moon',24),el('b',{textContent:'Rest day'}),el('small',{textContent:'Log a recovery day'})]);
+  rest.onclick=()=>{const t=day();if(db.workouts.some(w=>w.date===t&&/rest day/i.test(w.notes||''))){rest.querySelector('small').textContent='✓ Logged for today';return;}db.workouts.push({date:t,type:'Recovery',miles:0,minutes:0,notes:'Rest day',energy:'',soreness:feel.sore==='none'?'None':feel.sore==='mild'?'Mild':'Sore'});if(save()){rest.querySelector('small').textContent='✓ Logged for today';render();}else db.workouts.pop();};
+  g.append(rest);
 }
 
 const css=el('style');css.textContent=`
@@ -381,6 +422,7 @@ const css=el('style');css.textContent=`
 .br-circle{width:200px;height:200px;margin:18px auto;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 55%,transparent),color-mix(in srgb,var(--accent) 15%,transparent));display:flex;flex-direction:column;align-items:center;justify-content:center;transform:scale(.6);transition:transform 4s ease-in-out;text-align:center}.br-circle b{font-size:20px}.br-circle small{font-size:12px;color:var(--fg);opacity:.8}
 @media (prefers-reduced-motion:reduce){.br-circle{transition:none!important}}
 .v6-gone{display:none!important}
+.v6-pick.v6-done{border-color:#3fc495!important}.v6-pick.v6-done .t6-tag{color:#3fc495}
 .v6-where{margin:10px 0 0!important;padding:16px!important}.v6-where.on{border-color:var(--accent)!important}
 .v6-planrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;position:sticky;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--card);padding:8px 0}.v6-planrow button{margin:0!important;padding:13px 8px!important;border-radius:14px!important;font-size:15px;font-weight:700;width:100%}.v6-planrow button.hidden{display:none}#planRow6 #planClear6{margin:0!important}
 #builder6 input,#builder6 textarea{width:100%}
