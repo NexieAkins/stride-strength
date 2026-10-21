@@ -3,8 +3,9 @@
 const $=id=>document.getElementById(id);
 const S=(b,v='0 0 48 48')=>'<svg viewBox="'+v+'" width="100%" height="100%" aria-hidden="true">'+b+'</svg>';
 const PLATE=S('<circle cx="24" cy="24" r="21" fill="#e9edf5"/><circle cx="24" cy="24" r="16" fill="#fff" stroke="#d5dbe7" stroke-width="1.5"/><path d="M24 24L24 9A15 15 0 0 1 38.3 28.6z" fill="#f2b04a"/><path d="M24 24L38.3 28.6A15 15 0 0 1 14 35.2z" fill="#58b368"/><path d="M24 24L14 35.2A15 15 0 0 1 24 9z" fill="#b86b3e"/><circle cx="31" cy="17" r="2" fill="#fff8" /><circle cx="22" cy="31" r="2.2" fill="#3f8f4f"/><circle cx="17" cy="22" r="1.8" fill="#8f4f2c"/>');
-const food=n=>{n=String(n||'');return /shake|smoothie|protein drink/i.test(n)?'🥤':/coffee|latte|tea\b|cappuccino/i.test(n)?'☕':/milk/i.test(n)?'🥛':/juice/i.test(n)?'🧃':/water/i.test(n)?'💧':/salad/i.test(n)?'🥗':/soup|stew|chili|curry|okra|egusi|efo|pepper ?soup/i.test(n)?'🍲':/egg|omelet|akara/i.test(n)?'🍳':/jollof|rice|bowl|fried rice/i.test(n)?'🍛':/pasta|spaghetti|noodle/i.test(n)?'🍝':/fish|salmon|tuna|shrimp/i.test(n)?'🐟':/chicken|turkey|suya/i.test(n)?'🍗':/beef|steak|goat/i.test(n)?'🥩':/burger/i.test(n)?'🍔':/pizza/i.test(n)?'🍕':/wrap|sandwich|toast|bread/i.test(n)?'🥪':/oat|porridge|pap|ogi|yogurt|cereal|granola/i.test(n)?'🥣':/banana|apple|orange|fruit|berries|mango/i.test(n)?'🍎':/plantain|dodo/i.test(n)?'🍌':/pancake|waffle/i.test(n)?'🥞':/nuts|peanut|almond/i.test(n)?'🥜':/bar\b|granola bar/i.test(n)?'🍫':/yam|potato|fries/i.test(n)?'🍠':null;};
-const tile=(n,cls)=>{const d=document.createElement('div');d.className='pic6 '+(cls||'');const e=food(n);if(e)d.textContent=e;else d.innerHTML=PLATE;return d;};
+const FOODS=[[/shake|smoothie|protein drink/i,'🥤'],[/coffee|latte|\btea\b|cappuccino/i,'☕'],[/milk/i,'🥛'],[/juice/i,'🧃'],[/salad/i,'🥗'],[/soup|stew|chili|curry|okra|egusi|efo|ogbono/i,'🍲'],[/yam|potato|fries|cassava/i,'🍠'],[/plantain|dodo/i,'🍌'],[/jollof|rice|fried rice/i,'🍛'],[/pasta|spaghetti|noodle/i,'🍝'],[/eba|fufu|amala|pounded|semo|swallow/i,'🫓'],[/bread|toast|sandwich|wrap/i,'🥪'],[/egg|omelet|akara/i,'🍳'],[/fish|salmon|tuna|shrimp|prawn/i,'🐟'],[/chicken|turkey|suya/i,'🍗'],[/beef|steak|goat|meat/i,'🥩'],[/beans|lentil|moi ?moi/i,'🫘'],[/burger/i,'🍔'],[/pizza/i,'🍕'],[/oat|porridge|\bpap\b|ogi|yogurt|cereal|granola/i,'🥣'],[/pancake|waffle/i,'🥞'],[/banana|apple|orange|fruit|berr|mango|pineapple/i,'🍎'],[/nuts|peanut|almond|groundnut/i,'🥜'],[/\bbar\b|chocolate/i,'🍫'],[/water/i,'💧']];
+const food=n=>{n=String(n||'');const out=[];for(const [r,e] of FOODS){if(r.test(n)&&!out.includes(e))out.push(e);if(out.length===2)break;}return out.length?out.join(''):null;};
+const tile=(n,cls)=>{const d=document.createElement('div');d.className='pic6 '+(cls||'');const e=food(n);if(e){const a=[...e.matchAll(/\p{Extended_Pictographic}\uFE0F?/gu)].map(m=>m[0]);if(a.length>1){d.classList.add('pic6-two');d.innerHTML='<span>'+a[0]+'</span><span>'+a[1]+'</span>';}else d.textContent=e;}else d.innerHTML=PLATE;return d;};
 /* Equipment pictograms */
 const st='fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"';
 const EQ={
@@ -49,8 +50,31 @@ function menuView(){
   mv.querySelector('.mv6-swap').onclick=()=>openBuild(dn?dn+': ':'');
   mv.querySelector('.mv6-range').onclick=e=>{const b=e.target.closest('button');if(!b)return;mvWk+=Number(b.dataset.w);menuView();};mv.querySelector('.mv6-strip').onclick=e=>{const b=e.target.closest('button');if(!b)return;mvSel=Number(b.dataset.i);menuView();};
 }
+
+function progressExtras(){
+  const box=$('progressV6');if(!box||typeof db==='undefined')return;
+  const sessions=(db.trainingSessions||[]).filter(x=>x&&Array.isArray(x.exercises));
+  const best={};sessions.forEach(x=>{const d=x.date||x.created_at||x.completed_at||'';x.exercises.forEach(e=>{(e.sets||[]).forEach(t=>{if(!t.done)return;const w=Number(t.weight);if(!(w>0))return;const b=best[e.name]||(best[e.name]={first:w,firstD:d,max:w});if(d&&d<b.firstD){b.first=w;b.firstD=d;}if(w>b.max)b.max=w;});});});
+  const lifts=Object.entries(best).sort((a,b)=>(b[1].max-b[1].first)-(a[1].max-a[1].first)).slice(0,4);
+  const ws=(db.weights||[]).filter(w=>w&&w.date&&Number(w.weight)>0).sort((a,b)=>a.date<b.date?-1:1);
+  const unit=localStorage.getItem('stride-weight-unit')==='kg'||$('weightUnit')?.value==='kg'?'kg':'lb',cv=v=>unit==='kg'?v/2.20462262:v;
+  const key=JSON.stringify(lifts)+'|'+ws.length+'|'+(ws.at(-1)?.weight||'')+unit;let x=$('progX6');if(x&&x.dataset.k===key)return;
+  if(!x){x=document.createElement('div');x.id='progX6';box.after(x);}x.dataset.k=key;
+  let h='<div class="card px6"><div class="px6-h"><b>Strength</b><small>Best lifts</small></div>';
+  h+=lifts.length?lifts.map(([n,b])=>'<div class="px6-lift"><span>'+n.replace(/</g,'')+'</span><b>'+(b.max>b.first?b.first+' → '+b.max:b.max)+' lb</b></div>').join(''):'<p class="px6-empty">Finish a strength workout with weights and your best lifts show here.</p>';
+  h+='</div>';
+  let sp='';if(ws.length>1){const pts=ws.slice(-12),vals=pts.map(w=>cv(Number(w.weight))),mn=Math.min(...vals),mx=Math.max(...vals),r=(mx-mn)||1;const P=vals.map((v,i)=>[i*300/(pts.length-1),6+(1-(v-mn)/r)*38]);sp='<svg class="spark6" viewBox="0 0 300 50" width="100%" height="50" preserveAspectRatio="none"><polyline fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" points="'+P.map(p=>p.map(n=>n.toFixed(1)).join(',')).join(' ')+'"/></svg>';}
+  const wc=[...box.querySelectorAll('.card,section,div')].find(c=>/weigh-in/i.test(c.querySelector('button')?.textContent||'')&&/weight/i.test(c.textContent)&&c.id!=='progX6');if(wc){wc.querySelector('.spark6')?.remove();if(sp)wc.insertAdjacentHTML('beforeend',sp);}
+  document.querySelectorAll('.v6-wgraph').forEach(g=>{const f=$('historyFold');if(f&&g.parentElement!==f)f.append(g);});
+  x.innerHTML=h;
+  if(0)x.querySelector('.px6-wi').onclick=()=>{const wf=$('weightForm');[...document.querySelectorAll('nav button,nav a')].find(b=>/^\s*(\+|＋)?\s*$|log/i.test((b.getAttribute('aria-label')||'')+b.textContent))?.click();setTimeout(()=>{const d=wf?.closest('details');if(d)d.open=true;wf?.scrollIntoView({behavior:'smooth',block:'center'});wf?.querySelector('input[type=number]')?.focus();},300);};
+  // Two-up tiles for transformation + achievements
+  const tr=$('myTransformation'),aw=document.querySelector('#progress .v6-awards');
+  if(tr&&aw&&!$('two6')){const two=document.createElement('div');two.id='two6';two.className='two6';const t=document.createElement('button');t.type='button';t.className='t6-mk two6-t';t.innerHTML=(window.strideIcon?window.strideIcon('cam',22).outerHTML:'')+'<span><b>My transformation</b><small>Private photos</small></span>';t.onclick=()=>{tr.classList.toggle('two6-open');if(tr.classList.contains('two6-open'))tr.scrollIntoView({behavior:'smooth',block:'start'});};aw.before(two);two.append(t,aw);tr.classList.add('two6-fold');}
+  const hs=document.querySelector('#historyFold>summary');if(hs&&!hs.dataset.x6){hs.dataset.x6=1;hs.append(Object.assign(document.createElement('small'),{className:'hx6',textContent:'Workouts, weight, nutrition · share summary'}));}
+}
 function decorate(){
-  menuView();
+  menuView();progressExtras();
   document.querySelectorAll('.meal-diary-entry:not([data-p6])').forEach(c=>{c.dataset.p6=1;if(c.querySelector('.v6-mealpic'))return;c.prepend(tile(c.querySelector('h3')?.textContent,'pic6-float'));c.classList.add('v6-haspic');});
   document.querySelectorAll('.meal-diary-entry:not([data-s6])').forEach(c=>{const st=[...c.querySelectorAll('.meal-diary-metrics .workout-history-stat')].map(x=>x.querySelector('strong')?.textContent+' '+(x.querySelector('span')?.textContent||'').toLowerCase().replace('protein','g protein').replace(/^(\S+) g g/,'$1 g'));if(!st.length)return;c.dataset.s6=1;const sub=document.createElement('p');sub.className='ml6-sub';sub.textContent=st.join(' · ').replace(/ g g protein/,' g protein');c.querySelector('.workout-history-title')?.append(sub);c.classList.add('ml6');});
   document.querySelectorAll('.menu-meal:not([data-p6])').forEach(c=>{c.dataset.p6=1;const t=c.querySelector('li')?.textContent;c.querySelector('.menu-meal-head')?.prepend(tile(t,'pic6-sm'));});
@@ -74,6 +98,9 @@ function calendar(){
   box.onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.n){calMonth=new Date(y,m+Number(b.dataset.n),1);box.dataset.k='';calendar();return;}window.strideMealSetDay?.(b.dataset.d);box.hidden=true;};
 }
 const css=document.createElement('style');css.textContent=`
+.px6{margin-bottom:10px}.px6-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.px6-h b{font-size:16px}.px6-h small{color:var(--muted);font-size:12.5px}.px6-lift{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--soft);font-size:14px}.px6-lift:last-child{border:0}.px6-empty{color:var(--muted);font-size:13.5px;margin:4px 0}.px6-big{font-size:24px;font-weight:800;margin:2px 0 6px}.px6-big small{font-size:12.5px;font-weight:700}.px6-big .dn{color:#3fc495}.px6-big .up{color:#f0b45a}.px6-wi{width:auto!important;margin:0!important;padding:5px 10px!important;font-size:12.5px!important;font-weight:700;border:1px solid var(--accent)!important;color:var(--accent)!important;background:none!important;border-radius:10px!important;min-height:0!important}
+.two6{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.two6>*{margin:0!important;min-width:0}.two6 .t6-mk{display:flex;align-items:center;gap:8px;text-align:left;width:100%!important}.two6 .t6-mk>svg:last-child{display:none}.two6 small{display:block;color:var(--muted);font-size:11.5px}.two6 b{font-size:14px}.two6 svg{color:var(--accent);flex:none}
+#myTransformation.two6-fold:not(.two6-open){display:none!important}#historyFold>summary{flex-wrap:wrap}.hx6{display:block;flex-basis:100%;color:var(--muted);font-size:12px;font-weight:500;margin:2px 0 0 26px}.spark6{display:block;margin-top:6px}
 .mv6-hide{display:none!important}.mv6-build:not([open]){display:none!important}.mv6-build>summary{display:none!important}.mv6-close{float:right;width:auto!important;background:none!important;border:0!important;color:var(--muted)!important;font-weight:700;padding:4px!important;margin:0!important}.mv6-outer{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
 .mv6-top b{display:block;font-size:19px}.mv6-top small{color:var(--muted);font-size:13px}
 .mv6-create{display:block;width:100%;margin:12px 0!important;background:var(--accent)!important;color:var(--on-accent)!important;border:0!important;border-radius:14px!important;padding:13px!important;font-weight:700;font-size:15px}
@@ -86,7 +113,7 @@ const css=document.createElement('style');css.textContent=`
 .mv6-swap{display:flex;width:100%;justify-content:space-between;align-items:center;background:var(--card)!important;border:1px solid var(--soft)!important;color:var(--fg)!important;border-radius:14px!important;padding:13px 14px!important;font-weight:700;margin:0 0 10px!important;text-align:left}.mv6-swap span{color:var(--muted)}
 .meal-diary-entry.ml6{padding:10px 12px!important;display:flow-root}.meal-diary-entry.ml6 .meal-diary-metrics{display:none!important}.meal-diary-entry.ml6 .workout-history-head{border:0!important;padding:0!important;margin:0!important}.meal-diary-entry.ml6 h3{font-size:15px!important;margin:0!important}.ml6-sub{margin:2px 0 0;font-size:12.5px;color:var(--muted)}.meal-diary-entry.ml6 .repeat-meal{float:right;margin:-26px 0 0!important;padding:5px 10px!important;font-size:12px!important;min-height:0!important;border:1px solid var(--accent)!important;color:var(--accent)!important;background:none!important;border-radius:10px!important}
 .meal-diary-entry.ml6 .pic6-float{width:52px;height:52px;margin:0 12px 0 0}
-.pic6{display:grid;place-items:center;border-radius:14px;flex:none;background:color-mix(in srgb,var(--accent) 15%,var(--card));overflow:hidden}
+.pic6-two{position:relative}.pic6-two span{position:absolute;font-size:.78em}.pic6-two span:first-child{left:10%;top:8%}.pic6-two span:last-child{right:8%;bottom:6%}.pic6{display:grid;place-items:center;border-radius:14px;flex:none;background:color-mix(in srgb,var(--accent) 15%,var(--card));overflow:hidden}
 .pic6-float{float:left;width:56px;height:56px;font-size:30px;margin:0 12px 6px 0}.pic6-float svg{width:48px;height:48px}
 .pic6-sm{width:40px;height:40px;font-size:22px;border-radius:10px;margin-right:10px;display:inline-grid;vertical-align:middle}.pic6-sm svg{width:34px;height:34px}
 .menu-meal-head{display:flex;align-items:center;gap:6px}
