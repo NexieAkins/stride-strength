@@ -94,5 +94,12 @@ const css=document.createElement('style');css.textContent=`
 .scan6-src{font-size:11.5px;color:var(--muted);margin:8px 0 0}.scan6-ok{color:var(--accent);font-weight:700}`;
 document.head.append(css);
 window.strideOpenScanner=open;
+// Barcodes in meal photos: if a photo you take or choose has a barcode, look the product up too.
+async function codeFromFile(f){try{const bmp=await createImageBitmap(f);
+  if('BarcodeDetector' in window){try{const r=await new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']}).detect(bmp);if(r&&r[0]?.rawValue)return r[0].rawValue;}catch{}}
+  if(!window.ZXing)await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';sc.onload=ok;sc.onerror=no;document.head.append(sc);});
+  const c=document.createElement('canvas'),k=Math.min(1,1400/Math.max(bmp.width,bmp.height));c.width=bmp.width*k;c.height=bmp.height*k;c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+  const Z=window.ZXing,src=new Z.HTMLCanvasElementLuminanceSource(c),bb=new Z.BinaryBitmap(new Z.HybridBinarizer(src));const res=new Z.MultiFormatReader().decode(bb);return res?.getText?.()||null;}catch{return null;}}
+document.addEventListener('change',e=>{const i=e.target;if(!i||!['aiMealPhoto','mealCamera'].includes(i.id)||!i.files?.length)return;const f=i.files[0];codeFromFile(f).then(code=>{if(!code||!/^\d{6,14}$/.test(code))return;const d=sheet();d.querySelector('.scan6-cam').hidden=true;d.querySelector('.scan6-man input').value=code;d.showModal?d.showModal():d.setAttribute('open','');lookup(code);});},true);
 const tick=()=>{try{addButton();}catch{}setTimeout(tick,1200);};tick();
 })();
