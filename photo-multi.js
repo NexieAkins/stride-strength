@@ -3,9 +3,13 @@
 'use strict';
 const MAX=4;
 async function shrink(file,dim=1600,q=.8){
-  if(!file?.type?.startsWith('image/'))throw Error('Choose an image file.');
-  if(file.size>15*1024*1024)throw Error('Choose an image under 15 MB.');
-  let bmp;try{bmp=await createImageBitmap(file);}catch{throw Error('This image could not be opened. Try a JPG, PNG, or screenshot.');}
+  const isHeic=/hei[cf]/i.test(file?.type||'')||/\.(heic|heif)$/i.test(file?.name||'');
+  if(!file||!(file.type?.startsWith('image/')||isHeic||/\.(jpe?g|png|webp|gif|bmp)$/i.test(file.name||'')))throw Error('Choose an image file.');
+  if(file.size>25*1024*1024)throw Error('Choose an image under 25 MB.');
+  let bmp;try{bmp=await createImageBitmap(file);}catch{
+    try{if(!window.heic2any)await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';sc.onload=ok;sc.onerror=no;document.head.append(sc);});
+      const out=await window.heic2any({blob:file,toType:'image/jpeg',quality:.85});bmp=await createImageBitmap(Array.isArray(out)?out[0]:out);}
+    catch{throw Error('This photo couldn’t be opened. Try taking it again, or change your camera to save as JPEG.');}}
   try{const r=Math.min(1,dim/Math.max(bmp.width,bmp.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*r));c.height=Math.max(1,Math.round(bmp.height*r));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q);}finally{bmp.close?.();}
 }
 // inputs: file inputs (camera + library). after: element to place thumbnails after. onChange(list, error)

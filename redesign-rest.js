@@ -108,7 +108,7 @@ function buildMeals(){
   const tot=$('macroTiles')?.closest('.card'),tv=$('mealView-today');if(tot&&tv)tv.prepend(tot);const sub=$('meals')?.querySelector(':scope>p');
   const q=el('div',{id:'mealQuick',className:'v6-quick4'});
   const go=(i,l,f)=>{const b=el('button',{type:'button'},[icon(i,20),el('span',{textContent:l})]);b.onclick=f;q.append(b);};
-  go('cam','Photo',()=>$('aiMealPhoto')?.click());
+  go('cam','Photo',(ev)=>{let m=$('photoPick6');if(!m){m=el('div',{id:'photoPick6',className:'v6-pick6'});const a=el('button',{type:'button',textContent:'📷 Take a photo'});a.onclick=()=>{m.hidden=true;$('mealCamera')?.click();};const b=el('button',{type:'button',textContent:'🖼 Choose from photos'});b.onclick=()=>{m.hidden=true;$('aiMealPhoto')?.click();};m.append(a,b);q.after(m);}else m.hidden=!m.hidden;});
   const mode=m=>{const was=panel.dataset.mode===m;panel.dataset.mode=was?'':m;const mm=$('manualMeal');if(mm)mm.open=!was&&m==='manual';q.querySelectorAll('button').forEach(b=>b.classList.toggle('on',!was&&b.dataset.m===m));if(!was){const t=m==='type'?$('aiMealDescription'):mm;setTimeout(()=>{t?.scrollIntoView({behavior:'smooth',block:'center'});if(m==='type')t?.focus();},50);}};window.__v6mealMode=mode;
   go('pen','Type it',()=>mode('type'));
   const goRecent=()=>{const y=$('yourMeals');const p=$('pastDays');if(p)p.open=true;y?.scrollIntoView({behavior:'smooth',block:'start'});};
@@ -393,3 +393,5 @@ const apply=()=>ids.forEach(id=>{const s=document.getElementById(id);if(!s)retur
 document.addEventListener('click',e=>{if(e.target.closest('#mealQuick,#mealScanBtn,.repeat-meal'))setTimeout(apply,0);},true);
 document.addEventListener('submit',e=>{if(e.target.id==='mealForm')setTimeout(()=>{touched.delete('mealType');apply();},400);},true);
 const t=()=>{apply();setTimeout(t,30000);};setTimeout(t,800);})();
+
+(function(){const st=document.createElement('style');st.textContent='.v6-pick6{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.v6-pick6 button{margin:0!important;font-weight:700}';document.head.append(st);})();
