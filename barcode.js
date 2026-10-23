@@ -13,10 +13,10 @@ function sheet(){
   d=document.createElement('dialog');d.id='scanSheet';d.className='scan6';
   d.innerHTML='<div class="scan6-h"><b>Scan a barcode</b><button type="button" class="scan6-x" aria-label="Close">✕</button></div>'+
   '<div class="scan6-cam"><video playsinline muted autoplay></video><div class="scan6-frame"></div><p class="scan6-hint">Point your camera at the barcode</p></div>'+
-  '<form class="scan6-man"><input inputmode="numeric" pattern="[0-9]*" placeholder="Or type the barcode number" aria-label="Barcode number"><button type="submit">Look up</button></form>'+
+  '<button type="button" class="scan6-snap">📷 Trouble scanning? Take a photo of the barcode</button><input type="file" accept="image/*" capture="environment" class="scan6-file" hidden>'+'<form class="scan6-man"><input inputmode="numeric" pattern="[0-9]*" placeholder="Or type the barcode number" aria-label="Barcode number"><button type="submit">Look up</button></form>'+
   '<div class="scan6-res" aria-live="polite"></div>';
   document.body.append(d);
-  d.querySelector('.scan6-x').onclick=close;
+  d.querySelector('.scan6-x').onclick=close;const sf=d.querySelector('.scan6-file');d.querySelector('.scan6-snap').onclick=()=>sf.click();sf.onchange=async()=>{const f=sf.files?.[0];sf.value='';if(!f)return;stop();d.querySelector('.scan6-cam').hidden=true;msg('Reading the barcode…');const codes=await codeFromFile(f);if(codes&&codes.length){d.querySelector('.scan6-man input').value=codes[0];if(codes.length>1){for(const c of codes.slice(1)){const it=await quick(c);if(it)basket.push(it);}bk();}lookup(codes[0]);}else msg('Couldn’t read a barcode in that photo. Get closer so the bars fill the photo, or type the numbers under it.');};
   d.addEventListener('close',stop);d.addEventListener('cancel',()=>{});
   d.querySelector('.scan6-man').onsubmit=e=>{e.preventDefault();const v=e.target.querySelector('input').value.replace(/\D/g,'');if(v.length>=6)lookup(v);else msg('Enter the full number under the barcode.');};
   return d;
@@ -27,7 +27,7 @@ async function open(){
   d.showModal?d.showModal():d.setAttribute('open','');bk();
   const v=d.querySelector('video');
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},advanced:[{focusMode:'continuous'}]},audio:false});
     v.srcObject=stream;await v.play().catch(()=>{});
     scan(v);
   }catch(e){d.querySelector('.scan6-cam').hidden=true;msg('Camera isn’t available here. Type the barcode number instead.');}
@@ -35,12 +35,12 @@ async function open(){
 async function scan(v){
   loopOn=true;
   if('BarcodeDetector' in window){
-    let det;try{det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']});}catch{det=null;}
+    let det;try{det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','code_93','itf','codabar','qr_code','data_matrix'].filter(f=>!BarcodeDetector.getSupportedFormats||true)});}catch{det=null;}
     if(det){const tick=async()=>{if(!loopOn)return;try{const r=await det.detect(v);if(r&&r[0]?.rawValue){found(r[0].rawValue);return;}}catch{}setTimeout(tick,250);};tick();return;}
   }
   try{
     if(!window.ZXing)await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';s.onload=res;s.onerror=rej;document.head.append(s);});
-    const Z=window.ZXing,hints=new Map();hints.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.UPC_E,Z.BarcodeFormat.CODE_128]);
+    const Z=window.ZXing,hints=new Map();hints.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.UPC_E,Z.BarcodeFormat.CODE_128,Z.BarcodeFormat.CODE_39,Z.BarcodeFormat.CODE_93,Z.BarcodeFormat.ITF,Z.BarcodeFormat.CODABAR,Z.BarcodeFormat.QR_CODE]);hints.set(Z.DecodeHintType.TRY_HARDER,true);
     zxReader=new Z.BrowserMultiFormatReader(hints,300);
     zxReader.decodeFromVideoElementContinuously(v,(res)=>{if(res&&loopOn)found(res.getText());});
   }catch(e){msg('Couldn’t start the scanner. Type the barcode number instead.');}
@@ -52,7 +52,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 async function lookup(code){
   msg('Looking up '+code+'…');
   let p;
-  try{const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(code)+'.json?fields=product_name,brands,nutriments,serving_size,serving_quantity,image_front_small_url');const j=await r.json();if(j.status!==1||!j.product)throw 0;p=j.product;}
+  try{p=await findProduct(code);if(!p)throw 0;}
   catch{msg('<p>We couldn’t find <b>'+esc(code)+'</b>. You can scan again, or use <b>Enter it</b> to add it yourself.</p><div class="scan6-row"><button type="button" class="scan6-again">Scan again</button><button type="button" class="scan6-manual">Enter it</button></div>',true);wire();return;}
   const n=p.nutriments||{},sq=Number(p.serving_quantity)||0;
   const per=k=>Number(n[k+'_serving']);const p100=k=>Number(n[k+'_100g']);
@@ -80,6 +80,14 @@ async function lookup(code){
   wire();
 }
 let basket=[];
+const variants=c=>{c=String(c).replace(/\D/g,'');const v=[c];if(c.length===12)v.push('0'+c);if(c.length===13&&c[0]==='0')v.push(c.slice(1));if(c.length===8)v.push(c);return [...new Set(v)];};
+async function findProduct(code){
+  for(const v of variants(code)){try{const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+v+'.json?fields=product_name,brands,nutriments,serving_size,serving_quantity,image_front_small_url');const j=await r.json();if(j.status===1&&j.product&&(j.product.product_name||j.product.brands))return j.product;}catch{}}
+  // Fallback: USDA branded foods (US packaged foods)
+  try{const r=await fetch('https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&dataType=Branded&pageSize=5&query='+variants(code).join('%20OR%20'));const j=await r.json();const f=(j.foods||[]).find(x=>variants(code).some(v=>String(x.gtinUpc||'').replace(/^0+/,'')===v.replace(/^0+/,'')))||null;
+    if(f){const nut=id=>{const n=(f.foodNutrients||[]).find(x=>x.nutrientId===id||x.nutrientNumber===String(id));return n?Number(n.value):0;};const g=Number(f.servingSize)||0,k=f.servingSizeUnit&&/^g$/i.test(f.servingSizeUnit)&&g?g/100:1;
+      return{product_name:(f.description||'').replace(/\b\w/g,m=>m).toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase()),brands:f.brandName||f.brandOwner||'',serving_size:g?g+' '+(f.servingSizeUnit||'').toLowerCase():'',serving_quantity:g,nutriments:{'energy-kcal_serving':nut(1008)*k,proteins_serving:nut(1003)*k,carbohydrates_serving:nut(1005)*k,fat_serving:nut(1004)*k,fiber_serving:nut(1079)*k}};}}catch{}
+  return null;}
 function saveOne(it){return new Promise(res=>{const set=(id,v)=>{const e=$(id);if(e)e.value=v;};set('mealDate',window.strideMealDay?.()||new Date().toISOString().slice(0,10));set('mealType',it.slot);set('food',it.name);set('calories',it.c.kcal);set('protein',it.c.pro);set('carbs',it.c.carb);set('fat',it.c.fat);set('fiber',it.c.fib);const f=$('mealForm'),n=(db.meals||[]).length;if(f){f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true}));}setTimeout(()=>res((db.meals||[]).length>n),350);});}
 async function saveAll(){const items=basket.slice();basket=[];stop();const d=sheet();d.querySelector('.scan6-cam').hidden=true;msg('Adding '+items.length+' items…');let ok=0;for(const it of items){if(await saveOne(it))ok++;}
   msg('<p class="scan6-ok">✓ '+ok+' of '+items.length+' items added to your meals.</p><div class="scan6-row"><button type="button" class="scan6-again">Scan more</button><button type="button" class="scan6-done">Done</button></div>',true);wire();bk();window.strideToast?.('✓ '+ok+' items logged');}
@@ -102,16 +110,16 @@ const css=document.createElement('style');css.textContent=`
 .scan6-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.scan6-grid label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}.scan6-grid input,.scan6-grid select{margin:0!important}
 .scan6-tot{font-weight:700;margin:10px 0}.scan6-row{display:flex;gap:8px}.scan6-row button{flex:1;margin:0!important}.scan6-add,.scan6-done{background:var(--accent)!important;color:var(--on-accent)!important;border:0!important}
 .scan6-again,.scan6-manual{background:none!important;border:1px solid var(--soft)!important;color:var(--fg)!important}
-.scan6-bk{background:var(--card);border:1px solid var(--soft);border-radius:14px;padding:10px 12px;margin-bottom:10px}.scan6-bk ul{list-style:none;padding:0;margin:6px 0}.scan6-bk li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid var(--soft)}.scan6-bk li button{width:28px!important;height:28px!important;padding:0!important;margin:0!important;border-radius:50%!important;background:none!important;border:1px solid var(--soft)!important;color:var(--fg)!important;flex:none;min-height:0!important}.scan6-addall{width:100%;margin:6px 0 0!important;background:var(--accent)!important;color:var(--on-accent)!important;border:0!important}.scan6-skip{width:100%;margin-top:8px!important}.scan6-src{font-size:11.5px;color:var(--muted);margin:8px 0 0}.scan6-ok{color:var(--accent);font-weight:700}`;
+.scan6-bk{background:var(--card);border:1px solid var(--soft);border-radius:14px;padding:10px 12px;margin-bottom:10px}.scan6-bk ul{list-style:none;padding:0;margin:6px 0}.scan6-bk li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid var(--soft)}.scan6-bk li button{width:28px!important;height:28px!important;padding:0!important;margin:0!important;border-radius:50%!important;background:none!important;border:1px solid var(--soft)!important;color:var(--fg)!important;flex:none;min-height:0!important}.scan6-addall{width:100%;margin:6px 0 0!important;background:var(--accent)!important;color:var(--on-accent)!important;border:0!important}.scan6-skip{width:100%;margin-top:8px!important}.scan6-snap{width:100%;margin:10px 0 0!important;background:var(--card)!important;border:1px solid var(--soft)!important;color:var(--fg)!important;font-weight:700;font-size:13.5px!important}.scan6-src{font-size:11.5px;color:var(--muted);margin:8px 0 0}.scan6-ok{color:var(--accent);font-weight:700}`;
 document.head.append(css);
 window.strideOpenScanner=open;
 // Barcodes in meal photos: if a photo you take or choose has a barcode, look the product up too.
-async function quick(code){try{const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(code)+'.json?fields=product_name,brands,nutriments,serving_size');const j=await r.json();if(j.status!==1)return null;const p=j.product,n=p.nutriments||{},sv=Number(n['energy-kcal_serving'])>0,g=k=>Number(n[k+(sv?'_serving':'_100g')])||0;const slot=(()=>{const h=new Date().getHours();return h<11?'Breakfast':h<16?'Lunch':h<22?'Dinner':'Snack';})();return{name:[p.brands?.split(',')[0],p.product_name].filter(Boolean).join(' ').trim()+(sv?'':' — 100 g'),slot,c:{kcal:Math.round(g('energy-kcal')),pro:+g('proteins').toFixed(1),carb:+g('carbohydrates').toFixed(1),fat:+g('fat').toFixed(1),fib:+g('fiber').toFixed(1)}};}catch{return null;}}
+async function quick(code){try{const p=await findProduct(code);if(!p)return null;const n=p.nutriments||{},sv=Number(n['energy-kcal_serving'])>0,g=k=>Number(n[k+(sv?'_serving':'_100g')])||0;const slot=(()=>{const h=new Date().getHours();return h<11?'Breakfast':h<16?'Lunch':h<22?'Dinner':'Snack';})();return{name:[p.brands?.split(',')[0],p.product_name].filter(Boolean).join(' ').trim()+(sv?'':' — 100 g'),slot,c:{kcal:Math.round(g('energy-kcal')),pro:+g('proteins').toFixed(1),carb:+g('carbohydrates').toFixed(1),fat:+g('fat').toFixed(1),fib:+g('fiber').toFixed(1)}};}catch{return null;}}
 async function codeFromFile(f){try{const bmp=await createImageBitmap(f);
-  if('BarcodeDetector' in window){try{const r=await new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']}).detect(bmp);if(r&&r.length)return [...new Set(r.map(x=>x.rawValue).filter(Boolean))];}catch{}}
+  if('BarcodeDetector' in window){try{const r=await new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','code_93','itf','codabar','qr_code','data_matrix'].filter(f=>!BarcodeDetector.getSupportedFormats||true)}).detect(bmp);if(r&&r.length)return [...new Set(r.map(x=>x.rawValue).filter(Boolean))];}catch{}}
   if(!window.ZXing)await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';sc.onload=ok;sc.onerror=no;document.head.append(sc);});
-  const c=document.createElement('canvas'),k=Math.min(1,1400/Math.max(bmp.width,bmp.height));c.width=bmp.width*k;c.height=bmp.height*k;c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
-  const Z=window.ZXing,src=new Z.HTMLCanvasElementLuminanceSource(c),bb=new Z.BinaryBitmap(new Z.HybridBinarizer(src));let out=[];try{const rr=new Z.GenericMultipleBarcodeReader(new Z.MultiFormatReader()).decodeMultiple(bb);out=rr.map(x=>x.getText());}catch{try{out=[new Z.MultiFormatReader().decode(bb).getText()];}catch{}}return out.length?[...new Set(out)]:null;}catch{return null;}}
+  const c=document.createElement('canvas'),k=Math.min(1,2200/Math.max(bmp.width,bmp.height));c.width=bmp.width*k;c.height=bmp.height*k;c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+  const Z=window.ZXing,src=new Z.HTMLCanvasElementLuminanceSource(c),bb=new Z.BinaryBitmap(new Z.HybridBinarizer(src));const hints=new Map();hints.set(Z.DecodeHintType.TRY_HARDER,true);let out=[];try{const rr=new Z.GenericMultipleBarcodeReader((()=>{const r=new Z.MultiFormatReader();r.setHints(hints);return r;})()).decodeMultiple(bb,hints);out=rr.map(x=>x.getText());}catch{try{out=[new Z.MultiFormatReader().decode(bb,hints).getText()];}catch{try{const rc=document.createElement('canvas');rc.width=c.height;rc.height=c.width;const x=rc.getContext('2d');x.translate(rc.width/2,rc.height/2);x.rotate(Math.PI/2);x.drawImage(c,-c.width/2,-c.height/2);out=[new Z.MultiFormatReader().decode(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(rc))),hints).getText()];}catch{}}}return out.length?[...new Set(out)]:null;}catch{return null;}}
 document.addEventListener('change',e=>{const i=e.target;if(!i||!['aiMealPhoto','mealCamera'].includes(i.id)||!i.files?.length)return;const f=i.files[0];codeFromFile(f).then(async codes=>{codes=(codes||[]).filter(c=>/^\d{6,14}$/.test(c));if(!codes.length)return;const d=sheet();d.querySelector('.scan6-cam').hidden=true;d.showModal?d.showModal():d.setAttribute('open','');if(codes.length===1){d.querySelector('.scan6-man input').value=codes[0];lookup(codes[0]);return;}msg('Found '+codes.length+' barcodes · looking them up…');for(const c of codes){const it=await quick(c);if(it)basket.push(it);}bk();msg(basket.length?'<p>Check the list above, remove anything you don’t want, then add them all.</p>':'Couldn’t find those products. Try scanning them one at a time.',!!basket.length);});},true);
 const tick=()=>{try{addButton();}catch{}setTimeout(tick,1200);};tick();
 })();
