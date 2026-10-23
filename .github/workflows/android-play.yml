@@ -18,6 +18,7 @@ jobs:
     env:
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_UPLOAD_KEY_BASE64: ${{ secrets.ANDROID_UPLOAD_KEY_BASE64 }}
+      ANDROID_UPLOAD_KEY_ENC_BASE64: ${{ secrets.ANDROID_UPLOAD_KEY_ENC_BASE64 }}
     steps:
       - name: Check signing password
         run: |
@@ -56,6 +57,9 @@ jobs:
           key="$RUNNER_TEMP/stride-android/upload.p12"
           if [ -n "$ANDROID_UPLOAD_KEY_BASE64" ]; then
             printf '%s' "$ANDROID_UPLOAD_KEY_BASE64" | base64 --decode > "$key"
+          elif [ -n "$ANDROID_UPLOAD_KEY_ENC_BASE64" ]; then
+            printf '%s' "$ANDROID_UPLOAD_KEY_ENC_BASE64" | tr -d ' \n\r' | base64 --decode > "$RUNNER_TEMP/stride-android/key.enc"
+            openssl enc -d -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$RUNNER_TEMP/stride-android/key.enc" -out "$key" -pass env:ANDROID_KEYSTORE_PASSWORD || { echo "The saved encrypted key could not be unlocked with ANDROID_KEYSTORE_PASSWORD."; exit 1; }
           else
             test "$GITHUB_RUN_NUMBER" = "1" || test "${{ inputs.new_upload_key }}" = "true" || { echo "Restore ANDROID_UPLOAD_KEY_BASE64 before another release; never replace an enrolled upload key."; exit 1; }
             keytool -genkeypair -keystore "$key" -storetype PKCS12 -storepass:env ANDROID_KEYSTORE_PASSWORD -keypass:env ANDROID_KEYSTORE_PASSWORD -alias stride-upload -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=Stride and Strength Upload"
