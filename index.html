@@ -177,11 +177,12 @@ async function writeCloud(){
   if(db.profile?.user_id===user.id){const {error:profileError}=await client.from('profiles').upsert(db.profile,{onConflict:'user_id'});if(profileError)throw profileError;}
   localStorage.setItem(KEY,JSON.stringify(db));
   if(!queued)db.syncDirty=null;localStorage.setItem(KEY,JSON.stringify(db));message('');return true;
- }catch(e){message('Couldn’t save online right now — your entries are kept on this device. '+e.message);return false;}
+ }catch(e){message('✓ Saved on this device · will sync when you’re back online');return false;}
  finally{writing=false;if(queued){queued=false;writeCloud()}}
 }
 let pending;
 window.cloudRecordOwner=()=>user?.id||null;window.strideProfileReadyOwner=null;
+window.addEventListener('online',()=>{if(user&&db.syncDirty===user.id)writeCloud();else if(user)loadCloud();});setInterval(()=>{if(user&&!writing&&!loading&&db.syncDirty===user.id&&navigator.onLine!==false)writeCloud();},60000);
 window.cloudQueue=function(){if(!user||loading)return;db.syncDirty=user.id;localStorage.setItem(KEY,JSON.stringify(db));clearTimeout(pending);pending=setTimeout(()=>{pending=null;writeCloud()},500)};
 window.__strideReload=()=>loadCloud();let __lastHide=0;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')__lastHide=Date.now();else if(__lastHide&&Date.now()-__lastHide>60000&&!(window.strideSessionTracker?.isActive?.()||window.strideLiveRun?.isActive?.()))loadCloud();});
 async function loadCloud(){
@@ -208,8 +209,8 @@ async function loadCloud(){
   $('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
   localStorage.setItem(KEY,JSON.stringify(db));render();
   loaded=true;message('');
- }catch(e){message('Could not load cloud records: '+e.message)}
- finally{loading=false;document.querySelector('main').inert=!loaded}
+ }catch(e){message(navigator.onLine===false?'You’re offline — your entries save on this device and sync when you’re back online.':'Couldn’t load your online records right now — your entries are kept on this device.')}
+ finally{loading=false;document.querySelector('main').inert=false}
 }
 let authBusy=false;
 async function login(signup){
