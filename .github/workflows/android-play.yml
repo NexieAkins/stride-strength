@@ -4,6 +4,11 @@ on:
     branches: [native/store-launch]
     paths: ['.github/workflows/android-play.yml']
   workflow_dispatch:
+    inputs:
+      new_upload_key:
+        description: 'Create a brand-new upload key (only before the first Play upload)'
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -52,7 +57,7 @@ jobs:
           if [ -n "$ANDROID_UPLOAD_KEY_BASE64" ]; then
             printf '%s' "$ANDROID_UPLOAD_KEY_BASE64" | base64 --decode > "$key"
           else
-            test "$GITHUB_RUN_NUMBER" = "1" || { echo "Restore ANDROID_UPLOAD_KEY_BASE64 before another release; never replace an enrolled upload key."; exit 1; }
+            test "$GITHUB_RUN_NUMBER" = "1" || test "${{ inputs.new_upload_key }}" = "true" || { echo "Restore ANDROID_UPLOAD_KEY_BASE64 before another release; never replace an enrolled upload key."; exit 1; }
             keytool -genkeypair -keystore "$key" -storetype PKCS12 -storepass:env ANDROID_KEYSTORE_PASSWORD -keypass:env ANDROID_KEYSTORE_PASSWORD -alias stride-upload -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=Stride and Strength Upload"
             openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$key" -out play-upload/android-upload-key.p12.enc -pass env:ANDROID_KEYSTORE_PASSWORD
           fi
@@ -66,7 +71,7 @@ jobs:
         with:
           name: stride-strength-google-play
           path: play-upload/
-          retention-days: 7
+          retention-days: 30
           if-no-files-found: error
       - name: Remove private signing files
         if: always()
