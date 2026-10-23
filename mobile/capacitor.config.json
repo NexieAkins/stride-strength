@@ -1,1 +1,1 @@
-{"appId":"com.strideandstrength.app","appName":"Stride & Strength","webDir":"www","plugins":{"CapacitorHttp":{"enabled":true}},"ios":{"contentInset":"automatic"}}
+{"appId": "com.strideandstrength.app", "appName": "Stride & Strength", "webDir": "www", "plugins": {"CapacitorHttp": {"enabled": true}}, "ios": {"contentInset": "automatic", "backgroundColor": "#0D1430"}, "backgroundColor": "#0D1430", "android": {"backgroundColor": "#0D1430"}}
