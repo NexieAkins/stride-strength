@@ -138,7 +138,7 @@ function tickRest(){const b=restUI(),left=(restEnd-Date.now())/1000;if(left<=0){
 setInterval(()=>{if(restEnd){if(!window.strideSessionTracker?.isActive?.()){restEnd=0;}tickRest();}},250);window.addEventListener('stride-session-end',()=>{restEnd=0;tickRest();});
 document.addEventListener('change',e=>{const c=e.target;if(c.type!=='checkbox'||!c.checked||!c.closest('#sessionTracker'))return;if(!/completed .* set/i.test(c.getAttribute('aria-label')||''))return;restEnd=Date.now()+restBase*1000;tickRest();});
 
-function repeatSheet(){
+window.strideRepeatSheet=()=>repeatSheet();function repeatSheet(){
   let d=$('repeat6');if(!d){d=el('dialog',{id:'repeat6',className:'v6-sheet'});document.body.append(d);}
   const ws=(db.workouts||[]).filter(w=>w&&w.date).slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,25);
   const close=el('button',{type:'button',className:'v6-sheetx','aria-label':'Close',textContent:'✕'});close.onclick=()=>d.close();
