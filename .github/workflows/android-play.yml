@@ -19,6 +19,7 @@ jobs:
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_UPLOAD_KEY_BASE64: ${{ secrets.ANDROID_UPLOAD_KEY_BASE64 }}
       ANDROID_UPLOAD_KEY_ENC_BASE64: ${{ secrets.ANDROID_UPLOAD_KEY_ENC_BASE64 }}
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
     steps:
       - name: Check signing password
         run: |
@@ -77,6 +78,15 @@ jobs:
           path: play-upload/
           retention-days: 30
           if-no-files-found: error
+      - name: Upload to Google Play (internal testing)
+        if: env.PLAY_SERVICE_ACCOUNT_JSON != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.strideandstrength.app
+          releaseFiles: play-upload/stride-strength.aab
+          track: internal
+          status: completed
       - name: Remove private signing files
         if: always()
         run: rm -rf "$RUNNER_TEMP/stride-android"
