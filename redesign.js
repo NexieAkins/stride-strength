@@ -209,7 +209,7 @@ function prettyDialogs(){
   if(window.__v6confirm)return;window.__v6confirm=1;
   let last=null,bypass=false;const nativeConfirm=window.confirm.bind(window);
   document.addEventListener('click',e=>{if(!bypass)last=e.target.closest('button,a,[role=button]')||e.target;},true);
-  const sheet=(msg,okLabel,danger,onOk)=>{const d=el('dialog',{className:'v6-sheet v6-confirm'});const parts=String(msg).split(/(?<=[?.!])\s+/);
+  const sheet=(msg,okLabel,danger,onOk)=>{const d=el('dialog',{className:'v6-sheet v6-confirm'});const parts=String(msg).split(/\s+(?=[A-Z])/);
     const no=el('button',{type:'button',className:'v6-ghost',textContent:'Cancel'}),ok=el('button',{type:'button',className:'v6-start'+(danger?' v6-danger':''),textContent:okLabel});
     no.onclick=()=>{d.close();d.remove();};ok.onclick=()=>{d.close();d.remove();onOk&&onOk();};
     d.append(el('h2',{textContent:parts[0]}),...(parts.length>1?[el('p',{className:'v6-sub',textContent:parts.slice(1).join(' ')})]:[]),el('div',{className:'v6-confirmrow'},onOk?[no,ok]:[ok]));
@@ -223,4 +223,4 @@ function init(){header();prettyDialogs();tabbar();performanceSkin();buildHome();
 if(document.readyState==='complete')setTimeout(init,0);else window.addEventListener('load',()=>setTimeout(init,50));
 })();
 
-(function(){const st=document.createElement('style');st.textContent='.v6-week b{position:relative}.ring6{position:absolute;inset:-7px;width:calc(100% + 14px);height:calc(100% + 14px);transform:rotate(-90deg);pointer-events:none}.ring6 circle{fill:none;stroke-width:3.2;stroke-linecap:round}.ring6 .r6-bg{stroke:color-mix(in srgb,var(--fg) 10%,transparent)}.ring6 .r6-fit{stroke:var(--accent)}.ring6 .r6-nut{stroke:#3fc495;opacity:.85}.ring6 .r6-nut.full{opacity:1}.v6-week .dot b{box-shadow:none!important}';document.head.append(st);})();
+(function(){const st=document.createElement('style');st.textContent='.v6-week b{position:relative;overflow:visible!important}.ring6{position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%) rotate(-90deg);pointer-events:none;z-index:-1}.v6-week b{isolation:isolate}.ring6 circle{fill:none;stroke-width:3.2;stroke-linecap:round}.ring6 .r6-bg{stroke:color-mix(in srgb,var(--fg) 10%,transparent)}.ring6 .r6-fit{stroke:var(--accent)}.ring6 .r6-nut{stroke:#3fc495;opacity:.85}.ring6 .r6-nut.full{opacity:1}.v6-week .dot b{box-shadow:none!important}';document.head.append(st);})();
