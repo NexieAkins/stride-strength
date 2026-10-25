@@ -72,9 +72,12 @@ function logLayout(){
   $('typeChips')?.remove();const tl=lab('workoutType');if(tl)tl.hidden=true;
   const MAIN=[['Run','run',[['Easy / long run','Long Run'],['Quality / speed','Quality Run']]],['Walk','walk',[['Walk','Walk']]],['Strength','dumb',[['Upper body','Upper Body'],['Lower body','Lower Body']]],['Core','core',[['Core','Core']]],['Bike','run',[['Bike','Bike']]],['Swim','drop',[['Swim','Swim']]],['Recovery','leaf',[['Recovery','Recovery']]],['Other','plus',[['Other activity','Other activity']]]];
   const main=el('div',{id:'logMain6',className:'v6-chips v6-pills'}),sub=el('div',{id:'logSub6',className:'v6-chips v6-subchips'});
-  const setType=v=>{if(![...type.options].some(o=>o.value===v)){type.append(el('option',{value:v,textContent:v}));}type.value=v;type.dispatchEvent(new Event('change',{bubbles:true}));draw();};
-  function draw(){const cur=type.value,grp=MAIN.find(m=>m[2].some(x=>x[1]===cur));main.replaceChildren();MAIN.forEach(m=>{const b=el('button',{type:'button',className:grp===m?'on':'',textContent:m[0]});b.onclick=()=>setType((grp===m?cur:null)||m[2][0][1]);main.append(b);if(m[0]==='Core')main.append(el('span',{className:'v6-br'}));});
-    sub.replaceChildren();if(grp&&grp[2].length>1)grp[2].forEach(([l,v])=>{const b=el('button',{type:'button',className:v===cur?'on':'',textContent:l});b.onclick=()=>setType(v);sub.append(b);});sub.hidden=!sub.children.length;}
+  const setType=v=>{if(!v){type.value='';type.dispatchEvent(new Event('change',{bubbles:true}));draw();return;}if(![...type.options].some(o=>o.value===v)){type.append(el('option',{value:v,textContent:v}));}type.value=v;type.dispatchEvent(new Event('change',{bubbles:true}));draw();};
+  function draw(){const parts=String(type.value||'').split(' + ').filter(Boolean);const grpOf=v=>MAIN.find(m=>m[2].some(x=>x[1]===v));const groups=parts.map(grpOf).filter(Boolean);const first=groups[0];
+    main.replaceChildren();MAIN.forEach(m=>{const on=groups.includes(m);const b=el('button',{type:'button',className:on?'on':'',textContent:m[0]});b.setAttribute('aria-pressed',String(on));
+      b.onclick=()=>{let ps=parts.slice();if(on){ps=ps.filter(v=>grpOf(v)!==m);}else ps.push(m[2][0][1]);setType(ps.join(' + '));};main.append(b);if(m[0]==='Core')main.append(el('span',{className:'v6-br'}));});
+    sub.replaceChildren();groups.forEach(g=>{if(g[2].length<2)return;const curV=parts.find(v=>grpOf(v)===g);g[2].forEach(([l,v])=>{const b=el('button',{type:'button',className:v===curV?'on':'',textContent:l});b.onclick=()=>setType(parts.map(x=>x===curV?v:x).join(' + '));sub.append(b);});});sub.hidden=!sub.children.length;
+    if(!$('logMultiHint')){main.before(el('p',{id:'logMultiHint',className:'v6-sub',style:'margin:-4px 0 6px;font-size:12.5px',textContent:'Tap more than one if you did both (e.g. Strength + Core).'}));}}
   type.addEventListener('change',draw);f.addEventListener('reset',()=>setTimeout(draw,0));type.before(el('p',{className:'v6-lbl',textContent:'What did you do?'}),main,sub);draw();
   // 2×2 metrics
   const dist=$('distance'),durF=f.querySelector('fieldset.duration-parts'),pace=$('autoPace');
