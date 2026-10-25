@@ -26,6 +26,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Stride &amp; Strength uses the microphone when you choose to say what you ate.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Stride &amp; Strength turns what you say into text so you can log meals by voice.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Scan food barcodes and take meal, equipment and running-plan photos when you choose to.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
