@@ -97,7 +97,7 @@ function drawHome(){
   const wrap=$('homeV6');if(!wrap||typeof db==='undefined')return;
   const today=day(),t=window.strideSelDay&&window.strideSelDay!==today?window.strideSelDay:today,isToday=t===today,sel=new Date(t+'T12:00'),meals=db.meals.filter(m=>m.date===t),h=new Date().getHours();
   const name=(db.profile?.user_id===(window.cloudRecordOwner?.()||'browser')&&db.profile.display_name)||(($('personalGreeting')?.textContent||'').match(/, ([^👋]+)/)?.[1]||'').trim();
-  const base0=Number(db.goals.calories)||1900,burn=isToday?(window.strideBurnedToday?.()||0):0,goal=base0+burn,base=base0;
+  const base0=Number(window.strideGoalFor?window.strideGoalFor(t):db.goals.calories)||1900,burn=isToday?(window.strideBurnedToday?.()||0):0,goal=base0+burn,base=base0;
   const eaten=sum(meals,'calories'),left=goal-eaten,pg=Number(db.goals.protein)||110;
   const fg=Math.round(base*.3/9),cg=Math.max(50,Math.round((base-pg*4-fg*9)/4));
   const plan0=(typeof plan!=='undefined'&&plan[(sel.getDay()+6)%7])||['', 'Choose your schedule',[]];const dayWorkouts=db.workouts.filter(w=>w.date===t);const dayName=sel.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
