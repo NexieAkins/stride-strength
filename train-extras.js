@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id);
 const T=()=>window.strideSessionTracker;
 const fmt=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0');};
-function goWorkout(){window.show?.('train');window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'plan'}));setTimeout(()=>{const t=$('sessionTracker');if(t){let e=t;while(e&&e!==document.body){e.hidden=false;e=e.parentElement;}t.scrollIntoView({behavior:'smooth',block:'start'});}},150);}
+function goWorkout(){window.show?.('train');window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'today'}));[...document.querySelectorAll('#train button')].find(b=>b.textContent.trim()==='Today')?.click();setTimeout(()=>{const t=$('sessionTracker');if(t){let e=t;while(e&&e!==document.body){e.hidden=false;if(e.id&&/^trainingView-/.test(e.id))e.classList.remove('hidden');e=e.parentElement;}t.scrollIntoView({behavior:'smooth',block:'start'});}},150);}
 window.strideGoWorkout=goWorkout;
 /* 1. Resume bar on every tab */
 function bar(){let b=$('resume6');if(!b){b=document.createElement('button');b.type='button';b.id='resume6';b.onclick=goWorkout;document.body.append(b);}return b;}
