@@ -54,6 +54,7 @@ function apply(){
   const rp=document.querySelector('#train .v6-pick');if(rp)put(rp,'calm');
   const b6=$('builder6');if(b6)put(b6,'home','sc6-r sc6-faint');const s6=$('schedule6');if(s6)put(s6,'track','sc6-r sc6-soft');
   
+  const lg=$('workoutForm')?.closest('.card');if(lg&&!lg.querySelector('.ban6')){const bn=document.createElement('div');bn.className='ban6';bn.style.backgroundImage='linear-gradient(transparent 40%,var(--card)),'+SC.shoes;lg.prepend(bn);}
   const ring=$('macroTiles')?.closest('.card');if(ring)put(ring,'food','sc6-r sc6-soft');
   const lm=$('aiMealPanel');if(lm)put(lm,'plate','sc6-r sc6-soft');const ym=$('yourMeals');if(ym)put(ym,'veg','sc6-r sc6-faint');
   const md=document.querySelector('.mv6-day');if(md)put(md,'food','sc6-top');
@@ -73,7 +74,7 @@ const css=document.createElement('style');css.textContent=`
 .sc6-tile::before{background-image:linear-gradient(color-mix(in srgb,var(--card) 55%,transparent),color-mix(in srgb,var(--card) 88%,transparent)),var(--sc6)}
 .sc6-tile{border-color:color-mix(in srgb,var(--accent) 35%,var(--soft))!important}
 .sc6-top-s{padding-top:96px!important}.sc6-top-s::before{height:104px}
-.sc6 > *{position:relative}
+.sc6 > *{position:relative}.ban6{height:120px;margin:-16px -16px 14px;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0;background-size:cover;background-position:center 45%}
 body.auth6{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 55%,transparent),var(--bg) 78%),var(--sc6auth) center top/cover no-repeat fixed,var(--bg)!important}
 body.auth6 #loginForm{}
 body.auth6 .card:has(#loginForm){background:color-mix(in srgb,var(--card) 82%,transparent)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}`;
