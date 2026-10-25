@@ -3,6 +3,7 @@
 (function(){
 const $=id=>document.getElementById(id);
 const T=()=>window.strideSessionTracker;
+(function purge(n){try{if(typeof db!=='undefined'&&window.__strideGone){const b=(db.trainingSessions||[]).length;db.trainingSessions=(db.trainingSessions||[]).filter(x=>!window.__strideGone(x?.id));if(db.trainingSessions.length!==b){localStorage.setItem('stride-strength-v3',JSON.stringify(db));T()?.draw?.();}}}catch{}if(n<20)setTimeout(()=>purge(n+1),1000);})(0);
 const fmt=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0');};
 function goWorkout(){window.show?.('train');window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'today'}));[...document.querySelectorAll('#train button')].find(b=>b.textContent.trim()==='Today')?.click();setTimeout(()=>{const t=$('sessionTracker');if(t){let e=t;while(e&&e!==document.body){e.hidden=false;if(e.id&&/^trainingView-/.test(e.id))e.classList.remove('hidden');e=e.parentElement;}t.scrollIntoView({behavior:'smooth',block:'start'});}},150);}
 window.strideGoWorkout=goWorkout;
