@@ -23,12 +23,12 @@ function recover(){try{if(typeof db==='undefined'||!T()?.isActive?.())return fal
 function planRepeat(){const b6=$('builder6');if(!b6||$('planRepeat6'))return;const r=document.createElement('button');r.type='button';r.id='planRepeat6';r.className='t6-mk';r.innerHTML='<span><b>Repeat a workout</b><small>Pick one from your history</small></span><span style="margin-left:auto">›</span>';r.onclick=()=>window.strideRepeatSheet?.();b6.before(r);}
 /* 4. Live tracker: bodyweight sets hide load; Copy last set */
 function sets(){document.querySelectorAll('#sessionTracker details.exercise').forEach(c=>{
-  c.querySelectorAll('select').forEach(sl=>{if(![...sl.options].some(o=>o.value==='bodyweight'))return;const row=sl.closest('div,li,tr');if(!row)return;const nums=[...row.querySelectorAll('input[type=number],input:not([type])')];const w=nums[1];const bw=sl.value==='bodyweight';
+  c.querySelectorAll('select').forEach(sl=>{if(![...sl.options].some(o=>o.value==='bodyweight'))return;const row=sl.closest('fieldset.v6-set,fieldset,li,tr,div');if(!row)return;const nums=[...row.querySelectorAll('input[type=number],input:not([type])')];const w=nums[1];const bw=sl.value==='bodyweight';
     if(!sl.dataset.bw7){sl.dataset.bw7=1;sl.addEventListener('change',()=>sets());}
     if(w){w.style.display=bw?'none':'';}let tag=row.querySelector('.bwtag7');if(bw&&!row.classList.contains('ts6-row')){if(!tag){tag=document.createElement('span');tag.className='bwtag7';tag.textContent='Bodyweight';sl.before(tag);}sl.classList.add('bwsel7');}else{tag?.remove();sl.classList.remove('bwsel7');}});
   const add=[...c.querySelectorAll('button')].find(b=>/^add set$/i.test(b.textContent.trim()));if(!add||c.querySelector('.dup7'))return;
   const d=document.createElement('button');d.type='button';d.className='dup7';d.textContent='⧉ Copy last set';
-  d.onclick=()=>{const rows=()=>[...c.querySelectorAll('input[type=checkbox]')].filter(x=>/completed/i.test(x.getAttribute('aria-label')||'')).map(x=>x.closest('div,li,tr'));const before=rows();const last=before.at(-1);const vals=last?[...last.querySelectorAll('input:not([type=checkbox]),select')].map(i=>i.value):null;add.click();
+  d.onclick=()=>{const rows=()=>[...c.querySelectorAll('input[type=checkbox]')].filter(x=>/completed/i.test(x.getAttribute('aria-label')||'')).map(x=>x.closest('fieldset.v6-set,fieldset,li,tr,div'));const before=rows();const last=before.at(-1);const vals=last?[...last.querySelectorAll('input:not([type=checkbox]),select')].map(i=>i.value):null;add.click();
     setTimeout(()=>{const now=rows();const nr=now.at(-1);if(!nr||nr===last||!vals)return;[...nr.querySelectorAll('input:not([type=checkbox]),select')].forEach((i,k)=>{if(vals[k]!==undefined&&vals[k]!==''){i.value=vals[k];i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));}});sets();},120);};
   add.after(d);});}
 const st=document.createElement('style');st.textContent=`
@@ -37,7 +37,7 @@ const st=document.createElement('style');st.textContent=`
 .r6-t{flex:1;min-width:0}.r6-t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r6-t small{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}.r6-go{font-weight:800;color:var(--accent);flex:none}
 #planRepeat6{display:flex;align-items:center;width:100%;margin:0 0 12px!important;text-align:left}#planRepeat6 small{display:block;color:var(--muted);font-size:12px}
 .bwtag7{font-size:13px;font-weight:700;color:var(--muted);padding:0 6px;white-space:nowrap}.bwsel7{max-width:44px;opacity:.6}
-.dup7{margin-left:8px!important;width:auto!important;background:none!important;border:1px solid var(--accent)!important;color:var(--accent)!important;font-weight:700}`;
+fieldset.ts6-row .ts6-go{grid-column:1/-1;width:100%!important;white-space:nowrap;writing-mode:horizontal-tb;order:20;margin-top:8px!important}fieldset.ts6-row input[placeholder=Load],fieldset.ts6-row label:has(input[placeholder=Load]){display:none!important}.dup7{margin-left:8px!important;width:auto!important;background:none!important;border:1px solid var(--accent)!important;color:var(--accent)!important;font-weight:700}`;
 document.head.append(st);
 let q=0;const run=()=>{q=0;try{planRepeat();sets();}catch(e){}};
 new MutationObserver(()=>{if(!q){q=1;requestAnimationFrame(run);}}).observe(document.body,{childList:true,subtree:true});setInterval(run,2000);run();
