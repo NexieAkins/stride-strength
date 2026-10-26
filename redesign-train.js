@@ -166,7 +166,7 @@ function focusExercise(){
 }
 function compactSets(){
   document.querySelectorAll('#sessionTracker details.exercise fieldset:not(.v6-set)').forEach(f=>{f.classList.add('v6-set');f.removeAttribute('style');
-    const ins=f.querySelectorAll('input:not([type=checkbox])');if(ins[0])ins[0].placeholder='Reps';if(ins[1])ins[1].placeholder='Load';
+    const ins=f.querySelectorAll('input:not([type=checkbox])');if(ins[0])ins[0].placeholder=(ins[0].getAttribute('aria-label')==='Seconds to hold'||ins[0].closest('.ts6-row'))?'Seconds':'Reps';if(ins[1])ins[1].placeholder='Load';
     const rm=[...f.querySelectorAll('button')].find(b=>/remove set/i.test(b.textContent));if(rm){rm.textContent='✕';rm.setAttribute('aria-label','Remove set');rm.classList.add('v6-rm');}
     const ck=f.querySelector('input[type=checkbox]');if(ck){const l=ck.closest('label');l?.classList.add('v6-ck');const sync=()=>f.classList.toggle('v6-setdone',ck.checked);ck.addEventListener('change',sync);sync();}
     const legend=f.querySelector('legend');if(legend){f.prepend(Object.assign(document.createElement('span'),{className:'v6-setno',textContent:legend.textContent.replace('Set ','')}));legend.classList.add('v6-srlegend');}
