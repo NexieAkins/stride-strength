@@ -6,7 +6,16 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let rec=null,on=false;
 function hint(){const d=$('aiMealDescription');if(!d)return;window.__v6mealMode&&$('aiMealPanel')?.dataset.mode!=='type'&&window.__v6mealMode('type');d.focus();d.scrollIntoView({block:'center'});window.strideToast?.('🎤 Tap the mic on your keyboard (bottom row) and say what you ate');}
 function stop(){on=false;try{rec?.stop();}catch{}$('mic6')?.classList.remove('live');}
-function start(){const d=$('aiMealDescription');if(!d)return;if(window.__v6mealMode&&$('aiMealPanel')?.dataset.mode!=='type')window.__v6mealMode('type');
+let NSR=null;try{if(window.Capacitor?.isNativePlatform?.())NSR=window.Capacitor.registerPlugin?.('SpeechRecognition')||window.Capacitor.Plugins?.SpeechRecognition||null;}catch{}
+async function nativeStart(d){const base=d.value.trim();const put=t=>{if(!t)return;d.value=(base?base+', ':'')+t;d.dispatchEvent(new Event('input',{bubbles:true}));};
+  try{const av=await NSR.available();if(!av?.available)throw 0;const p=await NSR.requestPermissions();if(p&&(p.speechRecognition==='denied'||p.microphone==='denied')){window.strideToast?.('Allow Microphone and Speech Recognition for Stride & Strength in Settings');return;}
+    on=true;$('mic6')?.classList.add('live');window.strideToast?.('🎤 Listening… tap Speak again when you’re done');let last='';
+    const h=await NSR.addListener('partialResults',e=>{const t=e?.accumulatedText||e?.matches?.[0]||'';if(t){last=t;put(t);}});
+    nstop=async()=>{try{await NSR.stop();}catch{}try{h?.remove?.();}catch{}on=false;$('mic6')?.classList.remove('live');nstop=null;if(last)window.strideToast?.('✓ Got it — check it, then tap Estimate');};
+    const r=await NSR.start({language:navigator.language||'en-US',maxResults:1,partialResults:true,popup:false});if(r?.matches?.[0]){last=r.matches[0];put(last);}
+  }catch(e){on=false;$('mic6')?.classList.remove('live');hint();}}
+let nstop=null;
+function start(){if(NSR){const d=$('aiMealDescription');if(!d)return;if(window.__v6mealMode&&$('aiMealPanel')?.dataset.mode!=='type')window.__v6mealMode('type');if(nstop)return nstop();return nativeStart(d);}const d=$('aiMealDescription');if(!d)return;if(window.__v6mealMode&&$('aiMealPanel')?.dataset.mode!=='type')window.__v6mealMode('type');
   if(!SR||window.Capacitor?.isNativePlatform?.())return hint();if(on)return stop();
   try{rec=new SR();rec.lang=navigator.language||'en-US';rec.interimResults=true;rec.continuous=false;}catch{return hint();}
   const base=d.value.trim();let got=false;
