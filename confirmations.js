@@ -18,3 +18,9 @@ const show=t=>{const now=Date.now();if(now-lastToast<1200)return;lastToast=now;w
 if(navigator.clipboard?.writeText){const c0=navigator.clipboard.writeText.bind(navigator.clipboard);navigator.clipboard.writeText=x=>c0(x).then(r=>{show('✓ Copied');return r;});}
 document.addEventListener('click',e=>{if(e.target.closest('.dup7'))setTimeout(()=>show('✓ Set copied'),200);},true);
 })();
+/* Edit / Delete always visible on logged meals, workouts and weigh-ins (no hidden ⋯ menu). */
+(function(){
+const st=document.createElement('style');st.textContent='.workout-history-menu>summary{display:none!important}.workout-history-menu{position:static!important;flex-basis:100%;order:9;border:0!important;background:none!important;padding:0!important;margin:0!important;box-shadow:none!important}.workout-history-menu>.actions{display:flex!important;position:static!important;gap:8px;margin:10px 0 0!important;padding:0!important;background:none!important;box-shadow:none!important;border:0!important;flex-wrap:wrap}.workout-history-menu>.actions button{width:auto!important;min-height:0!important;padding:7px 14px!important;font-size:13px!important;border-radius:999px!important;margin:0!important}.workout-history-head{flex-wrap:wrap}';document.head.append(st);
+const open=()=>document.querySelectorAll('details.workout-history-menu:not([open])').forEach(d=>d.open=true);
+new MutationObserver(open).observe(document.body,{childList:true,subtree:true});open();
+})();
