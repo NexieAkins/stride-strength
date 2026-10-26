@@ -64,7 +64,11 @@ function timedSets(){document.querySelectorAll('#sessionTracker details.exercise
     nums.slice(1).forEach(i=>{i.style.display='none';});row.querySelectorAll('select').forEach(sl=>{if([...sl.options].some(o=>o.value==='bodyweight')){sl.style.display='none';}});
     const b=document.createElement('button');b.type='button';b.className='tmr6 ts6-go';b.textContent='⏱ '+fmt(secs);b.dataset.lbl=b.textContent;
     b.onclick=e=>{e.preventDefault();if(running&&running.row===row){stopAll();return;}const want=Number(reps?.value)>0?Number(reps.value):secs;runPhases([{sec:5,label:'Get ready · '+c.querySelector('summary')?.textContent,rest:true},{sec:want,label:(c.querySelector('summary')?.textContent||'Hold')+' · hold',rest:false}],row,()=>{if(reps){reps.value=want;reps.dispatchEvent(new Event('input',{bubbles:true}));reps.dispatchEvent(new Event('change',{bubbles:true}));}if(!cb.checked)cb.click();});};
-    if(!row.querySelector('.tmr6'))cb.parentElement.insertBefore(b,cb);});});}
+    if(!row.querySelector('.tmr6')){if(row.matches('fieldset'))row.append(b);else cb.parentElement.insertBefore(b,cb);}
+    if(!row.querySelector('.max6')){const mx=document.createElement('button');mx.type='button';mx.className='tmr6 max6';mx.textContent='∞ Max hold';let t0=0,iv=null;
+      mx.onclick=e=>{e.preventDefault();if(iv){clearInterval(iv);iv=null;const got=Math.round((Date.now()-t0)/1000);mx.classList.remove('live');mx.textContent='∞ Max hold';if(got>0&&reps){reps.value=got;reps.dispatchEvent(new Event('input',{bubbles:true}));reps.dispatchEvent(new Event('change',{bubbles:true}));}if(got>0&&!cb.checked)cb.click();window.strideToast?.('✓ '+fmt(got)+' hold logged');return;}
+        t0=Date.now();mx.classList.add('live');try{navigator.vibrate?.(30);}catch{}const tick=()=>{mx.textContent='■ Stop · '+fmt((Date.now()-t0)/1000);};tick();iv=setInterval(tick,250);};
+      b.after(mx);}});});}
 /* ---------- keep the screen awake during workouts, runs and timers ---------- */
 let wl=null;async function wake(){const need=!!(window.strideSessionTracker?.isActive?.()||window.strideLiveRun?.isActive?.()||running);try{if(need&&!wl&&navigator.wakeLock&&document.visibilityState==='visible'){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null;});}else if(!need&&wl){await wl.release();wl=null;}}catch{}
   try{const KA=window.Capacitor?.Plugins?.KeepAwake;if(KA){if(need&&!wake.k){KA.keepAwake();wake.k=1;}else if(!need&&wake.k){KA.allowSleep();wake.k=0;}}}catch{}}
