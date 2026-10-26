@@ -1,4 +1,35 @@
 
+
+async function getJSON(url, ms = 4000) {
+  const c = new AbortController(); const t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, { signal: c.signal, headers: { 'User-Agent': 'StrideStrength/1.0 (stridenstrength.com)' } }); return r.ok ? await r.json() : null; }
+  catch { return null; } finally { clearTimeout(t); }
+}
+const r1 = v => (v == null || !isFinite(v)) ? null : Math.round(Number(v) * 10) / 10;
+async function labelCandidates(text) {
+  const q = String(text || '').replace(/[^\p{L}\p{N}' %.-]+/gu, ' ').trim().slice(0, 120);
+  if (q.length < 4) return [];
+  const key = process.env.USDA_API_KEY || 'DEMO_KEY';
+  const [usda, off] = await Promise.all([
+    getJSON('https://api.nal.usda.gov/fdc/v1/foods/search?dataType=Branded&pageSize=5&query=' + encodeURIComponent(q) + '&api_key=' + key),
+    getJSON('https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&json=1&page_size=5&fields=product_name,brands,serving_size,serving_quantity,nutriments&search_terms=' + encodeURIComponent(q))
+  ]);
+  const out = [];
+  for (const f of (usda?.foods || [])) {
+    const n = id => (f.foodNutrients || []).find(x => String(x.nutrientNumber) === id)?.value;
+    const size = Number(f.servingSize) || 100, k = size / 100;
+    const kcal = n('208'); if (kcal == null) continue;
+    out.push({ source: 'USDA', product: [f.brandName || f.brandOwner, f.description].filter(Boolean).join(' – '), serving: (f.householdServingFullText ? f.householdServingFullText + ' = ' : '') + size + (f.servingSizeUnit || 'g'),
+      calories: Math.round(kcal * k), protein_g: r1(n('203') * k), carbs_g: r1(n('205') * k), fat_g: r1(n('204') * k), fiber_g: r1((n('291') || 0) * k) });
+  }
+  for (const p of (off?.products || [])) {
+    const m = p.nutriments || {}; const kc = m['energy-kcal_serving']; if (kc == null || !p.product_name) continue;
+    out.push({ source: 'Open Food Facts', product: [p.brands, p.product_name].filter(Boolean).join(' – '), serving: p.serving_size || 'serving',
+      calories: Math.round(kc), protein_g: r1(m.proteins_serving), carbs_g: r1(m.carbohydrates_serving), fat_g: r1(m.fat_serving), fiber_g: r1(m.fiber_serving) });
+  }
+  return out.slice(0, 8);
+}
+
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 const SUPABASE_URL = 'https://gwagccrxnqicorqmcrma.supabase.co';
 const PUBLISHABLE_KEY = 'sb_publishable_xiH45eL40kzKyaYkP5XJ3g_V98SOjOw';
@@ -85,6 +116,7 @@ exports.handler = async (event) => {
       });
     }
 
+    const labels = description ? await labelCandidates(description) : [];
     const content = [
       {
         type: 'text',
@@ -95,6 +127,8 @@ exports.handler = async (event) => {
           'Do not claim precision.'
       }
     ];
+    if (labels.length) content[0].text += ' Packaged-product label data found in food databases (per serving): ' + JSON.stringify(labels) +
+      '. If the meal names a branded or packaged product that matches one of these (same brand and product, e.g. same protein amount or flavour line), use that label\'s per-serving values exactly, multiplied by the number of servings eaten (default 1 serving), and say in notes that the values came from the product label. Ignore entries that are not the same product. For a branded product with no matching entry, use your best knowledge of that exact product\'s label, not a generic food.';
 
     for (const p of photos) {
       content.push({ type: 'image_url', image_url: { url: p, detail: 'low' } });
