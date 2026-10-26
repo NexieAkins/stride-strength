@@ -36,7 +36,7 @@ jobs:
         with:
           packages: platform-tools
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund
         working-directory: mobile
       - run: npm run sync
         working-directory: mobile
