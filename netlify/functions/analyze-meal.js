@@ -17,7 +17,7 @@ async function labelCandidates(text) {
   const out = [];
   for (const f of (usda?.foods || [])) {
     const n = id => (f.foodNutrients || []).find(x => String(x.nutrientNumber) === id)?.value;
-    const size = Number(f.servingSize) || 100, k = size / 100;
+    const size = Number(f.servingSize); if (!size) continue; const k = size / 100;
     const kcal = n('208'); if (kcal == null) continue;
     out.push({ source: 'USDA', product: [f.brandName || f.brandOwner, f.description].filter(Boolean).join(' – '), serving: (f.householdServingFullText ? f.householdServingFullText + ' = ' : '') + size + (f.servingSizeUnit || 'g'),
       calories: Math.round(kcal * k), protein_g: r1(n('203') * k), carbs_g: r1(n('205') * k), fat_g: r1(n('204') * k), fiber_g: r1((n('291') || 0) * k) });
@@ -29,6 +29,28 @@ async function labelCandidates(text) {
   }
   return out.slice(0, 8);
 }
+const STOP = new Set(['the','and','with','for','of','a','an','one','two','bottle','cup','can','pack','oz','ml','fl','serving','milk','drink']);
+const toks = t => String(t || '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !STOP.has(w));
+function bestLabel(desc, labels) {
+  const d = toks(desc); if (!d.length) return null;
+  const want = (String(desc).match(/(\d+(?:\.\d+)?)\s*g\b/i) || [])[1];
+  let best = null;
+  for (const l of labels) {
+    const c = new Set(toks(l.product)); let hit = 0;
+    for (const w of d) if (c.has(w) || [...c].some(x => x.length > 4 && (x.startsWith(w) || w.startsWith(x)))) hit++;
+    let score = hit / d.length;
+    if (want && Math.abs((l.protein_g || 0) - Number(want)) <= 1.5) score += 0.35;
+    else if (want && /\d+\s*g/i.test(l.product) && !new RegExp('\\b' + want + '\\s*g', 'i').test(l.product)) score -= 0.3;
+    if (!best || score > best.score) best = { ...l, score };
+  }
+  return best && best.score >= 0.6 ? best : null;
+}
+function servingsIn(desc) {
+  const m = String(desc).trim().match(/^(\d+(?:\.\d+)?|half|one|two|three)\b\s*(x\b)?/i); if (!m) return 1;
+  const w = { half: 0.5, one: 1, two: 2, three: 3 }[m[1].toLowerCase()]; const n = w || Number(m[1]);
+  return n > 0 && n <= 6 ? n : 1;
+}
+const singleItem = d => !/,|\band\b|\bwith\b|\+|&/i.test(String(d).replace(/^\s*\d+\s*x?\s*/i, ''));
 
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 const SUPABASE_URL = 'https://gwagccrxnqicorqmcrma.supabase.co';
@@ -117,6 +139,12 @@ exports.handler = async (event) => {
     }
 
     const labels = description ? await labelCandidates(description) : [];
+    const match = description ? bestLabel(description, labels) : null;
+    if (match && !photos.length && singleItem(description)) {
+      const n = servingsIn(description), r = v => Math.round((Number(v) || 0) * n * 10) / 10;
+      return reply(200, { food_name: match.product.replace(/\b([A-Z])([A-Z]+)\b/g, (x, a, b) => a + b.toLowerCase()) + (n !== 1 ? ' × ' + n : ''), calories: Math.round(match.calories * n), protein_g: r(match.protein_g), carbs_g: r(match.carbs_g), fat_g: r(match.fat_g), fiber_g: r(match.fiber_g),
+        notes: 'From the product label (' + match.source + '), ' + n + ' × ' + match.serving + '.' });
+    }
     const content = [
       {
         type: 'text',
@@ -124,10 +152,10 @@ exports.handler = async (event) => {
           'Estimate total calories, protein, carbohydrates, fat and fiber for this meal: ' +
           (description || '(photo only)') +
           '. State assumptions about portions. ' +
-          'Do not claim precision.'
+          'Do not claim precision. A number like "30g" inside a product name usually describes the product (e.g. 30 g protein), not the portion eaten; assume 1 serving unless an amount eaten is stated.'
       }
     ];
-    if (labels.length) content[0].text += ' Packaged-product label data found in food databases (per serving): ' + JSON.stringify(labels) +
+    if (match) content[0].text += ' Packaged-product label found in a food database (per serving): ' + JSON.stringify(match) +
       '. If the meal names a branded or packaged product that matches one of these (same brand and product, e.g. same protein amount or flavour line), use that label\'s per-serving values exactly, multiplied by the number of servings eaten (default 1 serving), and say in notes that the values came from the product label. Ignore entries that are not the same product. For a branded product with no matching entry, use your best knowledge of that exact product\'s label, not a generic food.';
 
     for (const p of photos) {
