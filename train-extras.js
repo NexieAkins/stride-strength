@@ -31,14 +31,29 @@ function sets(){document.querySelectorAll('#sessionTracker details.exercise').fo
   d.onclick=()=>{const rows=()=>[...c.querySelectorAll('input[type=checkbox]')].filter(x=>/completed/i.test(x.getAttribute('aria-label')||'')).map(x=>x.closest('fieldset.v6-set,fieldset,li,tr,div'));const before=rows();const last=before.at(-1);const vals=last?[...last.querySelectorAll('input:not([type=checkbox]),select')].map(i=>i.value):null;add.click();
     setTimeout(()=>{const now=rows();const nr=now.at(-1);if(!nr||nr===last||!vals)return;[...nr.querySelectorAll('input:not([type=checkbox]),select')].forEach((i,k)=>{if(vals[k]!==undefined&&vals[k]!==''){i.value=vals[k];i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));}});sets();},120);};
   add.after(d);});}
+
+/* 5. Clear Finish vs Pause buttons */
+function finishBtns(){const tr=$('sessionTracker');if(!tr)return;const sc=[...tr.querySelectorAll('button')].find(b=>/^save and close session$/i.test(b.textContent.trim()));if(sc){sc.textContent='Pause — finish later';sc.classList.add('secondary');}
+  const f=$('finishSession');if(f&&!f.dataset.big7){f.dataset.big7=1;f.classList.add('v6-start');f.textContent='✓ Finish & log workout';const first=sc||[...tr.querySelectorAll('button')].find(b=>/discard session/i.test(b.textContent));if(first&&first.parentElement===f.parentElement)first.before(f);}}
+/* 6. Unfinished workout from an earlier day → one-tap Log it */
+const today7=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);};
+function stale(){try{if(typeof db==='undefined')return null;const me=window.cloudRecordOwner?.()||'browser';return (db.trainingSessions||[]).find(x=>x&&x.status==='draft'&&x.date<today7()&&(x.exercises||[]).some(e=>(e.sets||[]).some(z=>z&&z.done))&&(!x.owner||x.owner===me||x.owner===window.cloudRecordOwner?.()))||null;}catch{return null;}}
+function staleCard(){const s=stale();let c=$('stale7');if(!s){c?.remove();return;}if(c&&c.dataset.id===s.id)return;c?.remove();
+  const n=s.exercises.reduce((a,e)=>a+(e.sets||[]).filter(z=>z&&z.done).length,0);const day=new Date(s.date+'T12:00').toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
+  c=document.createElement('div');c.id='stale7';c.dataset.id=s.id;c.className='card';c.innerHTML='<b>Unfinished workout</b><p></p><div class="st7-row"><button type="button" class="v6-start st7-log">✓ Log it</button><button type="button" class="secondary st7-x">Discard</button></div>';
+  c.querySelector('p').textContent=s.title+' · '+day+' · '+n+' set'+(n===1?'':'s')+' done';
+  const resume=()=>{window.show?.('train');window.dispatchEvent(new CustomEvent('stride-train-view',{detail:'today'}));[...document.querySelectorAll('#train button')].find(b=>b.textContent.trim()==='Today')?.click();return [...document.querySelectorAll('#sessionTracker button')];};
+  c.querySelector('.st7-log').onclick=()=>{const bs=resume();const r=bs.find(b=>b.textContent.trim()==='Resume '+s.title);if(r){r.click();setTimeout(()=>{$('finishSession')?.click();c.remove();},300);}else{const f=$('finishSession');f?.click();c.remove();}};
+  c.querySelector('.st7-x').onclick=()=>{const bs=resume();bs.find(b=>b.textContent.trim()==='Discard saved session: '+s.title)?.click();};
+  const home=$('home');(home?.querySelector('.v6-week')?.parentElement||home)?.after?.call?0:0;const tgt=home&&(home.querySelector('.card')||home.firstElementChild);if(tgt)tgt.before(c);else document.querySelector('main')?.prepend(c);}
 const st=document.createElement('style');st.textContent=`
 #resume6{position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:55;display:flex;align-items:center;gap:10px;max-width:520px;margin:0 auto;padding:10px 14px!important;border-radius:16px!important;background:var(--card)!important;color:var(--fg)!important;border:1.5px solid var(--accent)!important;box-shadow:0 10px 28px rgba(0,0,0,.45);text-align:left;min-height:0!important;width:auto!important}
 #resume6[hidden]{display:none!important}.r6-dot{width:10px;height:10px;border-radius:50%;background:#3fc495;flex:none;animation:r6p 1.4s infinite}.r6-dot.p{background:#f0b45a;animation:none}@keyframes r6p{50%{opacity:.35}}
 .r6-t{flex:1;min-width:0}.r6-t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r6-t small{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}.r6-go{font-weight:800;color:var(--accent);flex:none}
-#planRepeat6{display:flex;align-items:center;width:100%;margin:0 0 12px!important;text-align:left}#planRepeat6 small{display:block;color:var(--muted);font-size:12px}
+#stale7{border:1.5px solid var(--accent)!important}#stale7 p{color:var(--muted);margin:4px 0 10px}.st7-row{display:flex;gap:8px}.st7-row button{width:auto!important;flex:1}#planRepeat6{display:flex;align-items:center;width:100%;margin:0 0 12px!important;text-align:left}#planRepeat6 small{display:block;color:var(--muted);font-size:12px}
 .bwtag7{font-size:13px;font-weight:700;color:var(--muted);padding:0 6px;white-space:nowrap}.bwsel7{max-width:44px;opacity:.6}
 fieldset.ts6-row .max6{grid-column:1/-1;width:100%!important;order:21;margin-top:6px!important;max-width:none!important;white-space:nowrap;background:none!important;border:1.5px solid var(--accent)!important;color:var(--accent)!important}fieldset.ts6-row .max6.live{background:var(--accent)!important;color:var(--on-accent)!important}fieldset.ts6-row .ts6-go{grid-column:1/-1;width:100%!important;max-width:none!important;white-space:nowrap;writing-mode:horizontal-tb;order:20;margin-top:8px!important}fieldset.ts6-row input[placeholder=Load],fieldset.ts6-row label:has(input[placeholder=Load]){display:none!important}.dup7{margin-left:8px!important;width:auto!important;background:none!important;border:1px solid var(--accent)!important;color:var(--accent)!important;font-weight:700}`;
 document.head.append(st);
-let q=0;const run=()=>{q=0;try{planRepeat();sets();}catch(e){}};
+let q=0;const run=()=>{q=0;try{planRepeat();sets();}catch(e){}try{finishBtns();}catch(e){}try{staleCard();}catch(e){}};
 new MutationObserver(()=>{if(!q){q=1;requestAnimationFrame(run);}}).observe(document.body,{childList:true,subtree:true});setInterval(run,2000);run();
 })();
