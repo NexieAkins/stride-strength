@@ -39,6 +39,7 @@ function bestLabel(desc, labels) {
     const c = new Set(toks(l.product)); let hit = 0;
     for (const w of d) if (c.has(w) || [...c].some(x => x.length > 4 && (x.startsWith(w) || w.startsWith(x)))) hit++;
     let score = hit / d.length;
+    if (want && Math.abs((l.protein_g || 0) - Number(want)) > 2) continue;
     if (want && Math.abs((l.protein_g || 0) - Number(want)) <= 1.5) score += 0.35;
     else if (want && /\d+\s*g/i.test(l.product) && !new RegExp('\\b' + want + '\\s*g', 'i').test(l.product)) score -= 0.3;
     if (!best || score > best.score) best = { ...l, score };
