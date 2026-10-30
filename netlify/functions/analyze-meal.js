@@ -271,3 +271,5 @@ exports.handler = async (event) => {
   }
 };
 
+
+exports.handler = require('./lib/usage.cjs').metered('meal-estimate', exports.handler);
