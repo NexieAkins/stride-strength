@@ -126,17 +126,17 @@ function drawLive(){
 setInterval(drawLive,1000);
 
 /* ---------- Strength: rest timer after each ticked set, progress bar ---------- */
-let restEnd=0,restBox=null,restBase=(()=>{try{return Number(localStorage.getItem('stride-rest-sec'))||30;}catch{return 30;}})();
+let restEnd=0,restBox=null,restStored=()=>{try{return Number(localStorage.getItem('stride-rest-sec'))||0;}catch{return 0;}},restBase=()=>restStored()||(window.strideIsOlder?.()?60:30);
 function restUI(){
   if(restBox)return restBox;
   restBox=el('div',{id:'restTimer',hidden:true,role:'status'});
   restBox.innerHTML='<small>Rest</small><b id="restLeft">0:30</b><div><button type="button" data-d="-15">−15 s</button><button type="button" data-d="skip">Skip</button><button type="button" data-d="15">+15 s</button></div>';
-  restBox.addEventListener('click',e=>{const d=e.target.closest('button')?.dataset.d;if(!d)return;if(d==='skip'){restEnd=0;}else{restEnd+=Number(d)*1000;restBase=Math.max(10,Math.min(300,restBase+Number(d)));try{localStorage.setItem('stride-rest-sec',String(restBase));}catch{}}tickRest();});
+  restBox.addEventListener('click',e=>{const d=e.target.closest('button')?.dataset.d;if(!d)return;if(d==='skip'){restEnd=0;}else{restEnd+=Number(d)*1000;const nb=Math.max(10,Math.min(300,restBase()+Number(d)));try{localStorage.setItem('stride-rest-sec',String(nb));}catch{}}tickRest();});
   document.body.append(restBox);return restBox;
 }
 function tickRest(){const b=restUI(),left=(restEnd-Date.now())/1000;if(left<=0){b.hidden=true;if(restEnd&&left>-1){try{navigator.vibrate?.(200);}catch(e){}}restEnd=0;return;}b.hidden=false;$('restLeft').textContent=clock(left);}
 setInterval(()=>{if(restEnd){if(!window.strideSessionTracker?.isActive?.()){restEnd=0;}tickRest();}},250);window.addEventListener('stride-session-end',()=>{restEnd=0;tickRest();});
-document.addEventListener('change',e=>{const c=e.target;if(c.type!=='checkbox'||!c.checked||!c.closest('#sessionTracker'))return;if(!/completed .* set/i.test(c.getAttribute('aria-label')||''))return;restEnd=Date.now()+restBase*1000;tickRest();});
+document.addEventListener('change',e=>{const c=e.target;if(c.type!=='checkbox'||!c.checked||!c.closest('#sessionTracker'))return;if(!/completed .* set/i.test(c.getAttribute('aria-label')||''))return;restEnd=Date.now()+restBase()*1000;tickRest();});
 
 window.strideRepeatSheet=()=>repeatSheet();function repeatSheet(){
   let d=$('repeat6');if(!d){d=el('dialog',{id:'repeat6',className:'v6-sheet'});document.body.append(d);}
