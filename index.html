@@ -142,8 +142,8 @@ function cloudRows(){
  workouts:db.workouts.map(w=>({
  id:w.id,user_id:user.id,workout_date:w.date||today,workout_type:w.type||'Other',
  source:w.source||'manual',distance_miles:Number(w.miles)||0,duration_minutes:Number(w.minutes)||0,
- energy:w.energy?Number(w.energy):null,soreness:w.soreness||null,notes:w.session?'STRIDE_SESSION_V1:'+JSON.stringify(w.session):w.notes||null
- })).concat((db.trainingSessions||[]).filter(s=>s.owner===user.id&&s.status==='draft'&&!window.__strideGone?.(s.id)).map(s=>({id:s.id,user_id:user.id,workout_date:s.date,workout_type:s.type,source:'manual',distance_miles:0,duration_minutes:0,energy:null,soreness:null,notes:'STRIDE_SESSION_V1:'+JSON.stringify(s)}))),
+ energy:w.energy?Number(w.energy):null,soreness:w.soreness||null,health_uuid:w.healthUuid||null,notes:w.session?'STRIDE_SESSION_V1:'+JSON.stringify(w.session):w.notes||null
+ })).concat((db.trainingSessions||[]).filter(s=>s.owner===user.id&&s.status==='draft'&&!window.__strideGone?.(s.id)).map(s=>({id:s.id,user_id:user.id,workout_date:s.date,workout_type:s.type,source:'manual',distance_miles:0,duration_minutes:0,energy:null,soreness:null,health_uuid:null,notes:'STRIDE_SESSION_V1:'+JSON.stringify(s)}))),
  meals:db.meals.map(m=>({
  id:m.id,user_id:user.id,meal_date:m.date||today,meal_type:m.type||'Other',
  food_name:m.food||'Meal',calories:Number(m.calories)||0,protein_g:Number(m.protein)||0,carbs_g:m.carbs===''||m.carbs==null?null:Number(m.carbs),fat_g:m.fat===''||m.fat==null?null:Number(m.fat),fiber_g:m.fiber===''||m.fiber==null?null:Number(m.fiber),photo_path:m.photo_path||null
@@ -205,7 +205,7 @@ async function loadCloud(){
   db.workouts=w.flatMap(x=>{
    let session=null;if((x.notes||'').startsWith('STRIDE_SESSION_V1:')){try{session=JSON.parse(x.notes.slice(18));if(!session||!Array.isArray(session.exercises)||!session.exercises.every(e=>e&&Array.isArray(e.sets)))session=null;}catch{}}
    if(session?.status==='draft'){let gone=[];try{gone=JSON.parse(localStorage.getItem('stride-discarded-sessions')||'[]');}catch{}if(gone.includes(session.id)||gone.includes(x.id)){client.from('workouts').delete().eq('id',x.id).eq('user_id',user.id).then(()=>{});return [];}session.owner=user.id;db.trainingSessions.push(session);return [];}
-   return [{id:x.id,date:x.workout_date,type:x.workout_type,miles:Number(x.distance_miles)||0,minutes:Number(x.duration_minutes)||0,source:x.source||'manual',notes:session?(session.summaryText||window.strideSessionTracker?.summary(session)||session.title||'Training session'):x.notes||'',session,energy:x.energy||'',soreness:x.soreness||''}];
+   return [{id:x.id,date:x.workout_date,type:x.workout_type,miles:Number(x.distance_miles)||0,minutes:Number(x.duration_minutes)||0,source:x.source||'manual',notes:session?(session.summaryText||window.strideSessionTracker?.summary(session)||session.title||'Training session'):x.notes||'',session,energy:x.energy||'',soreness:x.soreness||'',healthUuid:x.health_uuid??null}];
   });
   db.meals=m.map(x=>({id:x.id,date:x.meal_date,type:x.meal_type,food:x.food_name,calories:Number(x.calories)||0,protein:Number(x.protein_g)||0,carbs:x.carbs_g==null?'':Number(x.carbs_g),fat:x.fat_g==null?'':Number(x.fat_g),fiber:x.fiber_g==null?'':Number(x.fiber_g),photo_path:x.photo_path||null}));
   db.weights=weights.map(x=>({id:x.id,date:x.weigh_date,weight:Number(x.weight_lb)}));
@@ -570,7 +570,7 @@ get('aiUseEstimate').onclick=()=>{
 (function(){var t=document.getElementById('workoutType'),f=document.getElementById('workoutForm');if(!t||!f)return;var last=null;function sync(){var chosen=!!t.value;if(chosen===last)return;last=chosen;var on=false;[].slice.call(f.children).forEach(function(n){if(n===t){on=true;return;}if(!on||n.tagName==='LABEL'&&n.htmlFor==='workoutType')return;if(n.id==='workoutDate'||n.htmlFor==='workoutDate')return;n.classList.toggle('log-hidden',!chosen);});}t.addEventListener('change',sync);f.addEventListener('reset',function(){setTimeout(sync,0)});setInterval(sync,400);sync();})();
 </script>
 <style>.log-hidden{display:none!important}</style>
-<script src="./tidy.js"></script><script src="./ux-feedback.js"></script><script src="./redesign.js"></script><script src="./redesign-train.js"></script><script src="./redesign-rest.js"></script><script src="./pictures.js"></script><script src="./barcode.js"></script><script src="./scenes.js"></script><script src="./exercise-help.js"></script><script src="./native-feel.js"></script><script src="./train-extras.js"></script><script src="./confirmations.js"></script><script src="./voice.js"></script><script src="./weekend-flex.js"></script>
+<script src="./tidy.js"></script><script src="./ux-feedback.js"></script><script src="./redesign.js"></script><script src="./redesign-train.js"></script><script src="./redesign-rest.js"></script><script src="./pictures.js"></script><script src="./barcode.js"></script><script src="./scenes.js"></script><script src="./exercise-help.js"></script><script src="./native-feel.js"></script><script src="./train-extras.js"></script><script src="./confirmations.js"></script><script src="./voice.js"></script><script src="./weekend-flex.js"></script><script src="./health-sync.js"></script>
 <script>(function(){var t=document.getElementById('workoutType'),d=document.getElementById('distance');if(!t||!d)return;var l=document.querySelector('label[for="distance"]');function m(){var show=/Run|Walk|Bike|Swim/.test(t.value);d.classList.toggle('dist-hidden',!show);if(l)l.classList.toggle('dist-hidden',!show);if(!show)d.value='';}t.addEventListener('change',m);setInterval(m,400);m();})();</script><style>.dist-hidden{display:none!important}</style>
 </body></html>
 
