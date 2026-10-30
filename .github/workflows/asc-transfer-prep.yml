@@ -1,0 +1,21 @@
+name: App transfer prep (TestFlight cleanup)
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'dry = list only, apply = expire builds / remove testers / clear test info'
+        default: dry
+permissions:
+  contents: read
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyjwt cryptography requests
+      - run: python3 scripts/asc-transfer-prep.py
+        env:
+          MODE: ${{ inputs.mode }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
