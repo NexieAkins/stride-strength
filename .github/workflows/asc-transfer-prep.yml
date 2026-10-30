@@ -13,7 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install pyjwt cryptography requests
-      - run: python3 scripts/asc-transfer-prep.py
+      - run: python3 scripts/asc-transfer-prep.py 2>&1 | tee out.txt; while IFS= read -r l; do echo "::notice::$l"; done < out.txt
+        shell: bash
         env:
           MODE: ${{ inputs.mode }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
