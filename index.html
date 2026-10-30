@@ -50,7 +50,7 @@ function date(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padSt
 const today=date();function read(k,def){try{return JSON.parse(localStorage.getItem(k))||def}catch(e){return def}}
 let db=read(KEY,null);if(!db){db=read('stride-strength-v2-complete',null)||{workouts:read('stride-strength-data',[]),meals:[],weights:[],water:{},goals:{calories:1900,protein:110}};let old=read('stride-strength-v2',{});if(!db.meals?.length&&old.meals)db.meals=old.meals;if(!db.weights?.length&&old.weights)db.weights=old.weights;if(old.water&&!Object.keys(db.water||{}).length)db.water=old.water}
 for(let k of ['workouts','meals','weights'])if(!Array.isArray(db[k]))db[k]=[];db.water=db.water||{};db.goals=db.goals||{calories:1900,protein:110};db.checked=db.checked||{};
-function save(){try{for(const collection of ['workouts','meals','weights'])for(const record of db[collection])if(!record.id)record.id=crypto.randomUUID();localStorage.setItem(KEY,JSON.stringify(db));if(window.cloudQueue)window.cloudQueue();return true}catch(e){alert('Storage unavailable');return false}}
+function save(){try{let __syn=null;const __g=window.strideSignedOut===true;for(const collection of ['workouts','meals','weights'])for(const record of db[collection]){if(!record.id)record.id=crypto.randomUUID();if(__g&&!record.guest){if(!__syn){try{__syn=new Set(JSON.parse(localStorage.getItem('stride-cloud-ids')||'[]'));}catch(e){__syn=new Set();}}if(!__syn.has(record.id))record.guest=true;}}localStorage.setItem(KEY,JSON.stringify(db));if(window.cloudQueue)window.cloudQueue();return true}catch(e){alert('Storage unavailable');return false}}
 function show(page){document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hidden',x.id!==page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.go===page));render();scrollTo(0,0)}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 const standingCore=['Standing cross-body knee crunch: 12 per side','Standing side crunch: 12 per side','Slow standing knee raise: 15 per leg','Standing abdominal brace: 3 × 20 seconds; breathe normally'];
@@ -182,6 +182,7 @@ async function writeCloud(){
   if(error)throw error;
   if(db.profile?.user_id===user.id){const {error:profileError}=await client.from('profiles').upsert(db.profile,{onConflict:'user_id'});if(profileError)throw profileError;}
   localStorage.setItem(KEY,JSON.stringify(db));
+  try{const ids=new Set(JSON.parse(localStorage.getItem('stride-cloud-ids')||'[]'));for(const t of ['workouts','meals','weights'])for(const r of db[t])if(r.id)ids.add(r.id);localStorage.setItem('stride-cloud-ids',JSON.stringify([...ids].slice(-20000)));localStorage.setItem('stride-last-account',user.id);}catch(e){}
   if(!queued)db.syncDirty=null;localStorage.setItem(KEY,JSON.stringify(db));message('');return true;
  }catch(e){message('✓ Saved on this device · will sync when you’re back online');return false;}
  finally{writing=false;if(queued){queued=false;writeCloud()}}
@@ -191,6 +192,27 @@ window.cloudRecordOwner=()=>user?.id||null;window.strideProfileReadyOwner=null;
 window.addEventListener('online',()=>{if(user&&db.syncDirty===user.id)writeCloud();else if(user)loadCloud();});setInterval(()=>{if(user&&!writing&&!loading&&db.syncDirty===user.id&&navigator.onLine!==false)writeCloud();},60000);
 window.cloudQueue=function(){if(!user||loading)return;db.syncDirty=user.id;localStorage.setItem(KEY,JSON.stringify(db));clearTimeout(pending);pending=setTimeout(()=>{pending=null;writeCloud()},500)};
 window.__strideReload=()=>loadCloud();let __lastHide=0;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')__lastHide=Date.now();else if(__lastHide&&Date.now()-__lastHide>60000&&!(window.strideSessionTracker?.isActive?.()||window.strideLiveRun?.isActive?.()))loadCloud();});
+/* Guest → account: never lose entries made before signing in.
+   Only entries this device never synced to any account are merged, and only when the device
+   hasn't been used by a different account (otherwise the manual "Import" button stays the route). */
+function mergeGuestData(acct,cloud){
+ const snap=localBeforeLogin;if(!snap||!snap.__wasGuest)return 0;
+ const last=localStorage.getItem('stride-last-account');if(last&&last!==acct)return 0;
+ let synced;try{synced=new Set(JSON.parse(localStorage.getItem('stride-cloud-ids')||'[]'));}catch(e){synced=new Set();}
+ try{localStorage.setItem('stride-guest-backup',JSON.stringify({at:new Date().toISOString(),acct,data:snap}));}catch(e){}
+ let n=0;
+ for(const t of ['workouts','meals','weights']){
+  const have=new Set(db[t].map(x=>x.id));
+  for(const r of snap[t]||[]){if(!r||!r.id||!r.guest||have.has(r.id)||synced.has(r.id))continue;const c={...r};delete c.guest;db[t].push(c);have.add(r.id);n++;}
+ }
+ for(const [day,g] of Object.entries(snap.water||{})){if(!(day in db.water)&&Number(g)>0){db.water[day]=g;n++;}}
+ for(const s of snap.trainingSessions||[]){if(s&&s.status==='draft'&&(s.owner==='browser'||!s.owner)&&!(db.trainingSessions||[]).some(x=>x.id===s.id)&&!window.__strideGone?.(s.id)){(db.trainingSessions=db.trainingSessions||[]).push({...s,owner:acct});n++;}}
+ if(!cloud.goals?.length&&snap.goals){db.goals={...snap.goals};n++;}
+ if(!cloud.profiles?.length&&snap.profile&&(snap.profile.user_id==='browser'||!snap.profile.user_id)){db.profile={...snap.profile,user_id:acct};window.strideProfileReadyOwner=acct;n++;}
+ try{const wf=localStorage.getItem('stride-weekend-flex-local');if(wf&&!localStorage.getItem('stride-weekend-flex-'+acct))localStorage.setItem('stride-weekend-flex-'+acct,wf);}catch(e){}
+ return n;
+}
+if(/[?&]test\b/.test(location.search))window.__guestTest=(snap,acct,cloud)=>{localBeforeLogin=snap;return mergeGuestData(acct,cloud);};
 async function loadCloud(){
  if(!user||writing)return;
  if(pending||db.syncDirty===user.id){clearTimeout(pending);pending=null;if(!await writeCloud())return;}
@@ -213,8 +235,11 @@ async function loadCloud(){
   water.forEach(x=>{db.water[x.log_date]=x.glasses;db.waterIds[x.log_date]=x.id});
   db.goals=goals.length?{calories:goals[0].daily_calorie_goal,protein:goals[0].daily_protein_goal}:{calories:1900,protein:110};db.profile=profiles[0]||null;window.strideProfileReadyOwner=user.id;
   $('calGoal').value=db.goals.calories;$('proGoal').value=db.goals.protein;
+  let guestMerged=0;try{guestMerged=mergeGuestData(loadingOwner,{workouts:w,meals:m,weigh_ins:weights,water,goals,profiles});}catch(e){console.error('guest merge',e);}
+  try{const ids=new Set(JSON.parse(localStorage.getItem('stride-cloud-ids')||'[]'));for(const t of ['workouts','meals','weights'])for(const r of db[t])if(r.id)ids.add(r.id);localStorage.setItem('stride-cloud-ids',JSON.stringify([...ids].slice(-20000)));localStorage.setItem('stride-last-account',loadingOwner);}catch(e){}
   localStorage.setItem(KEY,JSON.stringify(db));render();
   loaded=true;message('');
+  if(guestMerged){setTimeout(async()=>{const ok=await writeCloud();window.strideToast?.(ok?'✓ Your guest entries were added to your account':'✓ Guest entries kept on this device — they’ll sync when you’re online');},300);}
  }catch(e){message(navigator.onLine===false?'You’re offline — your entries save on this device and sync when you’re back online.':'Couldn’t load your online records right now — your entries are kept on this device.')}
  finally{loading=false;document.querySelector('main').inert=false}
 }
@@ -296,13 +321,13 @@ client.auth.onAuthStateChange((event,session)=>{
  if(event==='PASSWORD_RECOVERY')setTimeout(async()=>{const pw=prompt('Choose a new password (at least 6 characters):');if(pw&&pw.length>=6){const {error}=await client.auth.updateUser({password:pw});message(error?error.message:'Password updated. You are signed in.')}else if(pw)message('Password must be at least 6 characters. Use Forgot password to try again.')},300);
  const next=session?.user||null,changed=next?.id!==user?.id;
  if(next&&changed){
-  localBeforeLogin=JSON.parse(JSON.stringify(db));
+  localBeforeLogin=JSON.parse(JSON.stringify(db));localBeforeLogin.__wasGuest=window.strideSignedOut===true;
   user=next;db.profile=null;window.strideProfileReadyOwner=null;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.add('authenticated');
   $('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');
   $('accountEmail').textContent='Signed in: '+user.email;
   document.querySelector('main').inert=true;setTimeout(loadCloud,0);window.strideSignedOut=false;document.body.classList.remove('welcome');if(!document.getElementById('accountpage').classList.contains('hidden'))document.querySelector('nav [data-go=home]').click();
  }else if(!next){
-  user=null;db.profile=null;window.strideProfileReadyOwner=null;window.dispatchEvent(new Event('stride-account-change'));document.body.classList.remove('authenticated');clearTimeout(pending);
+  user=null;if(db.profile&&db.profile.user_id!=='browser')db.profile=null;window.strideProfileReadyOwner=null;setTimeout(()=>{try{save()}catch(e){}},0);window.dispatchEvent(new Event('stride-account-change'));document.body.classList.remove('authenticated');clearTimeout(pending);
   $('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');
   message('');window.strideSignedOut=true;window.strideShowWelcome&&window.strideShowWelcome();
  }
@@ -570,7 +595,7 @@ get('aiUseEstimate').onclick=()=>{
 (function(){var t=document.getElementById('workoutType'),f=document.getElementById('workoutForm');if(!t||!f)return;var last=null;function sync(){var chosen=!!t.value;if(chosen===last)return;last=chosen;var on=false;[].slice.call(f.children).forEach(function(n){if(n===t){on=true;return;}if(!on||n.tagName==='LABEL'&&n.htmlFor==='workoutType')return;if(n.id==='workoutDate'||n.htmlFor==='workoutDate')return;n.classList.toggle('log-hidden',!chosen);});}t.addEventListener('change',sync);f.addEventListener('reset',function(){setTimeout(sync,0)});setInterval(sync,400);sync();})();
 </script>
 <style>.log-hidden{display:none!important}</style>
-<script src="./tidy.js"></script><script src="./ux-feedback.js"></script><script src="./redesign.js"></script><script src="./redesign-train.js"></script><script src="./redesign-rest.js"></script><script src="./pictures.js"></script><script src="./barcode.js"></script><script src="./scenes.js"></script><script src="./exercise-help.js"></script><script src="./native-feel.js"></script><script src="./train-extras.js"></script><script src="./confirmations.js"></script><script src="./voice.js"></script><script src="./weekend-flex.js"></script><script src="./health-sync.js"></script>
+<script src="./tidy.js"></script><script src="./ux-feedback.js"></script><script src="./redesign.js"></script><script src="./redesign-train.js"></script><script src="./redesign-rest.js"></script><script src="./pictures.js"></script><script src="./barcode.js"></script><script src="./scenes.js"></script><script src="./exercise-help.js"></script><script src="./native-feel.js"></script><script src="./train-extras.js"></script><script src="./confirmations.js"></script><script src="./voice.js"></script><script src="./weekend-flex.js"></script><script src="./guest.js"></script><script src="./health-sync.js"></script>
 <script>(function(){var t=document.getElementById('workoutType'),d=document.getElementById('distance');if(!t||!d)return;var l=document.querySelector('label[for="distance"]');function m(){var show=/Run|Walk|Bike|Swim/.test(t.value);d.classList.toggle('dist-hidden',!show);if(l)l.classList.toggle('dist-hidden',!show);if(!show)d.value='';}t.addEventListener('change',m);setInterval(m,400);m();})();</script><style>.dist-hidden{display:none!important}</style>
 </body></html>
 
