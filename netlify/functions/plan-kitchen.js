@@ -49,3 +49,5 @@ const __norm=s=>String(s||'').toLowerCase().replace(/\([^)]*\)/g,' ').replace(/[
 return reply(200,{...plan,planner_version:4,requested_meals:input.count,complete:complete(plan),missing_meal_slots:missingSlots(plan),cuisine:input.cuisine,daily_targets:input.count>1?{calories:input.calories,protein_g:input.protein}:null});
 }catch(error){return reply(error.name==='TimeoutError'?504:502,{error:'Could not create your kitchen plan. Try again.'});}
 };
+
+exports.handler = require('./lib/usage.cjs').metered('kitchen-plan', exports.handler);

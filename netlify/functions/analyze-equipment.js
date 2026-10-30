@@ -11,3 +11,5 @@ const response=await fetch('https://api.openai.com/v1/chat/completions',{method:
 if(!response.ok)return reply(502,{error:'Could not read the equipment photo. Try another angle.'});const data=await response.json();let result;try{result=JSON.parse(data.choices?.[0]?.message?.content||'null');}catch{return reply(502,{error:'The equipment result could not be checked. Try again.'});}if(!valid(result))return reply(502,{error:'The equipment result could not be checked. Try again.'});return reply(200,result);
 }catch(error){return reply(error.name==='TimeoutError'?504:502,{error:'Could not read the equipment. Try again or describe it manually.'});}
 };
+
+exports.handler = require('./lib/usage.cjs').metered('equipment-photo', exports.handler);
