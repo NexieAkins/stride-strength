@@ -79,7 +79,7 @@ function buildHome(){
   const close=el('button',{type:'button',className:'v6-sheetx','aria-label':'Close',textContent:'✕'});close.onclick=()=>sheet.close();
   const prefs=$('homePreferences'),sched=home.querySelector('.calm-fold'),prof=$('setName');
   sheet.append(el('div',{className:'v6-sheethead'},[el('h2',{textContent:'Fitness preferences'}),close]),el('p',{className:'v6-sub',textContent:'Your weekly schedule, meal style and diet rules. Change them any time.'}));
-  if(prof){prof.textContent='Edit fitness profile (age, weight, goals)';prof.classList.add('v6-ghost');sheet.append(prof);}
+  if(prof){prof.textContent='Edit fitness profile (age, weight, goals)';prof.classList.add('v6-ghost');sheet.append(prof);const o0=prof.onclick;prof.onclick=e=>{if(sheet.open)sheet.close();const d=$('profileIntro');if(d&&d.open&&!d.matches(':modal'))d.close();setTimeout(()=>{if(window.strideOnboarding?.open)window.strideOnboarding.open();else o0?.call(prof,e);},60);};}
   if(prefs){prefs.open=true;const sm=prefs.querySelector(':scope>summary');if(sm)sm.hidden=true;prefs.classList.add('v6-flatprefs');prefs.addEventListener('toggle',()=>{if(!prefs.open&&prefs.closest('#prefsSheet'))prefs.open=true;});sheet.append(prefs);prefs.querySelectorAll('button').forEach(b=>{if(/^done$/i.test(b.textContent.trim())){b.hidden=true;b.style.display='none';}});}
   // The weekly schedule list stays in the page (hidden on Home) because other screens update it.
   const done=el('button',{type:'button',className:'v6-start',textContent:'Save & close'});done.onclick=()=>sheet.close();sheet.append(done);
