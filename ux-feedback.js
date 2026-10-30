@@ -11,7 +11,7 @@ function setup(){
   const header=document.querySelector('header');if(!header)return;
   const ICON_A11Y='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor"><circle cx="12" cy="4" r="2"/><path d="M4 7.5c2.6.8 5.3 1.2 8 1.2s5.4-.4 8-1.2l.5 1.9c-2 .6-4.1 1-6.2 1.2V14l2 7h-2.1L12.5 15h-1L9.8 21H7.7l2-7v-3.4c-2.1-.2-4.2-.6-6.2-1.2z"/></svg>';
   const ICON_USER='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>';
-  const a11yBtn=el('button',{type:'button',id:'a11yBtn',className:'top-tool',innerHTML:ICON_A11Y,title:'Accessibility'});a11yBtn.setAttribute('aria-label','Accessibility: text size and skin');
+  const a11yBtn=el('button',{type:'button',id:'a11yBtn',className:'top-tool',innerHTML:ICON_A11Y,title:'Accessibility'});a11yBtn.hidden=true;a11yBtn.style.setProperty('display','none','important');a11yBtn.setAttribute('aria-label','Accessibility: text size and skin');
   const acctBtn=el('button',{type:'button',id:'acctBtn',className:'top-tool',innerHTML:ICON_USER,title:'Account'});acctBtn.setAttribute('aria-label','Account menu');
   const a11yPanel=el('div',{id:'a11yPanel',className:'top-panel',hidden:true});
   const acctPanel=el('div',{id:'acctPanel',className:'top-panel',hidden:true});
@@ -27,15 +27,16 @@ function setup(){
   // Account menu.
   function drawAccount(){
     acctPanel.replaceChildren();
+    const disp=()=>el('button',{type:'button',textContent:'Aa  Text size & display',onclick:e=>{e.stopPropagation();close();a11yPanel.hidden=false;acctBtn.setAttribute('aria-expanded','true');}});
     if(signedIn()){
       acctPanel.append(el('p',{className:'acct-email',textContent:email()||'Signed in'}),
         el('button',{type:'button',textContent:'Fitness preferences',onclick:()=>{close();window.strideOpenPrefs?.();}}),
-        el('button',{type:'button',textContent:'Account & sync',onclick:()=>{close();document.querySelector('[data-go=accountpage]')?.click()||window.show?.('accountpage');}}),
+        el('button',{type:'button',textContent:'Account & sync',onclick:()=>{close();document.querySelector('[data-go=accountpage]')?.click()||window.show?.('accountpage');}}),disp(),
         el('button',{type:'button',className:'acct-logout',textContent:'Log out',onclick:()=>{close();$('signout')?.click();}}));
     }else{
       acctPanel.append(el('p',{className:'acct-email',textContent:'Not syncing · saved on this device'}),
         el('button',{type:'button',textContent:'Fitness preferences',onclick:()=>{close();window.strideOpenPrefs?.();}}),
-        el('button',{type:'button',textContent:'Sign in or create account',onclick:()=>{close();if(window.strideShowWelcome)window.strideShowWelcome();else window.show?.('accountpage');}}));
+        disp(),el('button',{type:'button',textContent:'Sign in or create account',onclick:()=>{close();if(window.strideShowWelcome)window.strideShowWelcome();else window.show?.('accountpage');}}));
     }
   }
   function close(){a11yPanel.hidden=acctPanel.hidden=true;a11yBtn.setAttribute('aria-expanded','false');acctBtn.setAttribute('aria-expanded','false');}

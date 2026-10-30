@@ -4,7 +4,7 @@
 const bucket='stride-transformation-private-v5',LIMIT=100,MAX_ORIGINAL=15*1024*1024,WINDOW=2;
 const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=text;if(cls)n.className=cls;return n};
 const panel=node('div');panel.className='card';panel.id='myTransformation';
-panel.innerHTML=`<h2>My Transformation</h2><p>Private to your account.</p>
+panel.innerHTML=`<h2>My Transformation</h2><p>🔒 Private to your account · encrypted at rest · never viewed by us.</p>
 <div id="photoGuest" class="hidden"><p>Create a free account to keep private progress photos.</p><button type="button" id="photoGuestBtn" class="v6-start">Create a free account</button></div>
 <div id="photoMain">
 <button type="button" id="photoPick" class="v6-start">📷 Add progress photo</button>
