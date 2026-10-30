@@ -1,4 +1,12 @@
-<!doctype html><html lang="en"><head><script>(function(){var P=['--bg','--card','--soft','--fg','--muted','--accent','--on-accent'],K='stride-theme-cache',d=document.documentElement;try{var c=JSON.parse(localStorage.getItem(K)||'null');if(c&&c.v){P.forEach(function(p,i){if(c.v[i])d.style.setProperty(p,c.v[i]);});if(c.s)d.style.colorScheme=c.s;var st=document.createElement('style');st.textContent=':root{'+P.map(function(p,i){return c.v[i]?p+':'+c.v[i]+'!important':'';}).join(';')+'}html,body{background:'+c.v[0]+'!important}';document.head.appendChild(st);window.__themeBoot=st;window.__themeWant=c.v;}}catch(e){}
+<!doctype html><html lang="en"><head><script>(function(){try{var h=location.hash||'';if(!/[#&]type=signup(&|$)/.test(h))return;
+if(sessionStorage.getItem('stride-verify-continue')){sessionStorage.removeItem('stride-verify-continue');return;}
+var saved=h;history.replaceState(null,'',location.pathname+location.search);window.__verifyPage=1;
+function build(){var d=document.createElement('div');d.id='verifiedPage';d.setAttribute('role','dialog');d.setAttribute('aria-label','Email verified');
+d.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:var(--bg,#0b1220);color:var(--fg,#f5f7fb);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+d.innerHTML='<div style="font-size:64px;line-height:1">\u2705</div><h1 style="font-size:26px;margin:16px 0 8px">Email verified</h1><p style="max-width:320px;font-size:17px;line-height:1.45;margin:0 0 24px;color:var(--muted,#b6c4d9)">You\u2019re all set. Go back to the Stride &amp; Strength app and sign in.</p><button id="verifiedWeb" type="button" style="width:100%;max-width:320px;padding:14px;border-radius:14px;border:1px solid var(--soft,#2a3a55);background:transparent;color:var(--fg,#f5f7fb);font-size:16px;font-weight:700">Continue on the website</button>';
+document.body.appendChild(d);document.getElementById('verifiedWeb').onclick=function(){try{sessionStorage.setItem('stride-verify-continue','1');}catch(e){}location.replace(location.pathname+location.search+saved);location.reload();};}
+if(document.body)build();else document.addEventListener('DOMContentLoaded',build);}catch(e){}})();</script>
+<script>(function(){var P=['--bg','--card','--soft','--fg','--muted','--accent','--on-accent'],K='stride-theme-cache',d=document.documentElement;try{var c=JSON.parse(localStorage.getItem(K)||'null');if(c&&c.v){P.forEach(function(p,i){if(c.v[i])d.style.setProperty(p,c.v[i]);});if(c.s)d.style.colorScheme=c.s;var st=document.createElement('style');st.textContent=':root{'+P.map(function(p,i){return c.v[i]?p+':'+c.v[i]+'!important':'';}).join(';')+'}html,body{background:'+c.v[0]+'!important}';document.head.appendChild(st);window.__themeBoot=st;window.__themeWant=c.v;}}catch(e){}
 var ready=false;function save(){if(!ready)return;try{var cs=getComputedStyle(d),v=P.map(function(p){return (d.style.getPropertyValue(p)||cs.getPropertyValue(p)).trim();});localStorage.setItem(K,JSON.stringify({v:v,s:d.style.colorScheme||''}));}catch(e){}}
 function drop(){if(window.__themeBoot){window.__themeBoot.remove();window.__themeBoot=null;}}
 function same(){var w=window.__themeWant;if(!w)return false;for(var i=0;i<P.length;i++){if((d.style.getPropertyValue(P[i])||'').trim().toLowerCase()!==(w[i]||'').toLowerCase())return false;}return true;}
@@ -14,7 +22,7 @@ body:not(.authenticated) .calm-account{display:none}
 </style><style>
 #account{max-width:440px;margin:8vh auto;padding:26px;background:#1b273a;border-radius:20px}body.authenticated #account{max-width:720px;margin:8px auto;padding:10px 16px;background:transparent}body.authenticated #account>h3{display:none}body.authenticated #signedIn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}body.authenticated #signedIn p{margin:4px}body.authenticated #account #cloudStatus{margin:3px 0}
 #account input{max-width:340px;display:block}#account button{margin:4px}
-#cloudStatus{color:#b6c4d9;font-size:13px}#cloudImport{background:#0f766e}
+#cloudStatus{color:#b6c4d9;font-size:13px}#cloudImport{background:#0f766e}#cloudImport[hidden]{display:none}
 </style>
 <link rel="stylesheet" href="./app-polish.css">
 <style>body.text-large{zoom:1.15}body.text-xl{zoom:1.3}.size-row{display:flex;align-items:center;gap:6px;width:100%;max-width:620px;box-sizing:border-box;margin:6px auto 4px}.size-row span{font-size:13px;opacity:.75;margin-right:4px}.size-row button{margin:0;padding:3px 10px;font-size:13px;border-radius:999px;min-width:0}.size-row button.active{background:#5145cd}</style>
@@ -26,8 +34,8 @@ body:not(.authenticated) .calm-account{display:none}
 <div id="authConfirmWrap" hidden><label for="authConfirm">Confirm password</label><input id="authConfirm" type="password" minlength="6" autocomplete="new-password"></div>
 <button type="submit" id="authSubmit">Sign in</button><button type="button" id="signup">Create account</button></form><p class="guest-row"><button type="button" id="forgotPw" class="link-btn">Forgot password?</button><br><button type="button" id="continueGuest" class="link-btn">Continue without an account</button></p></div>
 <div id="signedIn" class="hidden"><p id="accountEmail"></p>
-<button id="cloudRefresh">Refresh cloud data</button><button id="cloudImport">Import this browser's saved records</button>
-<button id="signout">Sign out</button><button id="deleteAccount" type="button">Delete account</button><p class="muted">Import is optional and merges records into your cloud account. Export a backup first. Deleting your account permanently removes your cloud records and private photos.</p></div>
+<button id="cloudRefresh">Refresh cloud data</button><button id="cloudImport" hidden>Restore entries saved on this device</button>
+<button id="signout">Sign out</button><button id="deleteAccount" type="button">Delete account</button><p class="muted">Restoring is optional and adds entries saved on this device to your account. Export a backup first. Deleting your account permanently removes your cloud records and private photos.</p></div>
 <p id="cloudStatus" role="status">Cloud connection loading…</p></div></section>
 <section id="home"><div class="hero"><h2>Your strength. Your stride.</h2><button data-go="log">Log workout →</button> <button data-go="accountpage">Account &amp; sync</button></div><div class="card" id="homeStats"></div><h2>Your weekly schedule</h2><div id="schedule"></div></section>
 <section id="train" class="hidden"><h2>Interactive training</h2><p>Pick a day and check off what you did.</p><select id="daySelect"></select><div id="dayDetails" class="card"></div><button data-go="log">Log workout →</button></section>
@@ -298,12 +306,15 @@ $('deleteAccount').onclick=async()=>{
   authBusy=false;buttons.forEach(b=>b.disabled=false);
  }
 };
+function localBackupData(){try{const b=JSON.parse(localStorage.getItem('stride-guest-backup')||'null');return b&&b.data||null}catch(e){return null}}
+function updateRestoreBtn(){const btn=$('cloudImport');if(!btn)return;let show=false;try{const d=user&&localBackupData();if(d){for(const t of ['workouts','meals','weights']){const have=new Set((db[t]||[]).map(x=>x.id));if((d[t]||[]).some(x=>!x.id||!have.has(x.id))){show=true;break}}if(!show)for(const day of Object.keys(d.water||{}))if(!(day in (db.water||{}))){show=true;break}}}catch(e){}btn.hidden=!show}
+setInterval(updateRestoreBtn,1500);
 $('cloudRefresh').onclick=loadCloud;
 $('cloudImport').onclick=async()=>{
  if(!user)return;
- if(!confirm('Merge this browser’s pre-login records into your cloud account? Export a backup first.'))return;
- const incoming=localBeforeLogin;
- if(!incoming){message('No pre-login snapshot to import on this device.');return}
+ if(!confirm('Add the entries saved on this device to your account? Export a backup first.'))return;
+ const incoming=localBeforeLogin||localBackupData();
+ if(!incoming){message('No saved entries found on this device.');return}
  for(const table of ['workouts','meals','weights']){
   const existing=new Set(db[table].map(x=>x.id));
   for(const x of incoming[table]||[]){
@@ -315,7 +326,7 @@ $('cloudImport').onclick=async()=>{
   if(!(day in db.water))db.water[day]=glasses;
  }
  render();await writeCloud();
- message('Import completed. Check your history and cloud sync status.');
+ message('Entries restored. Check your history and cloud sync status.');updateRestoreBtn();
 };
 client.auth.onAuthStateChange((event,session)=>{
  if(event==='PASSWORD_RECOVERY')setTimeout(async()=>{const pw=prompt('Choose a new password (at least 6 characters):');if(pw&&pw.length>=6){const {error}=await client.auth.updateUser({password:pw});message(error?error.message:'Password updated. You are signed in.')}else if(pw)message('Password must be at least 6 characters. Use Forgot password to try again.')},300);
