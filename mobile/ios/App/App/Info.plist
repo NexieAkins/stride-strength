@@ -32,6 +32,10 @@
 	<string>Stride &amp; Strength turns what you say into text so you can log meals by voice.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Scan food barcodes and take meal, equipment and running-plan photos when you choose to.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Stride &amp; Strength reads workouts from Apple Health, such as Apple Watch workouts, so they appear in your training log without typing them in.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Stride &amp; Strength saves the workouts you log to Apple Health so your rings and activity stay complete.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Measure outdoor running distance and pace while you track a run.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

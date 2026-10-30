@@ -14,8 +14,7 @@ for kind, bundle in [('ios', 'com.strideandstrength.app'), ('watch', 'com.stride
     assert p['ExpirationDate'] > datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None), 'Expired profile'
     assert not p['Entitlements'].get('get-task-allow', False), 'Development profile cannot be used for TestFlight'
     assert not p.get('ProvisionedDevices') and not p.get('ProvisionsAllDevices'), 'Expected App Store distribution profile'
-    if kind == 'watch':
-        assert p['Entitlements'].get('com.apple.developer.healthkit'), 'Watch profile needs HealthKit'
+    assert p['Entitlements'].get('com.apple.developer.healthkit'), kind + ' profile needs the HealthKit capability'
     profiles[bundle] = p['UUID']
     destination = pathlib.Path.home() / 'Library/MobileDevice/Provisioning Profiles'
     destination.mkdir(parents=True, exist_ok=True)
