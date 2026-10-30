@@ -7,9 +7,10 @@ function estimate(profile,weightLb){
 const age=Number(profile.age_years),height=Number(profile.height_cm),weight=Number(weightLb||profile.starting_weight_lb),factor={sedentary:1.2,light:1.375,moderate:1.55,high:1.725}[profile.activity_level];
 if(['pregnant','breastfeeding','manual'].includes(profile.nutrition_context)||profile.nutrition_mode!=='auto'||!['female','male'].includes(profile.calorie_equation)||!factor||!Number.isFinite(age)||age<18||age>100||!Number.isFinite(height)||height<50||height>260||!Number.isFinite(weight)||weight<30||weight>700||!['consistency','strength','endurance','weight_loss','maintenance'].includes(profile.fitness_goal))return null;
 const kg=weight/2.20462262,resting=10*kg+6.25*height-5*age+(profile.calorie_equation==='male'?5:-161),maintenance=resting*factor;
-const adjusted=maintenance-(profile.fitness_goal==='weight_loss'?300:0);
+const older=age>=65,adjusted=maintenance-(profile.fitness_goal==='weight_loss'?300:0); // deficit is already capped at 300 kcal/day, which is also the cap for 65+
 const calories=Math.round(Math.max(1500,resting,adjusted)/10)*10;
-const protein=Math.round(kg*(['strength','weight_loss'].includes(profile.fitness_goal)?1.6:profile.fitness_goal==='endurance'?1.4:1.2));
+let protein=Math.round(kg*(['strength','weight_loss'].includes(profile.fitness_goal)?1.6:profile.fitness_goal==='endurance'?1.4:1.2));
+if(older)protein=Math.max(protein,Math.round(1.1*kg));
 return {calories,protein,maintenance:Math.round(maintenance),weightLb:weight};
 }
 root.strideNutritionEstimate=estimate;if(typeof module==='object')module.exports=estimate;
