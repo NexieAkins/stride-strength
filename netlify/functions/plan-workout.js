@@ -26,3 +26,5 @@ exports.handler=async event=>{
  }catch(e){return reply(e.name==='TimeoutError'?504:502,{error:'Could not create a workout. Use a default routine or try again.'})}
 };
 
+
+exports.handler = require('./lib/usage.cjs').metered('workout-plan', exports.handler);

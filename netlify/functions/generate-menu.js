@@ -191,3 +191,5 @@ exports.handler = async function (event) {
   }
 };
 
+
+exports.handler = require('./lib/usage.cjs').metered('menu', exports.handler);

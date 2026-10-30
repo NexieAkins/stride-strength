@@ -27,3 +27,5 @@ exports.handler=async event=>{
     return reply(200,{items,note:String(out.note||'').slice(0,400)});
   }catch(e){return reply(e.name==='TimeoutError'?504:502,{error:'Could not read your photos. Try again or type your ingredients.'});}
 };
+
+exports.handler = require('./lib/usage.cjs').metered('pantry-photo', exports.handler);

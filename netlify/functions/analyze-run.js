@@ -18,3 +18,5 @@ if(draft.kind==='plan'||draft.kind==='unclear'){draft.completed_distance_miles=n
 return reply(200,draft);
 }catch(error){return reply(error.name==='TimeoutError'?504:502,{error:'Could not read your photo. Try again or enter the details manually.'});}
 };
+
+exports.handler = require('./lib/usage.cjs').metered('run-analysis', exports.handler);
