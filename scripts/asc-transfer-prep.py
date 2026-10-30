@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Prepare the app for an App Store app transfer: expire all TestFlight builds,
-remove testers and beta groups, clear TestFlight Test Information.
-MODE=dry only lists what it would do."""
+"""Prepare the app for an App Store app transfer.
+MODE=dry   : list only (shows which build would be kept)
+MODE=old   : expire every build EXCEPT the newest; keep testers + test info
+MODE=final : expire ALL builds, remove testers and groups, clear Test Information"""
 import os, sys, time, json, jwt, requests
 KEY_ID=os.environ['APP_STORE_CONNECT_KEY_ID']; ISS=os.environ['APP_STORE_CONNECT_ISSUER_ID']; PK=os.environ['APP_STORE_CONNECT_PRIVATE_KEY']
 MODE=os.environ.get('MODE','dry'); BUNDLE=os.environ.get('BUNDLE','com.strideandstrength.app')
@@ -23,12 +24,20 @@ def all_pages(path):
 apps=all_pages(f'/v1/apps?filter[bundleId]={BUNDLE}')
 if not apps: sys.exit('App not found for '+BUNDLE)
 app=apps[0]; A=app['id']; print('App:',app['attributes']['name'],'| Apple ID',A,'| bundle',app['attributes']['bundleId'])
-builds=[b for b in all_pages(f'/v1/builds?filter[app]={A}&filter[expired]=false&limit=200')]
+builds=all_pages(f'/v1/builds?filter[app]={A}&filter[expired]=false&limit=200')
+builds.sort(key=lambda b:b['attributes'].get('uploadedDate') or '',reverse=True)
 print('Unexpired builds:',len(builds))
+if builds: print('Newest build:',builds[0]['attributes'].get('version'),'uploaded',builds[0]['attributes'].get('uploadedDate'))
 groups=all_pages(f'/v1/apps/{A}/betaGroups?limit=200'); print('Beta groups:',len(groups),[g['attributes']['name'] for g in groups])
 testers=all_pages(f'/v1/betaTesters?filter[apps]={A}&limit=200'); print('Testers on app:',len(testers))
 locs=all_pages(f'/v1/apps/{A}/betaAppLocalizations'); print('Test Information localizations:',len(locs))
-if MODE!='apply': print('DRY RUN — nothing changed.'); sys.exit(0)
+if MODE not in ('old','final'): print('DRY RUN — nothing changed. MODE=old would expire',max(0,len(builds)-1),'builds and keep the newest.'); sys.exit(0)
+if MODE=='old':
+    for i,b in enumerate(builds[1:],1):
+        req('PATCH',f'/v1/builds/{b["id"]}',json={'data':{'type':'builds','id':b['id'],'attributes':{'expired':True}}})
+        if i%20==0: print('  expired',i)
+    print('Expired',len(builds)-1,'old builds; kept build',builds[0]['attributes'].get('version') if builds else None)
+    sys.exit(0)
 for i,b in enumerate(builds,1):
     req('PATCH',f'/v1/builds/{b["id"]}',json={'data':{'type':'builds','id':b['id'],'attributes':{'expired':True}}})
     if i%20==0: print('  expired',i)

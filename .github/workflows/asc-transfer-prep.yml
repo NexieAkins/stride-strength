@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'dry = list only, apply = expire builds / remove testers / clear test info'
+        description: 'dry = list only; old = expire all but newest build; final = expire all, remove testers, clear test info'
         default: dry
 permissions:
   contents: read
