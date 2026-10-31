@@ -29,7 +29,7 @@ function sets(){document.querySelectorAll('#sessionTracker details.exercise').fo
   const add=[...c.querySelectorAll('button')].find(b=>/^add set$/i.test(b.textContent.trim()));if(!add||c.querySelector('.dup7'))return;
   const d=document.createElement('button');d.type='button';d.className='dup7';d.textContent='⧉ Copy last set';
   d.onclick=()=>{const rows=()=>[...c.querySelectorAll('input[type=checkbox]')].filter(x=>/completed/i.test(x.getAttribute('aria-label')||'')).map(x=>x.closest('fieldset.v6-set,fieldset,li,tr,div'));const before=rows();const last=before.at(-1);const vals=last?[...last.querySelectorAll('input:not([type=checkbox]),select')].map(i=>i.value):null;add.click();
-    setTimeout(()=>{const now=rows();const nr=now.at(-1);if(!nr||nr===last||!vals)return;[...nr.querySelectorAll('input:not([type=checkbox]),select')].forEach((i,k)=>{if(vals[k]!==undefined&&vals[k]!==''){i.value=vals[k];i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));}});sets();},120);};
+    setTimeout(()=>{const idx=c.dataset.exerciseIndex;if(!document.contains(c)&&idx!=null){const nc=document.querySelector('#sessionTracker details.exercise[data-exercise-index="'+idx+'"]');if(nc)c=nc;}const now=rows();const nr=now.at(-1);if(!nr||nr===last||!vals)return;[...nr.querySelectorAll('input:not([type=checkbox]),select')].forEach((i,k)=>{if(vals[k]!==undefined&&vals[k]!==''){i.value=vals[k];i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));}});sets();},120);};
   add.after(d);});}
 
 /* 5. Clear Finish vs Pause buttons */
