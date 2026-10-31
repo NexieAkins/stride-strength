@@ -100,7 +100,7 @@ render=function(){
  while(weeks.has(date(cursor))){count++;cursor.setDate(cursor.getDate()-7)}
  $('workoutStreak').textContent='Active-week workout streak: '+count+' week'+(count===1?'':'s');
  const weights=db.weights.slice().filter(x=>Number.isFinite(Number(x.weight))&&x.date).sort((a,b)=>a.date.localeCompare(b.date));
- const svg=$('weightGraph');svg.replaceChildren();
+ const svg=$('weightGraph');if(!svg)return;svg.replaceChildren();
  const ns='http://www.w3.org/2000/svg';
  const add=(tag,attrs,content)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));if(content!==undefined)el.textContent=content;svg.appendChild(el);return el};
  if(!weights.length){$('weightGraphNote').textContent='Log your first weekly weigh-in to start your graph.';return}
