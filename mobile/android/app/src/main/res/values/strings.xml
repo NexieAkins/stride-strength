@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Stride &amp; Strength</string>
+    <string name="title_activity_main">Stride &amp; Strength</string>
+    <string name="package_name">com.strideandstrength.app</string>
+    <string name="custom_url_scheme">com.strideandstrength.app</string>
+</resources>
