@@ -1,0 +1,1105 @@
+{
+"workouts": [
+{
+"id": "9d886172-8373-458d-90b9-818b9438f2e3",
+"workout_date": "2026-10-13",
+"workout_type": "Long Run",
+"source": "manual",
+"distance_miles": 6.76,
+"duration_minutes": 78.0,
+"energy": 6,
+"soreness": null,
+"notes": null
+},
+{
+"id": "e3feeaf4-bfd7-49f0-86aa-8579af418c6e",
+"workout_date": "2026-10-15",
+"workout_type": "Core",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 16.7,
+"energy": null,
+"soreness": null,
+"notes": "STRIDE_SESSION_V1:{\"id\":\"e3feeaf4-bfd7-49f0-86aa-8579af418c6e\",\"owner\":\"00000000-0000-4000-8000-000000000001\",\"status\":\"completed\",\"date\":\"2026-10-15\",\"title\":\"15-Minute Core Strength Session\",\"type\":\"Core\",\"source\":\"Personalized workout\",\"checkin\":{\"energy\":\"good\",\"pain\":\"none\",\"symptoms\":\"none\",\"nutrition_context\":\"standard\",\"checked_at\":\"2026-10-15T15:33:04.089Z\",\"adjustment\":\"as planned\"},\"elapsedSeconds\":1003.624,\"runningSince\":null,\"exercises\":[{\"name\":\"Rotary Torso Machine\",\"target\":\"12 per side\",\"load\":\"Moderate weight that allows controlled movement without strain\",\"cue\":\"Rotate your torso slowly and fully, keeping your hips stable and core engaged.\",\"sets\":[{\"reps\":15,\"unit\":\"reps per side\",\"weight\":100,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":15,\"unit\":\"reps per side\",\"weight\":120,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":140,\"unit\":\"reps per side\",\"weight\":12,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Plank\",\"target\":\"Hold for 30 seconds\",\"load\":\"Bodyweight\",\"cue\":\"Keep your body in a straight line from head to heels, engage your core and avoid sagging hips.\",\"sets\":[{\"reps\":60,\"unit\":\"seconds\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":60,\"unit\":\"seconds\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":60,\"unit\":\"seconds\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"Hanging Knee Raises\",\"target\":\"10-12\",\"load\":\"Bodyweight\",\"cue\":\"Use controlled motion to lift your knees towards your chest, avoid swinging.\",\"sets\":[{\"reps\":10,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":14,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]}],\"finishedAt\":\"2026-10-15T15:49:47.716Z\",\"summaryText\":\"15-Minute Core Strength Session\\n16.7 active minutes \u00b7 3 exercises \u00b7 9 sets\\nRotary Torso Machine: Set 1 \u2014 15 reps per side \u00b7 100 lb; Set 2 \u2014 15 reps per side \u00b7 120 lb; Set 3 \u2014 140 reps per side \u00b7 12 lb\\nPlank: Set 1 \u2014 60 seconds \u00b7 \u2014 bodyweight; Set 2 \u2014 60 seconds \u00b7 \u2014 bodyweight; Set 3 \u2014 60 seconds \u00b7 \u2014 bodyweight\\nHanging Knee Raises: Set 1 \u2014 10 reps \u00b7 \u2014 bodyweight; Set 2 \u2014 12 reps \u00b7 \u2014 bodyweight; Set 3 \u2014 14 reps \u00b7 \u2014 bodyweight\"}"
+},
+{
+"id": "8978ff64-62f8-447c-a955-39cee149f9ea",
+"workout_date": "2026-10-15",
+"workout_type": "Recovery",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 0.5,
+"energy": null,
+"soreness": null,
+"notes": "STRIDE_SESSION_V1:{\"id\":\"8978ff64-62f8-447c-a955-39cee149f9ea\",\"owner\":\"00000000-0000-4000-8000-000000000001\",\"status\":\"completed\",\"date\":\"2026-10-15\",\"title\":\"10-Minute Bodyweight Mobility Session\",\"type\":\"Recovery\",\"source\":\"Personalized workout\",\"checkin\":{\"energy\":\"good\",\"pain\":\"none\",\"symptoms\":\"none\",\"nutrition_context\":\"standard\",\"checked_at\":\"2026-10-15T15:56:04.192Z\",\"adjustment\":\"as planned\"},\"elapsedSeconds\":29.406,\"runningSince\":null,\"exercises\":[{\"name\":\"Cat-Cow Stretch\",\"target\":\"8 slow reps\",\"load\":\"Bodyweight\",\"cue\":\"Move slowly between arching and rounding your back, syncing breath with movement.\",\"sets\":[{\"reps\":null,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"World's Greatest Stretch\",\"target\":\"4 per side\",\"load\":\"Bodyweight\",\"cue\":\"Step forward into a lunge, rotate your torso and reach your arm up to open the chest and hips.\",\"sets\":[{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"Child's Pose to Cobra Flow\",\"target\":\"6 slow flows\",\"load\":\"Bodyweight\",\"cue\":\"Move slowly between child's pose and cobra to mobilize the spine and hips.\",\"sets\":[{\"reps\":null,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"Hip Circles on Mat\",\"target\":\"8 circles each direction\",\"load\":\"Bodyweight\",\"cue\":\"Lift one knee and make controlled circles to mobilize the hip joint.\",\"sets\":[{\"reps\":null,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]}],\"finishedAt\":\"2026-10-15T15:56:33.599Z\",\"summaryText\":\"10-Minute Bodyweight Mobility Session\\n0.5 active minutes \u00b7 4 exercises \u00b7 8 sets\\nCat-Cow Stretch: Set 1 \u2014 \u2014 reps \u00b7 \u2014 bodyweight; Set 2 \u2014 \u2014 reps \u00b7 \u2014 bodyweight\\nWorld's Greatest Stretch: Set 1 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight; Set 2 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight\\nChild's Pose to Cobra Flow: Set 1 \u2014 \u2014 reps \u00b7 \u2014 bodyweight; Set 2 \u2014 \u2014 reps \u00b7 \u2014 bodyweight\\nHip Circles on Mat: Set 1 \u2014 \u2014 reps \u00b7 \u2014 bodyweight; Set 2 \u2014 \u2014 reps \u00b7 \u2014 bodyweight\"}"
+},
+{
+"id": "dc0c9744-c90a-49b1-bb67-3fd13d38f06e",
+"workout_date": "2026-10-15",
+"workout_type": "Quality Run",
+"source": "manual",
+"distance_miles": 4.11,
+"duration_minutes": 42.93,
+"energy": 6,
+"soreness": null,
+"notes": "Imported running details:\nWorkout Time: 0:42:56\nDistance: 4.11 miles\nActive Kilocalories: 388 kcal\nTotal Kilocalories: 450 kcal\nElevation Gain: 6 ft\nAvg. Power: 184 W\nAvg. Cadence: 166 spm\nAvg. Pace: 10'27\"/mile\n\nSplits (1 mile each):\n1. Time: 1:41, Pace: 11'41\"/mile, Heart Rate: 134 bpm, Power: 165 W\n2. Time: 0:08, Pace: 10'08\"/mile, Heart Rate: 159 bpm, Power: 188 W\n3. Time: 9:43, Pace: 9'43\"/mile, Heart Rate: 165 bpm, Power: 196 W\n4. Time: 0:18, Pace: 10'18\"/mile, Heart Rate: 161 bpm, Power: 192 W\n5. Time: 1:07, Pace: 10'07\"/mile, Heart Rate: 163 bpm, Power: 194 W"
+},
+{
+"id": "ae1cfb18-bd44-43f8-a005-197fd391c97c",
+"workout_date": "2026-10-16",
+"workout_type": "Lower Body",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 26.8,
+"energy": null,
+"soreness": null,
+"notes": "STRIDE_SESSION_V1:{\"id\":\"ae1cfb18-bd44-43f8-a005-197fd391c97c\",\"owner\":\"00000000-0000-4000-8000-000000000001\",\"status\":\"completed\",\"date\":\"2026-10-16\",\"title\":\"Intermediate Lower Body Strength Session\",\"type\":\"Lower Body\",\"source\":\"Personalized workout\",\"checkin\":{\"energy\":\"good\",\"pain\":\"none\",\"symptoms\":\"none\",\"nutrition_context\":\"standard\",\"checked_at\":\"2026-10-16T23:08:44.203Z\",\"adjustment\":\"as planned\"},\"elapsedSeconds\":1609.442,\"runningSince\":null,\"exercises\":[{\"name\":\"Leg Curl Machine\",\"target\":\"10-12\",\"load\":\"No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.\",\"cue\":\"Control the movement, avoid swinging your hips, focus on contracting the hamstrings throughout the curl.\",\"sets\":[{\"reps\":12,\"unit\":\"reps\",\"weight\":80,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":90,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":100,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Leg Extension Machine\",\"target\":\"10-12\",\"load\":\"No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.\",\"cue\":\"Extend legs smoothly, pause briefly at the top, and lower slowly to protect the knee joint.\",\"sets\":[{\"reps\":15,\"unit\":\"reps\",\"weight\":80,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":15,\"unit\":\"reps\",\"weight\":90,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":100,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Leg Press Machine\",\"target\":\"10-12\",\"load\":\"No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.\",\"cue\":\"Keep feet flat on the platform, push through heels, and avoid locking knees at the top of the movement.\",\"sets\":[{\"reps\":15,\"unit\":\"reps\",\"weight\":180,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":200,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":220,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Hip Abduction Machine\",\"target\":\"12-15\",\"load\":\"No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.\",\"cue\":\"Perform slow, controlled abduction focusing on squeezing the outer hip muscles.\",\"sets\":[{\"reps\":15,\"unit\":\"reps\",\"weight\":120,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":15,\"unit\":\"reps\",\"weight\":140,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":169,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Romanian Deadlift (RDL) with Barbell\",\"target\":\"8-10\",\"load\":\"Start with a light barbell load to master form; increase weight progressively ensuring hamstrings are engaged without lower back discomfort.\",\"cue\":\"Keep a slight bend in knees, hinge at hips, maintain a flat back, and lower barbell slowly until hamstrings feel a stretch.\",\"sets\":[{\"reps\":12,\"unit\":\"reps\",\"weight\":35,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":40,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":40,\"weightUnit\":\"lb\",\"done\":true}]}],\"energyContext\":{\"body_weight_kg\":70.3068173515555,\"weight_source\":\"Weigh-in \u00b7 2026-10-15\",\"activity\":\"resistance\",\"auto_activity\":true,\"effort\":\"general\",\"effort_rating\":4},\"finishedAt\":\"2026-10-16T23:35:33.648Z\",\"summaryText\":\"Intermediate Lower Body Strength Session\\n26 min 49 sec active time \u00b7 5 exercises \u00b7 15 sets\\nEstimated energy: about 110 kcal (total session energy, including resting energy)\\nLeg Curl Machine: Set 1 \u2014 12 reps \u00b7 80 lb; Set 2 \u2014 12 reps \u00b7 90 lb; Set 3 \u2014 12 reps \u00b7 100 lb\\nLeg Extension Machine: Set 1 \u2014 15 reps \u00b7 80 lb; Set 2 \u2014 15 reps \u00b7 90 lb; Set 3 \u2014 12 reps \u00b7 100 lb\\nLeg Press Machine: Set 1 \u2014 15 reps \u00b7 180 lb; Set 2 \u2014 12 reps \u00b7 200 lb; Set 3 \u2014 12 reps \u00b7 220 lb\\nHip Abduction Machine: Set 1 \u2014 15 reps \u00b7 120 lb; Set 2 \u2014 15 reps \u00b7 140 lb; Set 3 \u2014 12 reps \u00b7 169 lb\\nRomanian Deadlift (RDL) with Barbell: Set 1 \u2014 12 reps \u00b7 35 lb; Set 2 \u2014 12 reps \u00b7 40 lb; Set 3 \u2014 12 reps \u00b7 40 lb\"}"
+},
+{
+"id": "46bccf0f-facd-4b3a-b5ff-f6aa00db6274",
+"workout_date": "2026-10-16",
+"workout_type": "Core",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 7.1,
+"energy": null,
+"soreness": null,
+"notes": "STRIDE_SESSION_V1:{\"id\":\"46bccf0f-facd-4b3a-b5ff-f6aa00db6274\",\"owner\":\"00000000-0000-4000-8000-000000000001\",\"status\":\"completed\",\"date\":\"2026-10-16\",\"title\":\"8-Minute Core Focus Session\",\"type\":\"Core\",\"source\":\"Personalized workout\",\"checkin\":{\"energy\":\"good\",\"pain\":\"none\",\"symptoms\":\"none\",\"nutrition_context\":\"standard\",\"checked_at\":\"2026-10-16T23:42:03.456Z\",\"adjustment\":\"as planned\"},\"elapsedSeconds\":424.2,\"runningSince\":null,\"exercises\":[{\"name\":\"Knee Raise (Hanging or Captain's Chair)\",\"target\":\"12 controlled reps\",\"load\":\"Bodyweight\",\"cue\":\"Engage your lower abs and lift knees slowly, avoiding swinging.\",\"sets\":[{\"reps\":24,\"unit\":\"reps\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"Rotary Torso Machine\",\"target\":\"15 reps each side\",\"load\":\"Last logged starting load: 12 lb (2026-10-15). Begin with a lighter warm-up; use this reference only on comparable equipment and adjust for today.\",\"cue\":\"Rotate your torso smoothly without jerking, keep hips stable.\",\"sets\":[{\"reps\":12,\"unit\":\"reps\",\"weight\":140,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":10,\"unit\":\"reps\",\"weight\":160,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Plank\",\"target\":\"Hold for 45 seconds\",\"load\":\"Bodyweight\",\"cue\":\"Keep your body in a straight line from head to heels, engage your core and avoid sagging hips.\",\"sets\":[{\"reps\":60,\"unit\":\"seconds\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]}],\"energyContext\":{\"body_weight_kg\":70.3068173515555,\"weight_source\":\"Weigh-in \u00b7 2026-10-15\",\"activity\":\"resistance\",\"auto_activity\":true,\"effort\":\"unknown\"},\"finishedAt\":\"2026-10-16T23:49:07.661Z\",\"summaryText\":\"8-Minute Core Focus Session\\n7 min 4 sec active time \u00b7 3 exercises \u00b7 4 sets\\nEstimated energy: 30\u201350 kcal (total session energy, including resting energy)\\nKnee Raise (Hanging or Captain's Chair): Set 1 \u2014 24 reps \u00b7 \u2014 bodyweight\\nRotary Torso Machine: Set 1 \u2014 12 reps \u00b7 140 lb; Set 2 \u2014 10 reps \u00b7 160 lb\\nPlank: Set 1 \u2014 60 seconds \u00b7 \u2014 bodyweight\"}"
+},
+{
+"id": "ac65e9be-4c43-4a75-b1d0-c67116aed23c",
+"workout_date": "2026-10-17",
+"workout_type": "Additional Activity",
+"source": "manual",
+"distance_miles": 0.3,
+"duration_minutes": 10.57,
+"energy": null,
+"soreness": null,
+"notes": "Recorded on Apple Watch \u00b7 21 active kcal burned. Review distance, time and effort before saving."
+},
+{
+"id": "8580c4be-f64c-438c-8d2e-7e3bcb2d0572",
+"workout_date": "2026-10-17",
+"workout_type": "Upper Body",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 24.3,
+"energy": 9,
+"soreness": null,
+"notes": "STRIDE_SESSION_V1:{\"id\":\"8580c4be-f64c-438c-8d2e-7e3bcb2d0572\",\"owner\":\"00000000-0000-4000-8000-000000000001\",\"status\":\"completed\",\"date\":\"2026-10-17\",\"title\":\"30-Minute Upper Back Focus Workout with Machines and Dumbbells\",\"type\":\"Upper Body\",\"source\":\"Personalized workout\",\"checkin\":{\"energy\":\"good\",\"pain\":\"none\",\"symptoms\":\"none\",\"nutrition_context\":\"standard\",\"checked_at\":\"2026-10-17T22:20:56.939Z\",\"adjustment\":\"as planned\"},\"elapsedSeconds\":1457.262,\"runningSince\":null,\"exercises\":[{\"name\":\"Lat Pulldown Machine\",\"target\":\"10-12\",\"load\":\"No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.\",\"cue\":\"Focus on pulling your elbows down and back, squeezing the shoulder blades together at the bottom of the movement.\",\"sets\":[{\"reps\":12,\"unit\":\"reps\",\"weight\":60,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":70,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":10,\"unit\":\"reps\",\"weight\":80,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Batca Fitness Systems Link LD-6 Dual Function Machine (Seated Row)\",\"target\":\"10-12\",\"load\":\"No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.\",\"cue\":\"Keep your chest up and pull the handles toward your torso, squeezing your upper back muscles.\",\"sets\":[{\"reps\":12,\"unit\":\"reps\",\"weight\":50,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":60,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":10,\"unit\":\"reps\",\"weight\":70,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Chest Press Machine\",\"target\":\"10-12\",\"load\":\"No comparable logged weight yet: use the lowest comfortable machine setting for a warm-up, then adjust. Machine scales differ.\",\"cue\":\"Press forward steadily, keeping your shoulders down and back to complement the back work.\",\"sets\":[{\"reps\":12,\"unit\":\"reps\",\"weight\":40,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":50,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Biceps curl\",\"target\":\"Your choice\",\"load\":\"Your choice\",\"cue\":\"\",\"sets\":[{\"reps\":12,\"unit\":\"reps\",\"weight\":10,\"weightUnit\":\"lb\",\"done\":true},{\"reps\":12,\"unit\":\"reps\",\"weight\":15,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Lat raise\",\"target\":\"Your choice\",\"load\":\"Your choice\",\"cue\":\"\",\"sets\":[{\"reps\":24,\"unit\":\"reps\",\"weight\":5,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Face pull\",\"target\":\"Your choice\",\"load\":\"Your choice\",\"cue\":\"\",\"sets\":[{\"reps\":25,\"unit\":\"reps\",\"weight\":40,\"weightUnit\":\"lb\",\"done\":true}]},{\"name\":\"Triceps pull down\",\"target\":\"Your choice\",\"load\":\"Your choice\",\"cue\":\"\",\"sets\":[{\"reps\":20,\"unit\":\"reps\",\"weight\":40,\"weightUnit\":\"lb\",\"done\":true}]}],\"energyContext\":{\"body_weight_kg\":70.3068173515555,\"weight_source\":\"Weigh-in \u00b7 2026-10-15\",\"activity\":\"resistance\",\"auto_activity\":true,\"effort\":\"unknown\"},\"finishedAt\":\"2026-10-17T22:45:22.056Z\",\"summaryText\":\"30-Minute Upper Back Focus Workout with Machines and Dumbbells\\n24 min 17 sec active time \u00b7 7 exercises \u00b7 13 sets\\nEstimated energy: 100\u2013170 kcal (total session energy, including resting energy)\\nLat Pulldown Machine: Set 1 \u2014 12 reps \u00b7 60 lb; Set 2 \u2014 12 reps \u00b7 70 lb; Set 3 \u2014 10 reps \u00b7 80 lb\\nBatca Fitness Systems Link LD-6 Dual Function Machine (Seated Row): Set 1 \u2014 12 reps \u00b7 50 lb; Set 2 \u2014 12 reps \u00b7 60 lb; Set 3 \u2014 10 reps \u00b7 70 lb\\nChest Press Machine: Set 1 \u2014 12 reps \u00b7 40 lb; Set 2 \u2014 12 reps \u00b7 50 lb\\nBiceps curl: Set 1 \u2014 12 reps \u00b7 10 lb; Set 2 \u2014 12 reps \u00b7 15 lb\\nLat raise: Set 1 \u2014 24 reps \u00b7 5 lb\\nFace pull: Set 1 \u2014 25 reps \u00b7 40 lb\\nTriceps pull down: Set 1 \u2014 20 reps \u00b7 40 lb\",\"noteText\":\"30-Minute Upper Back Focus Workout with Machines and Dumbbells\\n24 min 17 sec active time \u00b7 7 exercises \u00b7 13 sets\\nEstimated energy: 100\u2013170 kcal (total session energy, including resting energy)\\nLat Pulldown Machine: Set 1 \u2014 12 reps \u00b7 60 lb; Set 2 \u2014 12 reps \u00b7 70 lb; Set 3 \u2014 10 reps \u00b7 80 lb\\nBatca Fitness Systems Link LD-6 Dual Function Machine (Seated Row): Set 1 \u2014 12 reps \u00b7 50 lb; Set 2 \u2014 12 reps \u00b7 60 lb; Set 3 \u2014 10 reps \u00b7 70 lb\\nChest Press Machine: Set 1 \u2014 12 reps \u00b7 40 lb; Set 2 \u2014 12 reps \u00b7 50 lb\\nBiceps curl: Set 1 \u2014 12 reps \u00b7 10 lb; Set 2 \u2014 12 reps \u00b7 15 lb\\nLat raise: Set 1 \u2014 24 reps \u00b7 5 lb\\nFace pull: Set 1 \u2014 25 reps \u00b7 40 lb\\nTriceps pull down: Set 1 \u2014 20 reps \u00b7 40 lb\"}"
+},
+{
+"id": "51eb7cfe-8d79-4122-8a6e-48527f1ba076",
+"workout_date": "2026-10-20",
+"workout_type": "Long Run",
+"source": "manual",
+"distance_miles": 7.1,
+"duration_minutes": 81.33,
+"energy": 6,
+"soreness": null,
+"notes": "Imported running details:\nPlanned: 7 miles long run, duration 1h20m to 1h30m.\n\nCompleted: Distance 7.10 miles, duration 1:21:20 (h:mm:ss), average pace 11'27\"/mile, average cadence 165 spm, active calories 676 kcal, total calories 795 kcal.\n\nSplits:\n1 mile - 10:53, pace 10'53\"/mile, heart rate 134 bpm, cadence 167 spm\n2 mile - 10:13, pace 10'13\"/mile, heart rate 144 bpm, cadence 170 spm\n3 mile - 10:12, pace 10'12\"/mile, heart rate 146 bpm, cadence 171 spm\n4 mile - 11:37, pace 11'37\"/mile, heart rate 155 bpm, cadence 169 spm\n5 mile - 12:04, pace 12'04\"/mile, heart rate 159 bpm, cadence 165 spm\n6 mile - 12:23, pace 12'23\"/mile, heart rate 161 bpm, cadence 162 spm\n7 mile - 12:27, pace 12'27\"/mile, heart rate 161 bpm, cadence 160 spm\n8 partial mile - 1:24, pace 13'06\"/mile, heart rate 159 bpm, cadence 159 spm"
+},
+{
+"id": "bc31abfa-9a29-4c7e-b63d-5091836c5e5a",
+"workout_date": "2026-10-22",
+"workout_type": "Quality Run",
+"source": "manual",
+"distance_miles": 5.22,
+"duration_minutes": 59.07,
+"energy": 6,
+"soreness": "None",
+"notes": "Imported running details:\nWorkout Details:\n- Workout Time: 0:59:04\n- Elapsed Time: 0:59:16\n- Distance: 5.22 miles\n- Active Kilocalories: 504 kcal\n- Total Kilocalories: 590 kcal\n- Avg. Cadence: 161 spm\n- Avg. Pace: 11'18\"/mile\n- Avg. Heart Rate: 160 bpm\n\nSplits (1 mile each):\n1. Time: 11:02, Pace: 11'02\"/mile, Heart Rate: 148 bpm, Cadence: 165 spm\n2. Time: 10:39, Pace: 10'39\"/mile, Heart Rate: 160 bpm, Cadence: 166 spm\n3. Time: 10:44, Pace: 10'44\"/mile, Heart Rate: 165 bpm, Cadence: 165 spm\n4. Time: 10:55, Pace: 10'55\"/mile, Heart Rate: 167 bpm, Cadence: 165 spm\n5. Time: 13:04, Pace: 13'04\"/mile, Heart Rate: 160 bpm, Cadence: 152 spm\n6. Time: 2:40, Pace: 11'48\"/mile, Heart Rate: 168 bpm, Cadence: 162 spm\n\nWorkout Plan (Tempo 3 Miles):\n- Warm-Up: 1 mile at conversational pace (no faster than 4.9 mph)\n- Session: 3 miles at 5.4 mph (range 5.1-5.7 mph) with 150 seconds walking rest\n- Cool Down: 1 mile at conversational pace or slower\n\nWorkout Laps:\n- Lap 1: 1.00 mile, 11:31, 5.2 mph\n- Lap 2: 3.00 miles, 33:09, 5.4 mph\n- Lap 3: 0.10 mile, 2:30, 2.5 mph\n- Lap 4: 1.00 mile, 11:45, 5.1 mph\n- Lap 5: 0.00 mile, 0:08, 0.9 mph"
+},
+{
+"id": "80fa4572-97c0-439a-854f-93d0a4e339c4",
+"workout_date": "2026-10-23",
+"workout_type": "Lower Body",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 49.25,
+"energy": 6,
+"soreness": "None",
+"notes": "152 active kcal"
+},
+{
+"id": "ca7200a5-52f2-48b8-b253-cb4ebfc80fd5",
+"workout_date": "2026-10-24",
+"workout_type": "Upper Body",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 33.75,
+"energy": 3,
+"soreness": "None",
+"notes": "86 active kcal"
+},
+{
+"id": "0fc03b2a-848a-4803-a272-ce5edcec478e",
+"workout_date": "2026-10-25",
+"workout_type": "Walk",
+"source": "manual",
+"distance_miles": 0.54,
+"duration_minutes": 14.45,
+"energy": null,
+"soreness": null,
+"notes": "STRIDE_SESSION_V1:{\"id\":\"0fc03b2a-848a-4803-a272-ce5edcec478e\",\"owner\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"run\",\"status\":\"completed\",\"title\":\"Walk\",\"date\":\"2026-10-25\",\"type\":\"Walk\",\"exercises\":[],\"runningMetrics\":{\"mode\":\"gps\",\"heart_rate\":{\"average\":null,\"max\":null,\"samples\":0,\"recorded_seconds\":0}},\"noteText\":\"Recorded outdoors with phone GPS. Review distance for signal gaps.\\nNo sustained heart-rate samples recorded.\"}"
+},
+{
+"id": "2ef619b2-adc8-4288-b5f5-55646ae88ab2",
+"workout_date": "2026-10-26",
+"workout_type": "Core",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 11.8,
+"energy": null,
+"soreness": null,
+"notes": "STRIDE_SESSION_V1:{\"id\":\"2ef619b2-adc8-4288-b5f5-55646ae88ab2\",\"owner\":\"00000000-0000-4000-8000-000000000001\",\"status\":\"completed\",\"date\":\"2026-10-26\",\"title\":\"Standing Core \u00b7 20 minutes\",\"type\":\"Core\",\"source\":\"Core Library\",\"checkin\":{\"energy\":\"good\",\"pain\":\"none\",\"symptoms\":\"none\",\"nutrition_context\":\"standard\",\"checked_at\":\"2026-10-26T23:16:50.480Z\",\"adjustment\":\"as planned\"},\"elapsedSeconds\":707.854,\"runningSince\":null,\"exercises\":[{\"name\":\"Cross-body knee crunch\",\"target\":\"12 reps per side\",\"load\":\"Bodyweight\",\"cue\":\"Bring your knee toward the opposite elbow without pulling your neck.\",\"sets\":[{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"Standing side crunch\",\"target\":\"12 reps per side\",\"load\":\"Bodyweight\",\"cue\":\"Bring same-side knee and elbow toward each other.\",\"sets\":[{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"Slow knee raise\",\"target\":\"12 reps per side\",\"load\":\"Bodyweight\",\"cue\":\"Brace and stay tall without leaning backward.\",\"sets\":[{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":null,\"unit\":\"reps per side\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]},{\"name\":\"Standing abdominal brace\",\"target\":\"35 seconds\",\"load\":\"Bodyweight\",\"cue\":\"Keep breathing; relax between holds.\",\"sets\":[{\"reps\":36,\"unit\":\"seconds\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":41,\"unit\":\"seconds\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true},{\"reps\":60,\"unit\":\"seconds\",\"weight\":null,\"weightUnit\":\"bodyweight\",\"done\":true}]}],\"energyContext\":{\"body_weight_kg\":68.94604024152538,\"weight_source\":\"Weigh-in \u00b7 2026-10-24\",\"activity\":\"core\",\"auto_activity\":true,\"effort\":\"unknown\"},\"finishedAt\":\"2026-10-27T15:38:40.838Z\",\"summaryText\":\"Standing Core \u00b7 20 minutes\\n11 min 48 sec active time \u00b7 4 exercises \u00b7 12 sets\\nEstimated energy: 40\u201350 kcal (total session energy, including resting energy)\\nCross-body knee crunch: Set 1 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight; Set 2 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight; Set 3 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight\\nStanding side crunch: Set 1 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight; Set 2 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight; Set 3 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight\\nSlow knee raise: Set 1 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight; Set 2 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight; Set 3 \u2014 \u2014 reps per side \u00b7 \u2014 bodyweight\\nStanding abdominal brace: Set 1 \u2014 36 seconds \u00b7 \u2014 bodyweight; Set 2 \u2014 41 seconds \u00b7 \u2014 bodyweight; Set 3 \u2014 60 seconds \u00b7 \u2014 bodyweight\"}"
+},
+{
+"id": "e86b1766-4dd7-412c-96eb-b6d1356ad926",
+"workout_date": "2026-10-27",
+"workout_type": "Long Run",
+"source": "manual",
+"distance_miles": 4.6,
+"duration_minutes": 54.17,
+"energy": null,
+"soreness": null,
+"notes": "Imported running details:\nPlanned: 4.5 miles Long Run, duration 50 to 55 minutes.\n\nCompleted: 4.54 miles in 54 minutes 9 seconds, average pace 11:56 per mile (from first image).\n\nAdditional completed metrics (from second image):\n- Distance: 4.66 miles\n- Duration: 54 minutes 10 seconds\n- Active Calories: 439 kcal\n- Total Calories: 518 kcal\n- Average Cadence: 162 spm\n- Average Pace: 11:36 per mile\n- Average Heart Rate: 143 bpm\n\nSplits:\n1 mile: 12:04 pace, 139 bpm, 161 spm\n2 mile: 11:37 pace, 139 bpm, 163 spm\n3 mile: 10:50 pace, 146 bpm, 167 spm\n4 mile: 11:42 pace, 146 bpm, 163 spm\n5 mile: 11:44 pace, 149 bpm, 162 spm"
+},
+{
+"id": "f243bacd-8ff5-4341-8043-192cf9d1ba16",
+"workout_date": "2026-10-29",
+"workout_type": "Quality Run",
+"source": "manual",
+"distance_miles": 4.08,
+"duration_minutes": 46.1,
+"energy": 6,
+"soreness": "None",
+"notes": "Imported running details:\nPlanned Workout (5km Time Trial):\n- Warm-Up:\n  1. 0.75 miles at a conversational pace (no faster than 4.9 mph) - Run\n  2. 180 seconds walking rest - Rest\n- Session:\n  3. 3.11 miles time trial at 5.5 mph - Run\n\nCompleted Workout:\n- Workout Time: 46:06 (mm:ss)\n- Distance: 4.08 miles\n- Active Kilocalories: 388 kcal\n- Total Kilocalories: 455 kcal\n- Average Cadence: 160 spm\n- Average Pace: 11:16 per mile\n- Average Heart Rate: 160 bpm\n\nSplits:\n1 mile - Pace: 13:22/mi, Heart Rate: 138 bpm, Cadence: 149 spm\n2 mile - Pace: 10:34/mi, Heart Rate: 161 bpm, Cadence: 166 spm\n3 mile - Pace: 10:42/mi, Heart Rate: 167 bpm, Cadence: 165 spm\n4 mile - Pace: 10:33/mi, Heart Rate: 168 bpm, Cadence: 165 spm\n5 mile - Pace: 10:23/mi, Heart Rate: 170 bpm, Cadence: 164 spm\n\nPlanned Distance: 3.86 miles (0.75 + 3.11)\nPlanned Duration: null (not specified)\n\nCompleted Distance: 4.08 miles\nCompleted Duration: 2766 seconds (46 minutes 6 seconds)"
+},
+{
+"id": "dbdbce03-0ebb-40a9-a4d7-28bf1eab812c",
+"workout_date": "2026-10-30",
+"workout_type": "Lower Body",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 49.25,
+"energy": 6,
+"soreness": "None",
+"notes": "152 active kcal"
+},
+{
+"id": "4a7528c9-996f-4c04-8d45-4497c35d33db",
+"workout_date": "2026-10-30",
+"workout_type": "Lower Body",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 49.25,
+"energy": 6,
+"soreness": "None",
+"notes": "152 active kcal"
+},
+{
+"id": "17c1cd70-f9ac-477b-a59d-b019b76b0c96",
+"workout_date": "2026-10-30",
+"workout_type": "Lower Body",
+"source": "manual",
+"distance_miles": 0.0,
+"duration_minutes": 49.25,
+"energy": 6,
+"soreness": "None",
+"notes": "152 active kcal"
+}
+],
+"meals": [
+{
+"id": "a3c5ae32-30fe-4149-a641-7f5be9ca8378",
+"meal_date": "2026-10-25",
+"meal_type": "Dinner",
+"food_name": "Meal with grilled chicken, jollof rice, fried plantains, coleslaw, mixed vegetables, and assorted meat",
+"calories": 1200.0,
+"protein_g": 75.0,
+"carbs_g": 110,
+"fat_g": 50,
+"fiber_g": 12
+},
+{
+"id": "4a0a3960-0d94-4092-ab17-0da07f2416a7",
+"meal_date": "2026-10-14",
+"meal_type": "Breakfast",
+"food_name": "three large oranges",
+"calories": 210.0,
+"protein_g": 3.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "cf010529-ca88-41e9-932b-af3828aaa478",
+"meal_date": "2026-10-15",
+"meal_type": "Breakfast",
+"food_name": "Kroger frozen dinner rolls",
+"calories": 360.0,
+"protein_g": 9.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "1c22b296-6523-45a0-b7a7-e1c57fb6b227",
+"meal_date": "2026-10-16",
+"meal_type": "Snack",
+"food_name": "Scrambled eggs with vegetables and boiled yam",
+"calories": 350.0,
+"protein_g": 25.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "0443e88c-ef39-48d8-8891-2eca8f8941f7",
+"meal_date": "2026-10-16",
+"meal_type": "Lunch",
+"food_name": "Ensure Max Protein Nutrition Shake, French Vanilla, 14 fl oz",
+"calories": 220.0,
+"protein_g": 42.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "35b3ebdf-9afc-41f2-80f0-1137d6b6482a",
+"meal_date": "2026-10-14",
+"meal_type": "Breakfast",
+"food_name": "Chicken fried rice with vegetables and noodles",
+"calories": 600.0,
+"protein_g": 40.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "0afccb11-e155-4532-be8c-e933cac55343",
+"meal_date": "2026-10-21",
+"meal_type": "Dinner",
+"food_name": "Rice, fried plantain, beef stew, boiled eggs meal",
+"calories": 850.0,
+"protein_g": 55.0,
+"carbs_g": 90,
+"fat_g": 30,
+"fiber_g": 8
+},
+{
+"id": "0e722c9c-8f3c-4c84-8fd8-000da2145798",
+"meal_date": "2026-10-21",
+"meal_type": "Breakfast",
+"food_name": "Two medium oranges",
+"calories": 124.0,
+"protein_g": 2.4,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "9daf60e7-2bb7-4f92-bf56-0e5e18e591a4",
+"meal_date": "2026-10-16",
+"meal_type": "Breakfast",
+"food_name": "Rice with spinach and meat stew",
+"calories": 450.0,
+"protein_g": 25.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "c08b26af-8f44-4b0b-8105-f2d5b4a53d10",
+"meal_date": "2026-10-23",
+"meal_type": "Dinner",
+"food_name": "Watermelon cubes",
+"calories": 150.0,
+"protein_g": 0.7,
+"carbs_g": 9,
+"fat_g": 0.2,
+"fiber_g": 0.4
+},
+{
+"id": "613df457-4c6d-4baf-bb90-6149fcd48f33",
+"meal_date": "2026-10-25",
+"meal_type": "Breakfast",
+"food_name": "Coconut glazed donut (half)",
+"calories": 200.0,
+"protein_g": 2.0,
+"carbs_g": 25,
+"fat_g": 10,
+"fiber_g": 1
+},
+{
+"id": "3c73e437-3f4c-48a5-82ff-092488a4f59b",
+"meal_date": "2026-10-13",
+"meal_type": "Breakfast",
+"food_name": "Japanese hibachi rice with salmon, steak, and lobster",
+"calories": 850.0,
+"protein_g": 20.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "cd8bf0d3-253e-4914-ad0a-59088db5d096",
+"meal_date": "2026-10-19",
+"meal_type": "Lunch",
+"food_name": "Strawberry Protein Shake (11.5 fl. oz.)",
+"calories": 160.0,
+"protein_g": 30.0,
+"carbs_g": 6,
+"fat_g": 2,
+"fiber_g": 0
+},
+{
+"id": "2480a692-7464-40d8-bf44-ce563baeb5b6",
+"meal_date": "2026-10-19",
+"meal_type": "Breakfast",
+"food_name": "Two medium oranges",
+"calories": 124.0,
+"protein_g": 2.4,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "6f3f6026-3daf-4a78-81f5-f74d3963ea9d",
+"meal_date": "2026-10-27",
+"meal_type": "Lunch",
+"food_name": "Simple Truth Protein Instant Oatmeal (Berries & Cream) and Ensure Max Protein Nutrition Shake (French Vanilla)",
+"calories": 460.0,
+"protein_g": 62.0,
+"carbs_g": 45,
+"fat_g": 8,
+"fiber_g": 7
+},
+{
+"id": "8c2d27d5-9cb8-43e5-83be-d42235ea1991",
+"meal_date": "2026-10-28",
+"meal_type": "Lunch",
+"food_name": "Ensure Max Protein Nutrition Shake, French Vanilla, 14 fl oz",
+"calories": 220.0,
+"protein_g": 42.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "9f9d0a84-ddc8-4d50-9b98-c3ffe6238a8f",
+"meal_date": "2026-10-28",
+"meal_type": "Dinner",
+"food_name": "Jollof rice with chicken",
+"calories": 700.0,
+"protein_g": 45.0,
+"carbs_g": 80,
+"fat_g": 20,
+"fiber_g": 5
+},
+{
+"id": "c0068782-eca6-4b6a-98f8-3af83940598f",
+"meal_date": "2026-10-26",
+"meal_type": "Breakfast",
+"food_name": "Premiere Protein with coffee",
+"calories": 160.0,
+"protein_g": 30.0,
+"carbs_g": 4,
+"fat_g": 3,
+"fiber_g": 1
+},
+{
+"id": "e94e8fe7-dac8-4683-9f88-e13d50a2d69c",
+"meal_date": "2026-10-15",
+"meal_type": "Breakfast",
+"food_name": "Yoplait Strawberry and Banana Protein Yogurt",
+"calories": 150.0,
+"protein_g": 10.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "a4c37c99-589f-4c4b-8dbc-beb0243f0d34",
+"meal_date": "2026-10-17",
+"meal_type": "Other",
+"food_name": "Loaded nachos with tortilla chips, grilled chicken, beef, cheese, jalapenos, pico de gallo, sour cream, and green sauce",
+"calories": 900.0,
+"protein_g": 50.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "c8ff7a1c-0d4b-4932-85ad-cba6a298099d",
+"meal_date": "2026-10-15",
+"meal_type": "Breakfast",
+"food_name": "Efo Riro (Nigerian spinach stew with meat) and pounded yam",
+"calories": 450.0,
+"protein_g": 25.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "375ae290-56d9-43ac-8b21-a933bf40c0c0",
+"meal_date": "2026-10-15",
+"meal_type": "Breakfast",
+"food_name": "Protein drink (1 carton)",
+"calories": 180.0,
+"protein_g": 20.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "72b5998a-896c-4053-bdd8-80ae0981da7a",
+"meal_date": "2026-10-15",
+"meal_type": "Breakfast",
+"food_name": "Strawberry flavored milk drink",
+"calories": 63.0,
+"protein_g": 3.9,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "bc654470-aa35-47f4-8de1-7a6218ade653",
+"meal_date": "2026-10-20",
+"meal_type": "Lunch",
+"food_name": "Eba with okra and beef stew",
+"calories": 700.0,
+"protein_g": 40.0,
+"carbs_g": 80,
+"fat_g": 25,
+"fiber_g": 10
+},
+{
+"id": "52967511-73b5-4803-8944-22f0e18d7391",
+"meal_date": "2026-10-16",
+"meal_type": "Breakfast",
+"food_name": "3 hard boiled eggs, 1 slice whole wheat bread, 1 carton nutritional shake",
+"calories": 460.0,
+"protein_g": 38.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "1ec9bdd6-b65a-4639-a7e2-2a4b3903dd6b",
+"meal_date": "2026-10-17",
+"meal_type": "Breakfast",
+"food_name": "Fiji Sun mocktail",
+"calories": 120.0,
+"protein_g": 0.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "c41f6041-976d-4936-9615-1332e159cc2f",
+"meal_date": "2026-10-13",
+"meal_type": "Breakfast",
+"food_name": "2 hard boiled eggs, handful of plantain chips",
+"calories": 250.0,
+"protein_g": 12.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "c5fca7c8-a0c6-41d7-b2b9-0f18f2496c87",
+"meal_date": "2026-10-24",
+"meal_type": "Dinner",
+"food_name": "Efo Riro (Nigerian spinach stew) with pounded yam",
+"calories": 600.0,
+"protein_g": 15.0,
+"carbs_g": 90,
+"fat_g": 15,
+"fiber_g": 10
+},
+{
+"id": "635dac91-0efd-44dd-a04e-bc5ab96947a7",
+"meal_date": "2026-10-19",
+"meal_type": "Breakfast",
+"food_name": "Rice with spinach and meat stew",
+"calories": 450.0,
+"protein_g": 25.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "e41e51c1-142d-4076-9d4c-8442a8c08874",
+"meal_date": "2026-10-20",
+"meal_type": "Lunch",
+"food_name": "Ensure Max Protein Nutrition Shake, French Vanilla, 14 fl oz",
+"calories": 220.0,
+"protein_g": 42.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "e3450f34-cb64-4682-b9e1-5f31e95ae63b",
+"meal_date": "2026-10-14",
+"meal_type": "Breakfast",
+"food_name": "Two medium oranges",
+"calories": 124.0,
+"protein_g": 2.4,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "3f2d5796-c621-4898-a39d-299e6604eb94",
+"meal_date": "2026-10-29",
+"meal_type": "Breakfast",
+"food_name": "Go Chips Plantain Chips",
+"calories": 450.0,
+"protein_g": 2.7,
+"carbs_g": 54,
+"fat_g": 24,
+"fiber_g": 5.4
+},
+{
+"id": "642a2c6a-06d4-4c48-9063-fe671b4f2bbc",
+"meal_date": "2026-10-29",
+"meal_type": "Dinner",
+"food_name": "Fried chicken wings (5 pieces)",
+"calories": 600.0,
+"protein_g": 45.0,
+"carbs_g": 20,
+"fat_g": 40,
+"fiber_g": 1
+},
+{
+"id": "f723ebdd-b0ba-41d7-b03c-9ac938de60d2",
+"meal_date": "2026-10-19",
+"meal_type": "Breakfast",
+"food_name": "Protein drink (1 bottle, 414 ml)",
+"calories": 220.0,
+"protein_g": 42.0,
+"carbs_g": 8,
+"fat_g": 3,
+"fiber_g": 4
+},
+{
+"id": "22d6da17-313f-44ea-9d89-93f63a3b4081",
+"meal_date": "2026-10-24",
+"meal_type": "Breakfast",
+"food_name": "Premier Protein Caf\u00e9 Latte Protein Shake",
+"calories": 160.0,
+"protein_g": 30.0,
+"carbs_g": 4,
+"fat_g": 3,
+"fiber_g": 3.3
+},
+{
+"id": "eaf3a0f4-7bb8-4c3b-b84c-96c421b12c63",
+"meal_date": "2026-10-17",
+"meal_type": "Breakfast",
+"food_name": "Salmon with Israeli couscous, sweet potatoes, and vegetables",
+"calories": 550.0,
+"protein_g": 40.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "254efa47-d54c-4627-87a8-f9aa87e32659",
+"meal_date": "2026-10-22",
+"meal_type": "Lunch",
+"food_name": "Peppered meat and jollof rice",
+"calories": 450.0,
+"protein_g": 35.0,
+"carbs_g": 30,
+"fat_g": 20,
+"fiber_g": 3
+},
+{
+"id": "505610a6-b03f-4521-993b-366950891118",
+"meal_date": "2026-10-22",
+"meal_type": "Dinner",
+"food_name": "Go Chips Plantain Chips",
+"calories": 450.0,
+"protein_g": 2.7,
+"carbs_g": 54,
+"fat_g": 24,
+"fiber_g": 5.4
+},
+{
+"id": "cbf225e6-04c7-4e7a-94bb-fc0995ba2a61",
+"meal_date": "2026-10-26",
+"meal_type": "Dinner",
+"food_name": "4 medium mandarins",
+"calories": 200.0,
+"protein_g": 4.0,
+"carbs_g": 52,
+"fat_g": 1,
+"fiber_g": 8
+},
+{
+"id": "1518bbb4-6ce0-42ff-a47b-037743329d3f",
+"meal_date": "2026-10-24",
+"meal_type": "Breakfast",
+"food_name": "Passionfruit & lime tea",
+"calories": 50.0,
+"protein_g": 0.0,
+"carbs_g": 1,
+"fat_g": 0,
+"fiber_g": 0
+},
+{
+"id": "72ac4d49-b0d1-4b8b-8e04-f07093f941cf",
+"meal_date": "2026-10-21",
+"meal_type": "Breakfast",
+"food_name": "Strawberry flavored milk drink",
+"calories": 63.0,
+"protein_g": 3.9,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "915f6350-afd6-4b2a-954f-b4610cb29bec",
+"meal_date": "2026-10-23",
+"meal_type": "Breakfast",
+"food_name": "Second Nature Dark Chocolate Medley",
+"calories": 220.0,
+"protein_g": 6.0,
+"carbs_g": 11,
+"fat_g": 18,
+"fiber_g": 3
+},
+{
+"id": "a69ffb77-c54d-43a1-9bdd-e955de24c318",
+"meal_date": "2026-10-26",
+"meal_type": "Breakfast",
+"food_name": "Member's Mark \u2013 Member's Mark Ultra Filtered Milk Shake Strawberry",
+"calories": 160.0,
+"protein_g": 30.0,
+"carbs_g": 3,
+"fat_g": 2.5,
+"fiber_g": 0
+},
+{
+"id": "46345268-5df3-4b16-8b3a-ac1ed9f083c6",
+"meal_date": "2026-10-30",
+"meal_type": "Breakfast",
+"food_name": "Domino's Oven Baked Philly Cheese Steak Sandwich with Light Onions and Light Green Peppers",
+"calories": 650.0,
+"protein_g": 25.0,
+"carbs_g": 40,
+"fat_g": 18,
+"fiber_g": 3
+},
+{
+"id": "17639415-2e8f-4d83-9a31-e96970ca1bc1",
+"meal_date": "2026-10-30",
+"meal_type": "Breakfast",
+"food_name": "Mashed potatoes and cooked beef liver",
+"calories": 350.0,
+"protein_g": 35.0,
+"carbs_g": 20,
+"fat_g": 15,
+"fiber_g": 2
+},
+{
+"id": "81d6808d-76a9-48ae-81fd-bbf9219abe54",
+"meal_date": "2026-10-25",
+"meal_type": "Lunch",
+"food_name": "Fried plantains with fried meat and bell peppers",
+"calories": 450.0,
+"protein_g": 20.0,
+"carbs_g": 40,
+"fat_g": 25,
+"fiber_g": 6
+},
+{
+"id": "014b1fdf-2e5b-4cd4-bce6-9f613df53641",
+"meal_date": "2026-10-28",
+"meal_type": "Breakfast",
+"food_name": "Go Chips Plantain Chips",
+"calories": 450.0,
+"protein_g": 2.7,
+"carbs_g": 54,
+"fat_g": 24,
+"fiber_g": 5.4
+},
+{
+"id": "09618632-9ca8-4e6a-b76b-74899cb88b2c",
+"meal_date": "2026-10-27",
+"meal_type": "Dinner",
+"food_name": "Beef stir-fry with rice and mixed bell peppers",
+"calories": 550.0,
+"protein_g": 40.0,
+"carbs_g": 50,
+"fat_g": 15,
+"fiber_g": 6
+},
+{
+"id": "30817dd9-f090-4f9c-83ec-0bfea6adb735",
+"meal_date": "2026-10-29",
+"meal_type": "Breakfast",
+"food_name": "Mashed potatoes and cooked beef liver",
+"calories": 350.0,
+"protein_g": 35.0,
+"carbs_g": 20,
+"fat_g": 15,
+"fiber_g": 2
+},
+{
+"id": "92395b1c-b21e-46bd-892c-acaa149926a1",
+"meal_date": "2026-10-22",
+"meal_type": "Breakfast",
+"food_name": "Peppered meat (5 pieces)",
+"calories": 350.0,
+"protein_g": 40.0,
+"carbs_g": 5,
+"fat_g": 18,
+"fiber_g": 1
+},
+{
+"id": "82fc11bd-f321-400c-a55f-ab6037081727",
+"meal_date": "2026-10-14",
+"meal_type": "Breakfast",
+"food_name": "Yoplait Strawberry Peach High Protein Yogurt",
+"calories": 150.0,
+"protein_g": 12.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "51f620c5-4fb1-495c-b14c-7a3031cfc301",
+"meal_date": "2026-10-22",
+"meal_type": "Lunch",
+"food_name": "Watermelon cubes",
+"calories": 90.0,
+"protein_g": 2.0,
+"carbs_g": 23,
+"fat_g": 0.3,
+"fiber_g": 1
+},
+{
+"id": "02dc460f-6e24-47c3-9640-661b4f0ff895",
+"meal_date": "2026-10-22",
+"meal_type": "Breakfast",
+"food_name": "Yoplait Strawberry Banana Yogurt",
+"calories": 140.0,
+"protein_g": 5.0,
+"carbs_g": 27,
+"fat_g": 1.5,
+"fiber_g": 0
+},
+{
+"id": "501338ec-fd41-4681-bbe9-c43441700169",
+"meal_date": "2026-10-18",
+"meal_type": "Dinner",
+"food_name": "Fufu with beef stew",
+"calories": 450.0,
+"protein_g": 25.0,
+"carbs_g": 50,
+"fat_g": 15,
+"fiber_g": 5
+},
+{
+"id": "12e5dd32-2b72-4848-8fb0-ff909e2f1aaa",
+"meal_date": "2026-10-23",
+"meal_type": "Breakfast",
+"food_name": "Domino's Oven Baked Philly Cheese Steak Sandwich with Light Onions and Light Green Peppers",
+"calories": 650.0,
+"protein_g": 25.0,
+"carbs_g": 40,
+"fat_g": 18,
+"fiber_g": 3
+},
+{
+"id": "e03d20c5-a5b3-4b56-8350-2d3b3cde4262",
+"meal_date": "2026-10-25",
+"meal_type": "Lunch",
+"food_name": "Jollof rice with coleslaw",
+"calories": 450.0,
+"protein_g": 10.0,
+"carbs_g": 60,
+"fat_g": 15,
+"fiber_g": 5
+},
+{
+"id": "dab125f4-9c3d-4205-a281-967b65dfc804",
+"meal_date": "2026-10-20",
+"meal_type": "Breakfast",
+"food_name": "Two medium oranges",
+"calories": 124.0,
+"protein_g": 2.4,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "292e8873-bb22-4f4a-b5d3-d785164d93e2",
+"meal_date": "2026-10-16",
+"meal_type": "Breakfast",
+"food_name": "Two medium oranges",
+"calories": 124.0,
+"protein_g": 2.4,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "c2f87010-f9fb-4a07-a016-8edfa7a9fa86",
+"meal_date": "2026-10-19",
+"meal_type": "Dinner",
+"food_name": "Two medium oranges",
+"calories": 124.0,
+"protein_g": 2.6,
+"carbs_g": 31,
+"fat_g": 0.4,
+"fiber_g": 6
+},
+{
+"id": "2ee71b74-12ea-440a-a2c8-affef6325efc",
+"meal_date": "2026-10-26",
+"meal_type": "Breakfast",
+"food_name": "Member's Mark Egg Bites stuffed with steak and mushroom",
+"calories": 230.0,
+"protein_g": 16.0,
+"carbs_g": 8,
+"fat_g": 14,
+"fiber_g": 0
+},
+{
+"id": "7ab2845c-e005-4edf-9c17-75e35295f660",
+"meal_date": "2026-10-14",
+"meal_type": "Breakfast",
+"food_name": "Two boiled eggs",
+"calories": 156.0,
+"protein_g": 12.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "b79c4838-2a80-4fa2-b437-1ff48002975e",
+"meal_date": "2026-10-14",
+"meal_type": "Breakfast",
+"food_name": "Two handfuls of Gochips Spicy Plantain Chips",
+"calories": 300.0,
+"protein_g": 3.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "46eb566f-3f0c-444b-8c2f-c8860de4b3b0",
+"meal_date": "2026-10-21",
+"meal_type": "Breakfast",
+"food_name": "Two medium eggs",
+"calories": 140.0,
+"protein_g": 12.0,
+"carbs_g": 1,
+"fat_g": 10,
+"fiber_g": 0
+},
+{
+"id": "21e5af7d-e433-47b6-a664-c07346521a1f",
+"meal_date": "2026-10-26",
+"meal_type": "Dinner",
+"food_name": "Members Mark Thin Sliced Steak Beef Shaved with Quinoa and Brown Rice",
+"calories": 450.0,
+"protein_g": 35.0,
+"carbs_g": 40,
+"fat_g": 12,
+"fiber_g": 5
+},
+{
+"id": "fb082f15-2713-4346-b1df-621baea87d17",
+"meal_date": "2026-10-21",
+"meal_type": "Breakfast",
+"food_name": "Premier Protein Caf\u00e9 Latte Protein Shake",
+"calories": 160.0,
+"protein_g": 30.0,
+"carbs_g": 4,
+"fat_g": 3,
+"fiber_g": 3.3
+},
+{
+"id": "83f18511-c7e7-4f6f-a2a5-180a25670d40",
+"meal_date": "2026-10-17",
+"meal_type": "Breakfast",
+"food_name": "Sweet potato and Brussels sprouts",
+"calories": 180.0,
+"protein_g": 4.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "b7add744-2ef8-4985-9b8c-88da8d189931",
+"meal_date": "2026-10-18",
+"meal_type": "Lunch",
+"food_name": "Chicken Chinese fried rice with a drumstick",
+"calories": 700.0,
+"protein_g": 40.0,
+"carbs_g": 80,
+"fat_g": 20,
+"fiber_g": 3
+},
+{
+"id": "ff24dcab-a69a-41de-97cb-11e2069cc767",
+"meal_date": "2026-10-27",
+"meal_type": "Lunch",
+"food_name": "Spicy Plantain Chips",
+"calories": 450.0,
+"protein_g": 6.0,
+"carbs_g": 40,
+"fat_g": 30,
+"fiber_g": 6
+},
+{
+"id": "07679d81-cd24-4372-92c9-bb73aaa544a7",
+"meal_date": "2026-10-30",
+"meal_type": "Dinner",
+"food_name": "Jollof rice",
+"calories": 200.0,
+"protein_g": 4.0,
+"carbs_g": 40,
+"fat_g": 3,
+"fiber_g": 2
+},
+{
+"id": "f8e15a50-f319-401e-8884-e98e14e432d3",
+"meal_date": "2026-10-25",
+"meal_type": "Lunch",
+"food_name": "Fried dough balls with powdered sugar and sweet dipping sauce",
+"calories": 450.0,
+"protein_g": 6.0,
+"carbs_g": 60,
+"fat_g": 18,
+"fiber_g": 2
+},
+{
+"id": "e6900131-b0e6-4f42-b977-5ebff32c6f13",
+"meal_date": "2026-10-24",
+"meal_type": "Lunch",
+"food_name": "Chicken breast, egg omelette, fried yam",
+"calories": 550.0,
+"protein_g": 35.0,
+"carbs_g": 30,
+"fat_g": 10,
+"fiber_g": 5
+},
+{
+"id": "41b00865-549f-447b-b9d9-894a32e50da0",
+"meal_date": "2026-10-13",
+"meal_type": "Breakfast",
+"food_name": "3 medium oranges",
+"calories": 225.0,
+"protein_g": 3.0,
+"carbs_g": null,
+"fat_g": null,
+"fiber_g": null
+},
+{
+"id": "01d01833-5165-485e-9683-32b71637e013",
+"meal_date": "2026-10-23",
+"meal_type": "Dinner",
+"food_name": "fried yam",
+"calories": 720.0,
+"protein_g": 6.0,
+"carbs_g": 120,
+"fat_g": 24,
+"fiber_g": 12
+},
+{
+"id": "88583b30-dfb9-40dc-adf1-1459c2c9f12d",
+"meal_date": "2026-10-24",
+"meal_type": "Breakfast",
+"food_name": "Go Chips Plantain Chips",
+"calories": 450.0,
+"protein_g": 2.7,
+"carbs_g": 54,
+"fat_g": 24,
+"fiber_g": 5.4
+},
+{
+"id": "7a3ef000-49d9-45b9-9436-4168c32349a2",
+"meal_date": "2026-10-20",
+"meal_type": "Dinner",
+"food_name": "Peanut and Garri meal with ensure max protein",
+"calories": 820.0,
+"protein_g": 62.0,
+"carbs_g": 78,
+"fat_g": 33,
+"fiber_g": 14
+},
+{
+"id": "5ea0faa9-e29b-4559-bc59-1e0bfae63531",
+"meal_date": "2026-10-18",
+"meal_type": "Lunch",
+"food_name": "Roasted peanuts with garri",
+"calories": 450.0,
+"protein_g": 18.0,
+"carbs_g": 40,
+"fat_g": 28,
+"fiber_g": 8
+}
+],
+"weigh_ins": [
+{
+"id": "853d0177-4a00-4c1f-b8a9-0f36b9136baa",
+"weigh_date": "2026-10-15",
+"weight_lb": 155.0
+},
+{
+"id": "ba8ebe5f-c9b2-4fbf-8d77-89544ce0d9e6",
+"weigh_date": "2026-10-23",
+"weight_lb": 150.5
+},
+{
+"id": "37272aec-9289-4ee2-ab11-c7fdfe9456e7",
+"weigh_date": "2026-10-24",
+"weight_lb": 152.0
+}
+],
+"water": [
+{
+"log_date": "2026-10-13",
+"glasses": 1
+},
+{
+"log_date": "2026-10-14",
+"glasses": 1
+},
+{
+"log_date": "2026-10-20",
+"glasses": 0
+},
+{
+"log_date": "2026-10-22",
+"glasses": 5
+},
+{
+"log_date": "2026-10-23",
+"glasses": 1
+},
+{
+"log_date": "2026-10-26",
+"glasses": 0
+},
+{
+"log_date": "2026-10-27",
+"glasses": 0
+}
+],
+"goals": [
+{
+"cal": 1550,
+"pro": 102
+}
+],
+"_note": "Snapshot of the owner test account (Oct 2026) for regression tests. Cloud row shapes as returned by Supabase. No user ids."
+}
