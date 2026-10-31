@@ -336,6 +336,126 @@ async function runChecks() {
     const rgb = await ev(c => { const e = document.createElement('i'); e.style.color = c; document.body.append(e); const v = getComputedStyle(e).color; e.remove(); return v; }, want);
     eq(bg, rgb, 'body background after reload');
   });
+
+  /* ---------- Workout UI rebuild checks (set table, floating bar, log form) ---------- */
+  const finishDialogs = async () => { for (let i = 0; i < 3; i++) { const dlg = page.locator('dialog[open] button.v6-start, dialog[open] button[type=submit]').first(); if (await dlg.count()) { await dlg.click().catch(() => {}); await sleep(500); } } };
+  const startPlan = async (title, exercises) => {
+    await go('train');
+    await ev(a => strideSessionTracker.start({ title: a.title, exercises: a.exercises }, { focus: 'lower', checkinApproved: true }, 'Plan'), { title, exercises });
+    await sleep(1500);
+    await ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); document.querySelectorAll('#sessionTracker details.exercise').forEach(d => d.open = true); });
+    await sleep(700);
+  };
+  const exLoc = name => page.locator('#sessionTracker details.exercise').filter({ has: page.locator('summary', { hasText: name }) }).first();
+  const setRow = (name, i) => exLoc(name).locator('fieldset.st8').nth(i);
+  const fillRow = async (name, i, w, r) => {
+    const row = setRow(name, i);
+    const li = row.locator('.st8-load input'), ri = row.locator('.st8-reps input');
+    await li.fill(String(w)); await li.dispatchEvent('change'); await ri.fill(String(r)); await ri.dispatchEvent('change'); await sleep(150);
+  };
+  const clearOverlays = () => ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); document.querySelector('#restTimer [data-d=skip]')?.click(); }); // first-run sheets / rest timer can sit over the rows
+  const tickRow = async (name, i) => { await clearOverlays(); await setRow(name, i).locator('input[type=checkbox]').check(); await sleep(500); };
+  const LEG = { name: 'Leg Press Machine', sets: 3, reps: '8-12 reps', load: 'Moderate', starting_weight: 100, weight_unit: 'lb', cue: 'x' };
+
+  await check(17, 'Set table: header once + one row per set; columns SET/PREVIOUS/LB/REPS/check', async () => {
+    await fresh(); await startPlan('Table plan', [LEG]);
+    const r = await ev(() => { const c = document.querySelector('#sessionTracker details.exercise'); return { heads: c.querySelectorAll('.st8-head').length, rows: c.querySelectorAll('fieldset.st8').length, head: c.querySelector('.st8-head').textContent.replace(/\s+/g, ' ').trim(), inputs: [...c.querySelectorAll('fieldset.st8 input[type=number]')].map(i => i.inputMode) }; });
+    eq(r.heads, 1, 'header rows'); eq(r.rows, 3, 'set rows');
+    ok(/SET\s*PREVIOUS\s*LB.*REPS\s*✓/.test(r.head), 'header text: ' + r.head);
+    ok(r.inputs.every(m => m === 'decimal' || m === 'numeric'), 'inputmode: ' + r.inputs.join(','));
+    const w = await ev(() => document.documentElement.scrollWidth); ok(w <= 390, 'horizontal overflow: ' + w);
+    const over = await ev(() => [...document.querySelectorAll('#sessionTracker details.exercise fieldset.st8 *')].filter(e => e.getBoundingClientRect().width && e.getBoundingClientRect().right > 390).length); eq(over, 0, 'elements past 390px');
+  });
+
+  await check(18, 'Set table: PREVIOUS shows last session values (fallback to last set); tapping copies', async () => {
+    await fresh(); await startPlan('Prev plan', [{ ...LEG, sets: 4 }]);
+    const prev = await ev(() => [...document.querySelectorAll('#sessionTracker fieldset.st8 .st8-prev')].map(b => b.textContent.trim()));
+    eq(JSON.stringify(prev), JSON.stringify(['180 × 15', '200 × 12', '220 × 12', '220 × 12']), 'PREVIOUS texts');
+    await setRow('Leg Press Machine', 1).locator('.st8-prev').click(); await sleep(400);
+    const v = await ev(() => { const r = document.querySelectorAll('#sessionTracker fieldset.st8')[1]; const s = strideSessionTracker.session().exercises[0].sets[1]; return { w: r.querySelector('.st8-load input').value, r: r.querySelector('.st8-reps input').value, sw: s.weight, sr: s.reps }; });
+    eq(v.w, '200', 'copied weight input'); eq(v.r, '12', 'copied reps input'); eq(v.sw, 200, 'saved weight'); eq(v.sr, 12, 'saved reps');
+  });
+
+  await check(19, 'Set table: ticking a heavier set shows the PR pill exactly once (+ one toast)', async () => {
+    await fresh(); await startPlan('PR plan', [LEG]);
+    await ev(() => { window.__toasts = []; const o = window.strideToast; window.strideToast = m => { window.__toasts.push(String(m)); try { return o && o(m); } catch (e) {} }; });
+    await fillRow('Leg Press Machine', 0, 200, 10); await tickRow('Leg Press Machine', 0);
+    eq(await page.locator('#sessionTracker .st8-pr').count(), 0, 'pill after a lighter set');
+    await fillRow('Leg Press Machine', 1, 240, 10); await tickRow('Leg Press Machine', 1); await sleep(700);
+    eq(await page.locator('#sessionTracker .st8-pr').count(), 1, 'PR pills after heavier set');
+    ok(/New PR/.test(await setRow('Leg Press Machine', 1).locator('.st8-pr').textContent()), 'pill text');
+    const t = await ev(() => window.__toasts.filter(m => /New personal record: Leg Press Machine 240 lb × 10/.test(m)).length); eq(t, 1, 'PR toasts');
+    await sleep(1000); eq(await page.locator('#sessionTracker .st8-pr').count(), 1, 'PR pills still one later');
+    eq(await ev(() => window.__toasts.filter(m => /New personal record/.test(m)).length), 1, 'toasts after waiting');
+  });
+
+  await check(20, 'Set table: bodyweight row shows BW and no visible load input', async () => {
+    await fresh(); await startPlan('BW plan', [{ name: 'Push-up', sets: 2, reps: '8 reps', load: 'Bodyweight', cue: 'x' }]);
+    const r = await ev(() => { const row = document.querySelector('#sessionTracker fieldset.st8'); const vis = e => !!e && e.getBoundingClientRect().width > 0 && getComputedStyle(e).display !== 'none'; return { bw: vis(row.querySelector('.st8-bw')) && row.querySelector('.st8-bw').textContent.trim(), loadInput: [...row.querySelectorAll('input[type=number]')].filter(vis).length, reps: vis(row.querySelector('.st8-reps input')) }; });
+    eq(r.bw, 'BW', 'BW label'); eq(r.loadInput, 1, 'visible number inputs in BW row (reps only)'); ok(r.reps, 'reps input visible');
+  });
+
+  await check(21, 'Set table: plank row shows SECONDS + both timer buttons, nothing overlaps', async () => {
+    await fresh(); await startPlan('Plank plan', [{ name: 'Plank', sets: 2, reps: '30-45 seconds', load: 'Bodyweight', cue: 'x' }]);
+    const r = await ev(() => { const c = document.querySelector('#sessionTracker details.exercise'); const row = c.querySelector('fieldset.st8'); const vis = e => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && getComputedStyle(e).display !== 'none'; };
+      const parts = [...row.querySelectorAll('.st8-no, .st8-prev, .st8-bw, .st8-reps input, label.st8-ck, button.tmr6')].filter(vis);
+      const boxes = parts.map(e => ({ n: e.className || e.tagName, b: e.getBoundingClientRect() })); const hits = [];
+      for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) { const a = boxes[i].b, b = boxes[j].b; if (a.left < b.right - .5 && b.left < a.right - .5 && a.top < b.bottom - .5 && b.top < a.bottom - .5) hits.push(boxes[i].n + ' x ' + boxes[j].n); }
+      return { head: c.querySelector('.st8-head').textContent, timer: [...row.querySelectorAll('button.tmr6')].some(b => vis(b) && b.textContent.trim().startsWith('⏱')), max: [...row.querySelectorAll('button.tmr6')].some(b => vis(b) && b.textContent.includes('∞ Max hold')), hits, n: parts.length, right: Math.max(...boxes.map(x => x.b.right)) }; });
+    ok(/SECONDS/.test(r.head), 'header lacks SECONDS: ' + r.head); ok(r.timer, 'no visible ⏱ button'); ok(r.max, 'no visible ∞ Max hold button');
+    eq(r.hits.length, 0, 'overlapping boxes: ' + r.hits.join(' | ')); ok(r.n >= 6, 'parts found: ' + r.n); ok(r.right <= 390, 'row exceeds viewport: ' + r.right);
+  });
+
+  await check(22, 'Floating bar: hidden with no session; shown with title on Home; clear of tab bar; hidden after finish', async () => {
+    await fresh(); await go('home'); await sleep(1500);
+    ok(await ev(() => { const b = document.getElementById('resume6'); return !b || b.hidden || b.getBoundingClientRect().height === 0; }), 'bar visible with no session');
+    await startPlan('Bar plan', [LEG]);
+    await tickRow('Leg Press Machine', 0);
+    await go('home'); await sleep(1800);
+    await ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); const r = document.getElementById('restTimer'); if (r) r.hidden = true; });
+    const r = await ev(() => { const b = document.getElementById('resume6'), n = document.querySelector('nav'); const bb = b.getBoundingClientRect(), nb = n.getBoundingClientRect(); return { vis: !b.hidden && bb.height > 0, title: b.querySelector('b').textContent, btn: b.querySelector('.r6-go').textContent, time: /\d+:\d\d/.test(b.querySelector('small').textContent), barBottom: bb.bottom, navTop: nb.top, barH: bb.height, pad: parseFloat(getComputedStyle(document.body).paddingBottom) }; });
+    ok(r.vis, 'bar not visible during session'); eq(r.title, 'Bar plan', 'bar title'); ok(/Open/.test(r.btn), 'button: ' + r.btn); ok(r.time, 'no elapsed time');
+    ok(r.barBottom <= r.navTop, 'bar overlaps tab bar: bar bottom ' + r.barBottom + ' vs nav top ' + r.navTop);
+    ok(r.pad >= 120 + r.barH, 'page bottom padding ' + r.pad + ' < nav 120 + bar ' + r.barH);
+    await go('train'); await sleep(600);
+    const c = await ev(() => { const c = document.getElementById('workoutControls'); const b = c.getBoundingClientRect(); return { vis: !c.hidden && b.height > 0, h: b.height, title: c.querySelector('strong').textContent, dot: getComputedStyle(c, '::before').backgroundColor, btn: document.getElementById('workoutPauseResume').textContent }; });
+    ok(c.vis && c.h < 90, 'in-session controls not a compact bar: ' + c.h); eq(c.title, 'Bar plan', 'controls title'); ok(/Pause/.test(c.btn), 'controls button: ' + c.btn);
+    await ev(() => document.getElementById('workoutPauseResume').click()); await sleep(700);
+    const p = await ev(() => { const c = document.getElementById('workoutControls'); return { st: c.dataset.st, btn: document.getElementById('workoutPauseResume').textContent }; }); eq(p.st, 'paused', 'paused state'); ok(/Resume/.test(p.btn), 'paused button: ' + p.btn);
+    await ev(() => document.getElementById('workoutPauseResume').click()); await sleep(500);
+    const fin = page.locator('#finishSession'); await fin.click(); await sleep(800); await finishDialogs();
+    ok(!(await ev(() => strideSessionTracker.isActive())), 'session still active');
+    await go('home'); await sleep(1500);
+    ok(await ev(() => { const b = document.getElementById('resume6'); return !b || b.hidden || b.getBoundingClientRect().height === 0; }), 'bar still visible after finish');
+    ok(await ev(() => { const c = document.getElementById('workoutControls'); return !c || c.hidden || c.offsetParent === null; }), 'controls still visible after finish');
+    ok(await ev(() => !document.body.classList.contains('fb8-vis')), 'bar padding class left on after finish');
+  });
+
+  await check(23, 'Log form: saving a run with distance adds one workout with right miles/minutes', async () => {
+    await fresh(); await go('log'); await sleep(500);
+    const before = await ev(() => db.workouts.length);
+    await ev(() => { const t = document.getElementById('workoutType'); t.value = 'Long Run'; t.dispatchEvent(new Event('change', { bubbles: true })); }); await sleep(700);
+    ok(await page.locator('#distance').isVisible(), 'distance not shown for a run');
+    const set = async (id, v) => { const l = page.locator('#' + id); await l.fill(String(v)); await l.dispatchEvent('input'); await l.dispatchEvent('change'); };
+    await set('distance', '3.1'); await set('durationHours', '0'); await set('durationMinutes', '30'); await set('durationSeconds', '0'); await sleep(300);
+    const lay = await ev(() => { const g = id => document.getElementById(id).getBoundingClientRect(); const h = g('durationHours'), m = g('durationMinutes'), s = g('durationSeconds'); const sv = document.querySelector('#workoutForm .v6-start').getBoundingClientRect(), f = document.getElementById('workoutForm').getBoundingClientRect(); return { oneRow: Math.abs(h.top - m.top) < 2 && Math.abs(m.top - s.top) < 2, full: sv.width > f.width * 0.9 }; });
+    ok(lay.oneRow, 'h/m/s not on one row'); ok(lay.full, 'Save button not full width');
+    await page.locator('#workoutForm .v6-start').click(); await sleep(800); await finishDialogs(); await sleep(500);
+    eq(await ev(() => db.workouts.length), before + 1, 'workouts after saving the run');
+    const w = await ev(() => db.workouts[db.workouts.length - 1]); eq(w.miles, 3.1, 'miles'); eq(w.minutes, 30, 'minutes'); eq(w.type, 'Long Run', 'type');
+    await go('log'); await ev(() => { const t = document.getElementById('workoutType'); t.value = 'Core'; t.dispatchEvent(new Event('change', { bubbles: true })); }); await sleep(700);
+    ok(!(await page.locator('#distance').isVisible()), 'distance still shown for Core');
+  });
+
+  await check(24, 'Flag off (newSetTable=false): old set UI renders, no set-table header, old flow works', async () => {
+    await fresh({ init: () => { window.STRIDE_FLAGS = { newSetTable: false }; } });
+    eq(await ev(() => window.STRIDE_FLAGS.newSetTable), false, 'flag value');
+    await startPlan('Flag off plan', [LEG, { name: 'Plank', sets: 1, reps: '30 seconds', load: 'Bodyweight', cue: 'x' }]);
+    const r = await ev(() => ({ head: document.querySelectorAll('.st8-head').length, st8: document.querySelectorAll('fieldset.st8').length, old: document.querySelectorAll('#sessionTracker fieldset.v6-set .v6-rm').length, dup: document.querySelectorAll('#sessionTracker .dup7').length, wrap: document.querySelectorAll('.st8-actions').length, prev: document.querySelectorAll('.st8-prev').length }));
+    eq(r.head, 0, 'set-table headers'); eq(r.st8, 0, 'set-table rows'); eq(r.prev, 0, 'PREVIOUS buttons'); eq(r.wrap, 0, 'wrapped action rows'); eq(r.old, 4, 'old remove buttons'); ok(r.dup >= 1, 'Copy last set button');
+    const cb = page.locator('#sessionTracker details.exercise').first().locator('input[type=checkbox]').first(); await cb.check(); await sleep(300); ok(await cb.isChecked(), 'tick did not stick');
+    ok(await ev(() => [...document.querySelectorAll('#sessionTracker button')].some(b => b.textContent.includes('∞ Max hold'))), 'old plank Max hold button missing');
+  });
 }
 
 async function main() {
